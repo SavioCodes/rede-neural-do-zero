@@ -1,0 +1,27 @@
+# Rede Neural do Zero - Dependências
+# Autor: Sávio (https://github.com/SavioCodes)
+
+# Dependências principais
+numpy>=1.21.0
+
+# Visualização (opcional)
+matplotlib>=3.5.0
+
+# Testes
+pytest>=7.0.0
+
+# Utilitários para dados
+pandas>=1.3.0
+
+# Para notebooks (opcional)
+jupyter>=1.0.0
+ipykernel>=6.0.0
+
+# Desenvolvimento
+black>=22.0.0        # Formatação de código
+flake8>=4.0.0        # Linting
+mypy>=0.950          # Checagem de tipos
+
+# Documentação
+sphinx>=4.0.0        # Geração de documentação
+sphinx-rtd-theme>=1.0.0
