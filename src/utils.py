@@ -1,6 +1,6 @@
-"""
-Utilitários para manipulação de dados, visualização e métricas
-Autor: Sávio (https://github.com/SavioCodes)
+﻿"""
+UtilitÃ¡rios para manipulaÃ§Ã£o de dados, visualizaÃ§Ã£o e mÃ©tricas
+Autor: SÃ¡vio (https://github.com/SavioCodes)
 """
 
 import numpy as np
@@ -11,15 +11,15 @@ import os
 
 
 class DataUtils:
-    """Utilitários para manipulação e geração de dados."""
+    """UtilitÃ¡rios para manipulaÃ§Ã£o e geraÃ§Ã£o de dados."""
     
     @staticmethod
     def gerar_xor_dataset() -> Tuple[np.ndarray, np.ndarray]:
         """
-        Gera o dataset clássico XOR.
+        Gera o dataset clÃ¡ssico XOR.
         
         Returns:
-            tuple: (X, y) onde X são as entradas e y são as saídas
+            tuple: (X, y) onde X sÃ£o as entradas e y sÃ£o as saÃ­das
         """
         X = np.array([
             [0, 0],
@@ -41,12 +41,12 @@ class DataUtils:
     def gerar_dataset_classificacao(n_samples: int = 1000, n_features: int = 2, 
                                    noise: float = 0.1, random_state: int = 42) -> Tuple[np.ndarray, np.ndarray]:
         """
-        Gera um dataset sintético para classificação binária.
+        Gera um dataset sintÃ©tico para classificaÃ§Ã£o binÃ¡ria.
         
         Args:
-            n_samples: Número de amostras
-            n_features: Número de features
-            noise: Nível de ruído
+            n_samples: NÃºmero de amostras
+            n_features: NÃºmero de features
+            noise: NÃ­vel de ruÃ­do
             random_state: Seed para reprodutibilidade
             
         Returns:
@@ -77,7 +77,7 @@ class DataUtils:
         X = np.vstack([X_class0, X_class1])
         y = np.vstack([y_class0, y_class1])
         
-        # Adicionar ruído
+        # Adicionar ruÃ­do
         X += np.random.normal(0, noise, X.shape)
         
         # Embaralhar
@@ -90,7 +90,7 @@ class DataUtils:
     @staticmethod
     def normalizar_dados(X: np.ndarray, metodo: str = 'padrao') -> Tuple[np.ndarray, dict]:
         """
-        Normaliza os dados usando diferentes métodos.
+        Normaliza os dados usando diferentes mÃ©todos.
         
         Args:
             X: Dados de entrada
@@ -102,34 +102,38 @@ class DataUtils:
         if metodo == 'padrao':
             media = np.mean(X, axis=0)
             desvio = np.std(X, axis=0)
-            X_norm = (X - media) / (desvio + 1e-8)  # Evitar divisão por zero
+            desvio_seguro = np.where(desvio == 0, 1.0, desvio)
+            X_norm = (X - media) / desvio_seguro
             params = {'media': media, 'desvio': desvio, 'metodo': 'padrao'}
             
         elif metodo == 'minmax':
             minimo = np.min(X, axis=0)
             maximo = np.max(X, axis=0)
-            X_norm = (X - minimo) / (maximo - minimo + 1e-8)
+            faixa = maximo - minimo
+            faixa_segura = np.where(faixa == 0, 1.0, faixa)
+            X_norm = (X - minimo) / faixa_segura
             params = {'minimo': minimo, 'maximo': maximo, 'metodo': 'minmax'}
             
         elif metodo == 'robusto':
             mediana = np.median(X, axis=0)
             iqr = np.percentile(X, 75, axis=0) - np.percentile(X, 25, axis=0)
-            X_norm = (X - mediana) / (iqr + 1e-8)
+            iqr_seguro = np.where(iqr == 0, 1.0, iqr)
+            X_norm = (X - mediana) / iqr_seguro
             params = {'mediana': mediana, 'iqr': iqr, 'metodo': 'robusto'}
             
         else:
-            raise ValueError(f"Método '{metodo}' não reconhecido. Use 'padrao', 'minmax' ou 'robusto'.")
+            raise ValueError(f"MÃ©todo '{metodo}' nÃ£o reconhecido. Use 'padrao', 'minmax' ou 'robusto'.")
         
         return X_norm, params
     
     @staticmethod
     def aplicar_normalizacao(X: np.ndarray, params: dict) -> np.ndarray:
         """
-        Aplica normalização usando parâmetros salvos.
+        Aplica normalizaÃ§Ã£o usando parÃ¢metros salvos.
         
         Args:
             X: Dados para normalizar
-            params: Parâmetros de normalização salvos
+            params: ParÃ¢metros de normalizaÃ§Ã£o salvos
             
         Returns:
             np.ndarray: Dados normalizados
@@ -137,11 +141,15 @@ class DataUtils:
         metodo = params['metodo']
         
         if metodo == 'padrao':
-            return (X - params['media']) / (params['desvio'] + 1e-8)
+            desvio_seguro = np.where(params['desvio'] == 0, 1.0, params['desvio'])
+            return (X - params['media']) / desvio_seguro
         elif metodo == 'minmax':
-            return (X - params['minimo']) / (params['maximo'] - params['minimo'] + 1e-8)
+            faixa = params['maximo'] - params['minimo']
+            faixa_segura = np.where(faixa == 0, 1.0, faixa)
+            return (X - params['minimo']) / faixa_segura
         elif metodo == 'robusto':
-            return (X - params['mediana']) / (params['iqr'] + 1e-8)
+            iqr_seguro = np.where(params['iqr'] == 0, 1.0, params['iqr'])
+            return (X - params['mediana']) / iqr_seguro
     
     @staticmethod
     def dividir_treino_teste(X: np.ndarray, y: np.ndarray, 
@@ -152,7 +160,7 @@ class DataUtils:
         Args:
             X: Features
             y: Labels
-            test_size: Proporção para teste (0.0 a 1.0)
+            test_size: ProporÃ§Ã£o para teste (0.0 a 1.0)
             random_state: Seed para reprodutibilidade
             
         Returns:
@@ -162,7 +170,7 @@ class DataUtils:
         n_samples = X.shape[0]
         n_test = int(n_samples * test_size)
         
-        # Indices aleatórios
+        # Indices aleatÃ³rios
         indices = np.random.permutation(n_samples)
         test_indices = indices[:n_test]
         train_indices = indices[n_test:]
@@ -171,57 +179,57 @@ class DataUtils:
 
 
 class VisualizationUtils:
-    """Utilitários para visualização de dados e resultados."""
+    """UtilitÃ¡rios para visualizaÃ§Ã£o de dados e resultados."""
     
     @staticmethod
     def plotar_historico_treinamento(historico_erro: list, historico_acuracia: list, 
                                    salvar: Optional[str] = None):
         """
-        Plota o histórico de erro e acurácia durante o treinamento.
+        Plota o histÃ³rico de erro e acurÃ¡cia durante o treinamento.
         
         Args:
-            historico_erro: Lista com erros por época
-            historico_acuracia: Lista com acurácias por época
-            salvar: Caminho para salvar o gráfico (opcional)
+            historico_erro: Lista com erros por Ã©poca
+            historico_acuracia: Lista com acurÃ¡cias por Ã©poca
+            salvar: Caminho para salvar o grÃ¡fico (opcional)
         """
         fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 5))
         
         # Erro
         ax1.plot(historico_erro, 'b-', linewidth=2)
         ax1.set_title('Erro durante o Treinamento')
-        ax1.set_xlabel('Época')
-        ax1.set_ylabel('Erro Quadrático Médio')
+        ax1.set_xlabel('Ã‰poca')
+        ax1.set_ylabel('Erro QuadrÃ¡tico MÃ©dio')
         ax1.grid(True, alpha=0.3)
         
-        # Acurácia
+        # AcurÃ¡cia
         ax2.plot(historico_acuracia, 'g-', linewidth=2)
-        ax2.set_title('Acurácia durante o Treinamento')
-        ax2.set_xlabel('Época')
-        ax2.set_ylabel('Acurácia (%)')
+        ax2.set_title('AcurÃ¡cia durante o Treinamento')
+        ax2.set_xlabel('Ã‰poca')
+        ax2.set_ylabel('AcurÃ¡cia (%)')
         ax2.grid(True, alpha=0.3)
         
         plt.tight_layout()
         
         if salvar:
             plt.savefig(salvar, dpi=300, bbox_inches='tight')
-            print(f"Gráfico salvo em: {salvar}")
+            print(f"GrÃ¡fico salvo em: {salvar}")
         
         plt.show()
     
     @staticmethod
-    def plotar_dados_classificacao(X: np.ndarray, y: np.ndarray, titulo: str = "Dataset de Classificação",
+    def plotar_dados_classificacao(X: np.ndarray, y: np.ndarray, titulo: str = "Dataset de ClassificaÃ§Ã£o",
                                   salvar: Optional[str] = None):
         """
-        Plota dados de classificação binária em 2D.
+        Plota dados de classificaÃ§Ã£o binÃ¡ria em 2D.
         
         Args:
             X: Features (deve ter 2 colunas)
             y: Labels
-            titulo: Título do gráfico
+            titulo: TÃ­tulo do grÃ¡fico
             salvar: Caminho para salvar (opcional)
         """
         if X.shape[1] != 2:
-            print("Aviso: Plotagem disponível apenas para dados 2D. Usando as duas primeiras features.")
+            print("Aviso: Plotagem disponÃ­vel apenas para dados 2D. Usando as duas primeiras features.")
             X = X[:, :2]
         
         plt.figure(figsize=(8, 6))
@@ -242,27 +250,27 @@ class VisualizationUtils:
         
         if salvar:
             plt.savefig(salvar, dpi=300, bbox_inches='tight')
-            print(f"Gráfico salvo em: {salvar}")
+            print(f"GrÃ¡fico salvo em: {salvar}")
         
         plt.show()
     
     @staticmethod
     def plotar_fronteira_decisao(rede_neural, X: np.ndarray, y: np.ndarray, 
-                               resolucao: int = 100, titulo: str = "Fronteira de Decisão",
+                               resolucao: int = 100, titulo: str = "Fronteira de DecisÃ£o",
                                salvar: Optional[str] = None):
         """
-        Plota a fronteira de decisão da rede neural.
+        Plota a fronteira de decisÃ£o da rede neural.
         
         Args:
             rede_neural: Rede neural treinada
             X: Dados de entrada (2D)
             y: Labels
-            resolucao: Resolução da grade
-            titulo: Título do gráfico
+            resolucao: ResoluÃ§Ã£o da grade
+            titulo: TÃ­tulo do grÃ¡fico
             salvar: Caminho para salvar (opcional)
         """
         if X.shape[1] != 2:
-            print("Aviso: Fronteira disponível apenas para dados 2D. Usando as duas primeiras features.")
+            print("Aviso: Fronteira disponÃ­vel apenas para dados 2D. Usando as duas primeiras features.")
             X = X[:, :2]
         
         # Criar grade
@@ -274,7 +282,7 @@ class VisualizationUtils:
             np.linspace(y_min, y_max, resolucao)
         )
         
-        # Predições na grade
+        # PrediÃ§Ãµes na grade
         grade_pontos = np.c_[xx.ravel(), yy.ravel()]
         Z = rede_neural.prever(grade_pontos)
         Z = Z.reshape(xx.shape)
@@ -301,13 +309,13 @@ class VisualizationUtils:
         
         if salvar:
             plt.savefig(salvar, dpi=300, bbox_inches='tight')
-            print(f"Gráfico salvo em: {salvar}")
+            print(f"GrÃ¡fico salvo em: {salvar}")
         
         plt.show()
 
 
 class FileUtils:
-    """Utilitários para manipulação de arquivos."""
+    """UtilitÃ¡rios para manipulaÃ§Ã£o de arquivos."""
     
     @staticmethod
     def salvar_csv(dados: dict, caminho: str):
@@ -315,17 +323,17 @@ class FileUtils:
         Salva dados em formato CSV.
         
         Args:
-            dados: Dicionário com os dados
+            dados: DicionÃ¡rio com os dados
             caminho: Caminho do arquivo
         """
-        # Criar diretório se não existir
+        # Criar diretÃ³rio se nÃ£o existir
         os.makedirs(os.path.dirname(caminho), exist_ok=True)
         
         with open(caminho, 'w', newline='', encoding='utf-8') as f:
             writer = csv.DictWriter(f, fieldnames=dados.keys())
             writer.writeheader()
             
-            # Assumir que todos os valores são listas do mesmo tamanho
+            # Assumir que todos os valores sÃ£o listas do mesmo tamanho
             n_rows = len(list(dados.values())[0])
             for i in range(n_rows):
                 row = {key: values[i] for key, values in dados.items()}
@@ -360,7 +368,7 @@ class FileUtils:
                         # Tentar converter para float
                         dados[field].append(float(value))
                     except ValueError:
-                        # Se não conseguir, manter como string
+                        # Se nÃ£o conseguir, manter como string
                         dados[field].append(value)
         
         print(f"Dados carregados de: {caminho}")
@@ -368,20 +376,20 @@ class FileUtils:
 
 
 class MetricUtils:
-    """Utilitários para cálculo de métricas adicionais."""
+    """UtilitÃ¡rios para cÃ¡lculo de mÃ©tricas adicionais."""
     
     @staticmethod
     def matriz_confusao(y_true: np.ndarray, y_pred: np.ndarray, limiar: float = 0.5) -> np.ndarray:
         """
-        Calcula a matriz de confusão para classificação binária.
+        Calcula a matriz de confusÃ£o para classificaÃ§Ã£o binÃ¡ria.
         
         Args:
             y_true: Labels verdadeiros
-            y_pred: Predições (probabilidades)
-            limiar: Limiar para classificação binária
+            y_pred: PrediÃ§Ãµes (probabilidades)
+            limiar: Limiar para classificaÃ§Ã£o binÃ¡ria
             
         Returns:
-            np.ndarray: Matriz de confusão 2x2
+            np.ndarray: Matriz de confusÃ£o 2x2
         """
         y_pred_bin = (y_pred >= limiar).astype(int).ravel()
         y_true_bin = y_true.ravel().astype(int)
@@ -397,20 +405,20 @@ class MetricUtils:
     @staticmethod
     def precisao_recall_f1(y_true: np.ndarray, y_pred: np.ndarray, limiar: float = 0.5) -> dict:
         """
-        Calcula precisão, recall e F1-score.
+        Calcula precisÃ£o, recall e F1-score.
         
         Args:
             y_true: Labels verdadeiros
-            y_pred: Predições (probabilidades)
-            limiar: Limiar para classificação binária
+            y_pred: PrediÃ§Ãµes (probabilidades)
+            limiar: Limiar para classificaÃ§Ã£o binÃ¡ria
             
         Returns:
-            dict: Métricas calculadas
+            dict: MÃ©tricas calculadas
         """
         cm = MetricUtils.matriz_confusao(y_true, y_pred, limiar)
         tn, fp, fn, tp = cm.ravel()
         
-        # Evitar divisão por zero
+        # Evitar divisÃ£o por zero
         precisao = tp / (tp + fp) if (tp + fp) > 0 else 0
         recall = tp / (tp + fn) if (tp + fn) > 0 else 0
         f1 = 2 * (precisao * recall) / (precisao + recall) if (precisao + recall) > 0 else 0

@@ -1,0 +1,15 @@
+﻿# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+env/
+
+# OS/Editor
+.DS_Store
+Thumbs.db
+.vscode/
+
+# Test artifact
+test_modelo.npz
