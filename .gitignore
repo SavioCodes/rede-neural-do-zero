@@ -13,3 +13,7 @@ Thumbs.db
 
 # Test artifact
 test_modelo.npz
+
+# Runtime logs
+logs/*
+!logs/.gitkeep
