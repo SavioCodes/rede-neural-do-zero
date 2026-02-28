@@ -1,52 +1,84 @@
-# rede-neural-do-zero
+﻿# rede-neural-do-zero
 
-## Visao Geral
-Projeto educacional de rede neural implementada do zero em Python.
+[![CI](https://github.com/SavioCodes/rede-neural-do-zero/actions/workflows/ci.yml/badge.svg)](https://github.com/SavioCodes/rede-neural-do-zero/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
+[![Python](https://img.shields.io/badge/Python-3.11-blue)](https://www.python.org/)
 
-## Status do Projeto
-| Item | Valor |
-|:--|:--|
-| Maturidade | Educacional funcional |
-| Tipo | Projeto de estudo |
-| Ultima atualizacao relevante | 2026-02 |
+Educational neural network implementation from scratch with a reproducible evaluation pipeline.
 
-## Stack
-| Camada | Tecnologias |
-|:--|:--|
-| Runtime | Python 3.8+ |
-| Computacao numerica | NumPy |
-| Apoio analitico | pandas, matplotlib |
-| Testes | unittest/pytest |
+PT-BR: Implementacao didatica com foco em reproducibilidade e qualidade de engenharia.
 
-## Estrutura
-- `src/`: implementacao da rede e utilitarios.
-- `tests/`: testes automatizados.
-- `examples/`: exemplos praticos.
-- `docs/`: materiais de apoio.
+## Why This Exists
 
-## Como Executar
-```bash
-python -m venv venv
-# Windows: venv\Scripts\activate
-# Linux/Mac: source venv/bin/activate
-pip install -r requirements.txt
+This repository was created to understand core neural network mechanics without high-level frameworks.
+It includes training logic, utility modules, tests, and evaluation scripts.
+
+## Architecture
+
+```mermaid
+flowchart LR
+  Data[Dataset Utils] --> Preprocess[Normalization + Split]
+  Preprocess --> Model[RedeNeural]
+  Model --> Train[Backprop Training]
+  Train --> Eval[Evaluation Metrics]
+  Eval --> Logs[JSON/JSONL Logs]
 ```
 
-## Testes
+## Tech Stack
+
+- Python 3.8+
+- NumPy, pandas, matplotlib
+- pytest for tests
+
+## Repository Structure
+
+```text
+src/         # Neural network implementation and helpers
+tests/       # Unit and integration tests
+examples/    # Usage examples
+docs/        # Theory and algorithm notes
+scripts/     # Reproducible evaluation scripts
+logs/        # Evaluation logs (tracked with .gitkeep)
+```
+
+## Quickstart
+
 ```bash
+python -m venv .venv
+pip install -r requirements.txt
 pytest -q
 ```
 
-## CI
-Workflow padronizado em `.github/workflows/ci.yml`.
+## Reproducible Evaluation
 
-## Deploy
-Projeto educacional, sem URL publica fixa.
+```bash
+python scripts/evaluate.py --seed 42 --epochs 500 --samples 300
+```
+
+The script writes:
+
+- `logs/eval-summary.json`
+- `logs/eval-history.jsonl`
+
+## Test and Quality Gates
+
+```bash
+pytest -q
+python scripts/evaluate.py --seed 42 --epochs 400 --samples 240
+```
+
+## Technical Decisions and Trade-offs
+
+- Framework-free implementation improves learning depth at the cost of production features.
+- Deterministic evaluation (fixed seed) reduces CI flakiness.
+- JSON/JSONL logs are lightweight and portable for future experiment tracking.
 
 ## Roadmap
-- aumentar cobertura de testes de treinamento
-- adicionar benchmarks de desempenho
-- expandir exemplos didaticos
 
-## Licenca
-MIT (`LICENSE`).
+- [ ] Add richer experiment configurations (learning-rate sweeps)
+- [ ] Add confusion-matrix plot export in CI artifacts
+- [ ] Add notebook-free benchmark report generation
+
+## License
+
+MIT. See [LICENSE](./LICENSE).
