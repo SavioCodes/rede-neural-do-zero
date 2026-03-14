@@ -93,3 +93,5 @@ python scripts/evaluate.py --seed 42 --epochs 400 --samples 240
 ## License
 
 MIT. See [LICENSE](./LICENSE).
+
+PT-BR: Este projeto continua sendo um material educacional aberto para estudo de redes neurais artificiais.
