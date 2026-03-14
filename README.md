@@ -67,6 +67,17 @@ pytest -q
 python scripts/evaluate.py --seed 42 --epochs 400 --samples 240
 ```
 
+## Operational Signals
+
+- The repo uses deterministic evaluation to keep results comparable and reduce CI noise.
+- Theory notes, scripts, and generated logs are tracked as part of the engineering story, not split from the implementation.
+- The experiment loop is reproducible from the terminal, producing JSON and JSONL artifacts from a fixed-seed run.
+
+```bash
+pytest -q
+python scripts/evaluate.py --seed 42 --epochs 400 --samples 240
+```
+
 ## Technical Decisions and Trade-offs
 
 - Framework-free implementation improves learning depth at the cost of production features.
