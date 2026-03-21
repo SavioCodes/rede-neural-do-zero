@@ -4,44 +4,53 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 [![Python](https://img.shields.io/badge/Python-3.11-blue)](https://www.python.org/)
 
-Implementacao educacional de uma rede neural do zero com NumPy, testes automatizados e pipeline de avaliacao reproduzivel.
+Implementacao educacional de uma rede neural do zero com NumPy, exemplos reproduziveis, documentacao organizada e pipeline simples de qualidade.
 
 ## Visao Geral
 
-Este repositorio existe para estudar o funcionamento interno de uma rede neural sem depender de frameworks de alto nivel.
-O projeto cobre:
+Este projeto existe para estudar os fundamentos de redes neurais sem esconder a matematica atras de frameworks.
+Ele cobre:
 
 - inicializacao de pesos
 - forward propagation
 - backpropagation
 - funcoes de ativacao
-- utilitarios de dados e metricas
-- exemplos executaveis
+- metricas de classificacao binaria
+- geracao e normalizacao de datasets
 - avaliacao deterministica para CI
 
 ## Destaques
 
-- `RedeNeural(..., seed=...)` para experimentos reproduziveis sem depender do estado global do NumPy
-- validacoes de entrada para treino, previsao, split e normalizacao
+- `RedeNeural(..., seed=...)` para experimentos reproduziveis
+- validacoes de entrada no treino, previsao, metricas e split de dados
 - `prever_classes()` para converter probabilidades em classes binarias
-- historico de treino e de validacao salvo no objeto
-- script de avaliacao que gera artefatos JSON e JSONL em `logs/`
+- historico de treino e validacao salvo no modelo
+- `scripts/evaluate.py` gerando artefatos JSON e JSONL em `logs/`
+- configuracao centralizada em `pyproject.toml`
 
 ## Estrutura
 
 ```text
-src/         # Implementacao principal da rede neural e utilitarios
-tests/       # Testes unitarios e de integracao
-examples/    # Exemplos de uso
-scripts/     # Scripts auxiliares, incluindo avaliacao deterministica
-docs/        # Notas teoricas e algoritmos
-logs/        # Saida da avaliacao (mantido com .gitkeep)
-data/        # Dados e notas de datasets
+.github/workflows/   # CI
+docs/                # Notas teoricas e explicacao dos algoritmos
+examples/            # Scripts de demonstracao
+logs/                # Artefatos da avaliacao deterministica
+src/                 # Implementacao principal
+tests/               # Testes unitarios e de integracao
 ```
 
 ## Setup Rapido
 
-### Windows (PowerShell)
+### Runtime basico
+
+```bash
+python -m venv .venv
+source .venv/bin/activate  # Linux/macOS
+python -m pip install -r requirements.txt
+python -m pytest -q
+```
+
+### PowerShell
 
 ```powershell
 python -m venv .venv
@@ -50,20 +59,17 @@ python -m pip install -r requirements.txt
 python -m pytest -q
 ```
 
-### Linux/macOS
+### Ambiente de desenvolvimento
 
 ```bash
-python -m venv .venv
-source .venv/bin/activate
-python -m pip install -r requirements.txt
+python -m pip install -r requirements-dev.txt
+python -m ruff check .
 python -m pytest -q
 ```
 
 ## Uso Basico
 
 ```python
-import numpy as np
-
 from src.rede_neural import RedeNeural
 from src.utils import DataUtils
 
@@ -82,6 +88,14 @@ print(classes)
 print(metricas["acuracia"])
 ```
 
+## Exemplos
+
+```bash
+python examples/xor_exemplo.py
+python examples/classificacao.py
+python examples/exemplo.py --save-dir results/demo --no-plots
+```
+
 ## Avaliacao Reproduzivel
 
 ```bash
@@ -93,35 +107,44 @@ Arquivos gerados:
 - `logs/eval-summary.json`
 - `logs/eval-history.jsonl`
 
-O sumario salvo inclui configuracao do modelo, seed, metrica de erro, acuracia, precisao, recall e F1-score.
+O sumario inclui:
 
-## Qualidade
+- configuracao do modelo
+- seed usada
+- MSE, acuracia, precisao, recall e F1-score
+- matriz de confusao
+
+## Automacao
 
 Comandos principais:
 
 ```bash
-python -m pytest -q
-python scripts/evaluate.py --seed 42 --epochs 400 --samples 240
+make install
+make install-dev
+make lint
+make test
+make eval
+make verify
 ```
 
-CI atual:
+## Documentacao
 
-- executa testes automatizados
-- roda um smoke test deterministico da avaliacao
-- usa Python 3.11
+- [Fundamentos teoricos](./docs/teoria.md)
+- [Detalhes dos algoritmos](./docs/algoritmos.md)
+- [Notas sobre datasets](./data/README.md)
 
 ## Decisoes de Projeto
 
-- O foco e aprendizado e clareza, nao performance de producao.
+- O foco e clareza didatica, nao performance de producao.
 - A camada de saida usa sigmoid para classificacao binaria.
-- A avaliacao e deterministicamente configurada para reduzir flakiness na CI.
-- Os utilitarios evitam alterar o estado global do gerador aleatorio quando recebem `random_state`.
+- O script de avaliacao e deterministico para reduzir flakiness na CI.
+- O projeto evita depender do estado global do NumPy quando usa seeds.
 
 ## Proximos Passos
 
-- adicionar comparacoes de hiperparametros com exportacao de resultados
-- gerar artefatos de visualizacao para analise de fronteira de decisao
-- expandir exemplos com persistencia de modelos e avaliacao em datasets customizados
+- adicionar outras funcoes de custo para comparacao didatica
+- exportar artefatos visuais automaticamente em pipelines
+- incluir mais exemplos com datasets externos pequenos
 
 ## Licenca
 

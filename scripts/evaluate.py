@@ -5,23 +5,19 @@ from __future__ import annotations
 
 import argparse
 import json
+import sys
 from datetime import datetime, timezone
 from pathlib import Path
-import sys
-
-import numpy as np
 
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from src.rede_neural import RedeNeural
-from src.utils import DataUtils, MetricUtils
+from src.rede_neural import RedeNeural  # noqa: E402
+from src.utils import DataUtils, MetricUtils  # noqa: E402
 
 
 def run_evaluation(seed: int, epochs: int, samples: int, min_accuracy: float) -> dict:
-    np.random.seed(seed)
-
     X, y = DataUtils.gerar_dataset_classificacao(
         n_samples=samples,
         n_features=2,
@@ -65,6 +61,7 @@ def run_evaluation(seed: int, epochs: int, samples: int, min_accuracy: float) ->
             "precision": float(prf["precisao"]),
             "recall": float(prf["recall"]),
             "f1_score": float(prf["f1_score"]),
+            "confusion_matrix": prf["matriz_confusao"].tolist(),
         },
         "thresholds": {
             "min_accuracy": float(min_accuracy),

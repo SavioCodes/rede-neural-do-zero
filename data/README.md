@@ -1,85 +1,54 @@
-# 📁 Dados (Data)
+# Dados
 
-Esta pasta contém os datasets utilizados nos exemplos da rede neural.
+Esta pasta guarda referencias e pequenos arquivos de dados usados pelos exemplos do projeto.
 
-## 📊 Datasets Disponíveis
+## Arquivos atuais
 
-### 1. `xor_dataset.csv`
-Dataset clássico do problema XOR (OR Exclusivo).
+### `examples/xor_dataset.csv`
 
-**Formato:**
-- `x1`: Primeira entrada (0 ou 1)
-- `x2`: Segunda entrada (0 ou 1)
-- `y`: Saída esperada (0 ou 1)
+Dataset classico do problema XOR.
 
-**Características:**
-- 4 amostras
-- 2 features de entrada
-- 1 target binário
-- Problema não-linearmente separável
+Campos:
 
-### 2. `mnist_sample.csv` (Planejado)
-Amostra do dataset MNIST com dígitos manuscritos.
+- `x1`
+- `x2`
+- `y`
 
-**Características planejadas:**
-- 1000 amostras (100 de cada dígito 0-9)
-- 784 features (pixels 28x28)
-- 10 classes (dígitos 0-9)
+## Como carregar
 
-## 🔧 Como Usar
+### Gerar XOR em memoria
 
-### Carregar XOR
 ```python
 from src.utils import DataUtils
+
 X, y = DataUtils.gerar_xor_dataset()
 ```
 
-### Gerar Dataset Sintético
+### Gerar dataset sintetico de classificacao
+
 ```python
 from src.utils import DataUtils
-X, y = DataUtils.gerar_dataset_classificacao(n_samples=1000)
+
+X, y = DataUtils.gerar_dataset_classificacao(n_samples=1000, random_state=42)
 ```
 
-### Carregar CSV Personalizado
+### Ler um CSV customizado
+
 ```python
 from src.utils import FileUtils
-dados = FileUtils.carregar_csv('data/meu_dataset.csv')
+
+dados = FileUtils.carregar_csv("meu_dataset.csv")
 ```
 
-## 📈 Criando Seus Próprios Datasets
+## Recomendações
 
-### Formato CSV Recomendado
-```csv
-feature1,feature2,feature3,target
-1.2,3.4,5.6,0
-2.1,4.3,6.5,1
-...
-```
+- normalize as features antes do treino
+- mantenha treino e teste separados
+- garanta consistencia entre numero de colunas e arquitetura da rede
+- prefira seeds explicitas para comparacoes
 
-### Dicas:
-1. **Normalização**: Sempre normalize suas features
-2. **Separação**: Divida em treino/validação/teste
-3. **Balanceamento**: Verifique se as classes estão balanceadas
-4. **Ruído**: Considere adicionar ruído para robustez
+## Proximas extensoes naturais
 
-## 🎯 Datasets Recomendados para Teste
-
-### Classificação Binária:
-- Ionosphere
-- Breast Cancer Wisconsin
-- Sonar
-- Heart Disease
-
-### Classificação Multi-classe:
-- Iris
-- Wine
-- Digits
-- CIFAR-10 (simplificado)
-
-### Regressão:
-- Boston Housing
-- California Housing
-- Diabetes
-
----
-Autor: [Sávio](https://github.com/SavioCodes)
+- datasets pequenos de benchmark para classificacao binaria
+- conjuntos de dados externos com script de preparacao
+- exemplos de importacao e avaliacao com CSVs customizados

@@ -43,7 +43,10 @@ class TestFuncoesAtivacao(unittest.TestCase):
         esperado = np.array([0, 0, 0, 1, 2], dtype=float)
 
         np.testing.assert_array_equal(resultado, esperado)
-        np.testing.assert_array_equal(self.funcoes.relu(np.array([-1000.0, -1.0])), np.array([0, 0], dtype=float))
+        np.testing.assert_array_equal(
+            self.funcoes.relu(np.array([-1000.0, -1.0])),
+            np.array([0, 0], dtype=float),
+        )
 
     def test_relu_derivada(self) -> None:
         resultado = self.funcoes.relu_derivada(self.x_test)
@@ -77,7 +80,10 @@ class TestFuncoesAtivacao(unittest.TestCase):
         np.testing.assert_array_equal(self.funcoes.linear(self.x_test), self.x_test)
 
     def test_linear_derivada(self) -> None:
-        np.testing.assert_array_equal(self.funcoes.linear_derivada(self.x_test), np.ones_like(self.x_test))
+        np.testing.assert_array_equal(
+            self.funcoes.linear_derivada(self.x_test),
+            np.ones_like(self.x_test),
+        )
 
     def test_aplicar_funcao(self) -> None:
         for nome in ["sigmoid", "relu", "tanh", "leaky_relu", "linear"]:
@@ -265,6 +271,13 @@ class TestMetricUtils(unittest.TestCase):
             self.assertIsInstance(metricas["recall"], float)
             self.assertIsInstance(metricas["f1_score"], float)
 
+    def test_limiar_invalido_lanca_erro(self) -> None:
+        with self.assertRaises(ValueError):
+            MetricUtils.matriz_confusao(self.y_true, self.y_pred_perfect, limiar=1.5)
+
+        with self.assertRaises(ValueError):
+            MetricUtils.precisao_recall_f1(self.y_true, self.y_pred_perfect, limiar=-0.1)
+
 
 class TestFileUtils(unittest.TestCase):
     """Tests for file helpers."""
@@ -279,6 +292,12 @@ class TestFileUtils(unittest.TestCase):
 
         self.assertEqual(carregado["epoca"], [1.0, 2.0])
         self.assertEqual(carregado["erro"], [0.5, 0.2])
+
+    def test_salvar_csv_com_colunas_inconsistentes_lanca_erro(self) -> None:
+        with tempfile.TemporaryDirectory() as diretorio:
+            caminho = os.path.join(diretorio, "metricas.csv")
+            with self.assertRaises(ValueError):
+                FileUtils.salvar_csv({"epoca": [1, 2], "erro": [0.5]}, caminho)
 
 
 class TestIntegracaoUtils(unittest.TestCase):

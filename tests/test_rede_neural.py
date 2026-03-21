@@ -160,7 +160,10 @@ class TestRedeNeural(unittest.TestCase):
             np.testing.assert_array_almost_equal(pesos_a, pesos_b)
 
         self.assertTrue(
-            any(not np.allclose(pesos_a, pesos_c) for pesos_a, pesos_c in zip(rede_a.pesos, rede_c.pesos))
+            any(
+                not np.allclose(pesos_a, pesos_c)
+                for pesos_a, pesos_c in zip(rede_a.pesos, rede_c.pesos)
+            )
         )
 
     def test_arquiteturas_profundas(self) -> None:
@@ -207,7 +210,13 @@ class TestRedeNeural(unittest.TestCase):
 
     def test_validacao_parcial_lanca_erro(self) -> None:
         with self.assertRaises(ValueError):
-            self.rede.treinar(self.X_test, self.y_test, epochs=5, validacao_X=self.X_test, verbose=False)
+            self.rede.treinar(
+                self.X_test,
+                self.y_test,
+                epochs=5,
+                validacao_X=self.X_test,
+                verbose=False,
+            )
 
     def test_entrada_invalida_lanca_erro(self) -> None:
         with self.assertRaises(ValueError):

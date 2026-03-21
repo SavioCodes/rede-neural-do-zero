@@ -1,234 +1,174 @@
 #!/usr/bin/env python3
-"""
-Exemplo: Classificação com Dataset Sintético
-Autor: Sávio (https://github.com/SavioCodes)
+"""Synthetic classification experiments for the educational network."""
 
-Demonstra uso da rede neural em um problema de
-classificação binária mais realista.
-"""
+from __future__ import annotations
 
+import argparse
 import sys
-import os
-import numpy as np
+from pathlib import Path
 
-# Adicionar o diretório src ao path
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
 
-from src.rede_neural import RedeNeural
-from src.utils import DataUtils, VisualizationUtils, MetricUtils
+from src.rede_neural import RedeNeural  # noqa: E402
+from src.utils import DataUtils, MetricUtils  # noqa: E402
 
 
-def experimento_funcoes_ativacao():
-    """Compara diferentes funções de ativação."""
-    
-    print("🧪 COMPARANDO FUNÇÕES DE ATIVAÇÃO")
-    print("=" * 35)
-    
-    # Gerar dados
-    X, y = DataUtils.gerar_dataset_classificacao(n_samples=800, noise=0.15)
+def avaliar_modelo(
+    X_train,
+    X_test,
+    y_train,
+    y_test,
+    arquitetura,
+    ativacao: str,
+    inicializacao: str,
+    epochs: int,
+    taxa_aprendizado: float,
+    seed: int,
+) -> dict:
+    rede = RedeNeural(
+        arquitetura=arquitetura,
+        ativacao=ativacao,
+        inicializacao=inicializacao,
+        seed=seed,
+    )
+    rede.treinar(X_train, y_train, epochs=epochs, taxa_aprendizado=taxa_aprendizado, verbose=False)
+    resultado = rede.avaliar(X_test, y_test)
+    metricas = MetricUtils.precisao_recall_f1(y_test, resultado["predicoes"])
+    return {
+        "acuracia": resultado["acuracia"],
+        "erro": resultado["erro"],
+        "f1": metricas["f1_score"],
+        "precisao": metricas["precisao"],
+        "recall": metricas["recall"],
+    }
+
+
+def experimento_funcoes_ativacao(samples: int, epochs: int, seed: int) -> None:
+    X, y = DataUtils.gerar_dataset_classificacao(n_samples=samples, noise=0.15, random_state=seed)
     X_norm, _ = DataUtils.normalizar_dados(X)
-    X_train, X_test, y_train, y_test = DataUtils.dividir_treino_teste(X_norm, y, test_size=0.25)
-    
-    # Funções para testar
-    funcoes = ['sigmoid', 'relu', 'tanh']
-    resultados = {}
-    
-    for funcao in funcoes:
-        print(f"\n🔧 Testando função: {funcao.upper()}")
-        
-        # Escolher inicialização adequada
-        init = 'he' if funcao == 'relu' else 'xavier'
-        
-        # Criar rede
-        rede = RedeNeural(
+    X_train, X_test, y_train, y_test = DataUtils.dividir_treino_teste(
+        X_norm, y, test_size=0.25, random_state=seed
+    )
+
+    print("\nComparando funcoes de ativacao")
+    print("------------------------------")
+    print(f"{'funcao':<14}{'acuracia':<12}{'f1':<10}{'erro':<12}")
+
+    for indice, funcao in enumerate(["sigmoid", "relu", "tanh", "leaky_relu"]):
+        inicializacao = "he" if "relu" in funcao else "xavier"
+        resultado = avaliar_modelo(
+            X_train,
+            X_test,
+            y_train,
+            y_test,
             arquitetura=[2, 10, 6, 1],
             ativacao=funcao,
-            inicializacao=init
+            inicializacao=inicializacao,
+            epochs=epochs,
+            taxa_aprendizado=0.01,
+            seed=seed + indice,
         )
-        
-        # Treinar
-        rede.treinar(X_train, y_train, epochs=1000, taxa_aprendizado=0.01, verbose=False)
-        
-        # Avaliar
-        resultado = rede.avaliar(X_test, y_test)
-        metricas = MetricUtils.precisao_recall_f1(y_test, resultado['predicoes'])
-        
-        resultados[funcao] = {
-            'acuracia': resultado['acuracia'],
-            'erro': resultado['erro'],
-            'f1': metricas['f1_score'],
-            'precisao': metricas['precisao'],
-            'recall': metricas['recall']
-        }
-        
-        print(f"  Acurácia: {resultado['acuracia']:.2f}%")
-        print(f"  F1-Score: {metricas['f1_score']:.4f}")
-    
-    # Resumo
-    print(f"\n📊 RESUMO COMPARATIVO:")
-    print("-" * 60)
-    print(f"{'Função':<10} {'Acurácia':<10} {'F1-Score':<10} {'Precisão':<10} {'Recall':<10}")
-    print("-" * 60)
-    
-    for funcao, metricas in resultados.items():
-        print(f"{funcao.capitalize():<10} "
-              f"{metricas['acuracia']:<10.2f} "
-              f"{metricas['f1']:<10.4f} "
-              f"{metricas['precisao']:<10.4f} "
-              f"{metricas['recall']:<10.4f}")
-    
-    # Melhor função
-    melhor = max(resultados.items(), key=lambda x: x[1]['f1'])
-    print(f"\n🏆 Melhor função: {melhor[0].upper()} (F1: {melhor[1]['f1']:.4f})")
+        print(
+            f"{funcao:<14}{resultado['acuracia']:<12.2f}"
+            f"{resultado['f1']:<10.4f}{resultado['erro']:<12.6f}"
+        )
 
 
-def experimento_normalizacao():
-    """Testa diferentes métodos de normalização."""
-    
-    print("\n🧪 COMPARANDO MÉTODOS DE NORMALIZAÇÃO") 
-    print("=" * 40)
-    
-    # Gerar dados com escala diferente
-    X, y = DataUtils.gerar_dataset_classificacao(n_samples=600, noise=0.1)
-    
-    # Artificialmente criar escalas diferentes
-    X[:, 0] *= 100  # Primeira feature entre -100 e 100
-    X[:, 1] *= 0.01  # Segunda feature entre -0.01 e 0.01
-    
-    print(f"Dados originais - Feature 1: [{X[:, 0].min():.2f}, {X[:, 0].max():.2f}]")
-    print(f"Dados originais - Feature 2: [{X[:, 1].min():.4f}, {X[:, 1].max():.4f}]")
-    
-    # Métodos de normalização
-    metodos = ['padrao', 'minmax', 'robusto']
-    resultados = {}
-    
-    for metodo in metodos:
-        print(f"\n🔧 Testando normalização: {metodo.upper()}")
-        
-        # Normalizar
+def experimento_normalizacao(samples: int, epochs: int, seed: int) -> None:
+    X, y = DataUtils.gerar_dataset_classificacao(n_samples=samples, noise=0.1, random_state=seed)
+    X[:, 0] *= 100
+    X[:, 1] *= 0.01
+
+    print("\nComparando metodos de normalizacao")
+    print("----------------------------------")
+    print(f"{'metodo':<14}{'acuracia':<12}{'f1':<10}{'erro':<12}")
+
+    for indice, metodo in enumerate(["padrao", "minmax", "robusto"]):
         X_norm, _ = DataUtils.normalizar_dados(X, metodo=metodo)
-        
-        print(f"  Após {metodo} - Feature 1: [{X_norm[:, 0].min():.2f}, {X_norm[:, 0].max():.2f}]")
-        print(f"  Após {metodo} - Feature 2: [{X_norm[:, 1].min():.2f}, {X_norm[:, 1].max():.2f}]")
-        
-        # Dividir dados
-        X_train, X_test, y_train, y_test = DataUtils.dividir_treino_teste(X_norm, y, test_size=0.2)
-        
-        # Treinar rede
-        rede = RedeNeural([2, 8, 1], ativacao='relu', inicializacao='he')
-        rede.treinar(X_train, y_train, epochs=800, taxa_aprendizado=0.01, verbose=False)
-        
-        # Avaliar
-        resultado = rede.avaliar(X_test, y_test)
-        resultados[metodo] = resultado['acuracia']
-        
-        print(f"  Acurácia: {resultado['acuracia']:.2f}%")
-    
-    # Comparar com dados não normalizados
-    print(f"\n🔧 Testando SEM normalização:")
-    X_train, X_test, y_train, y_test = DataUtils.dividir_treino_teste(X, y, test_size=0.2)
-    rede = RedeNeural([2, 8, 1], ativacao='relu', inicializacao='he')
-    rede.treinar(X_train, y_train, epochs=800, taxa_aprendizado=0.001, verbose=False)  # Taxa menor
-    resultado = rede.avaliar(X_test, y_test)
-    resultados['sem_norm'] = resultado['acuracia']
-    print(f"  Acurácia: {resultado['acuracia']:.2f}%")
-    
-    # Resumo
-    print(f"\n📊 IMPACTO DA NORMALIZAÇÃO:")
-    print("-" * 30)
-    for metodo, acuracia in resultados.items():
-        print(f"{metodo.capitalize():<12}: {acuracia:.2f}%")
-    
-    melhor = max(resultados.items(), key=lambda x: x[1])
-    print(f"\n🏆 Melhor método: {melhor[0].capitalize()} ({melhor[1]:.2f}%)")
+        X_train, X_test, y_train, y_test = DataUtils.dividir_treino_teste(
+            X_norm, y, test_size=0.2, random_state=seed
+        )
+        resultado = avaliar_modelo(
+            X_train,
+            X_test,
+            y_train,
+            y_test,
+            arquitetura=[2, 8, 1],
+            ativacao="relu",
+            inicializacao="he",
+            epochs=epochs,
+            taxa_aprendizado=0.01,
+            seed=seed + indice,
+        )
+        print(
+            f"{metodo:<14}{resultado['acuracia']:<12.2f}"
+            f"{resultado['f1']:<10.4f}{resultado['erro']:<12.6f}"
+        )
 
 
-def experimento_hiperparametros():
-    """Testa diferentes combinações de hiperparâmetros."""
-    
-    print("\n🧪 OTIMIZAÇÃO DE HIPERPARÂMETROS")
-    print("=" * 35)
-    
-    # Dados
-    X, y = DataUtils.gerar_dataset_classificacao(n_samples=1000, noise=0.1)
+def experimento_hiperparametros(samples: int, epochs: int, seed: int) -> None:
+    X, y = DataUtils.gerar_dataset_classificacao(n_samples=samples, noise=0.1, random_state=seed)
     X_norm, _ = DataUtils.normalizar_dados(X)
-    X_train, X_test, y_train, y_test = DataUtils.dividir_treino_teste(X_norm, y, test_size=0.2)
-    
-    # Grid de hiperparâmetros
-    taxas_aprendizado = [0.001, 0.01, 0.1, 0.5]
-    arquiteturas = [
-        [2, 4, 1],
-        [2, 8, 1], 
-        [2, 12, 1],
-        [2, 8, 4, 1],
-        [2, 12, 6, 1]
+    X_train, X_test, y_train, y_test = DataUtils.dividir_treino_teste(
+        X_norm, y, test_size=0.2, random_state=seed
+    )
+
+    configuracoes = [
+        (0.001, [2, 4, 1]),
+        (0.01, [2, 8, 1]),
+        (0.01, [2, 8, 4, 1]),
+        (0.05, [2, 12, 6, 1]),
     ]
-    
-    melhor_resultado = 0
-    melhor_config = None
-    
-    print("Testando combinações...")
-    print(f"{'Taxa':<8} {'Arquitetura':<15} {'Acurácia':<10} {'F1':<8}")
-    print("-" * 45)
-    
-    for taxa in taxas_aprendizado:
-        for arq in arquiteturas:
-            # Treinar rede
-            rede = RedeNeural(arq, ativacao='relu', inicializacao='he')
-            rede.treinar(X_train, y_train, epochs=800, taxa_aprendizado=taxa, verbose=False)
-            
-            # Avaliar
-            resultado = rede.avaliar(X_test, y_test)
-            metricas = MetricUtils.precisao_recall_f1(y_test, resultado['predicoes'])
-            
-            # Exibir resultado
-            arq_str = str(arq).replace('[', '').replace(']', '').replace(' ', '')
-            print(f"{taxa:<8.3f} {arq_str:<15} {resultado['acuracia']:<10.2f} {metricas['f1_score']:<8.4f}")
-            
-            # Atualizar melhor
-            if metricas['f1_score'] > melhor_resultado:
-                melhor_resultado = metricas['f1_score']
-                melhor_config = (taxa, arq, resultado['acuracia'])
-    
-    print(f"\n🏆 MELHOR CONFIGURAÇÃO:")
-    print(f"Taxa de aprendizado: {melhor_config[0]}")
-    print(f"Arquitetura: {melhor_config[1]}")
-    print(f"Acurácia: {melhor_config[2]:.2f}%")
-    print(f"F1-Score: {melhor_resultado:.4f}")
+
+    melhor = None
+    print("\nComparando configuracoes")
+    print("-----------------------")
+    print(f"{'lr':<10}{'arquitetura':<18}{'acuracia':<12}{'f1':<10}")
+
+    for indice, (taxa, arquitetura) in enumerate(configuracoes):
+        resultado = avaliar_modelo(
+            X_train,
+            X_test,
+            y_train,
+            y_test,
+            arquitetura=arquitetura,
+            ativacao="relu",
+            inicializacao="he",
+            epochs=epochs,
+            taxa_aprendizado=taxa,
+            seed=seed + indice,
+        )
+
+        print(f"{taxa:<10.3f}{str(arquitetura):<18}{resultado['acuracia']:<12.2f}{resultado['f1']:<10.4f}")
+
+        if melhor is None or resultado["f1"] > melhor[2]:
+            melhor = (taxa, arquitetura, resultado["f1"], resultado["acuracia"])
+
+    assert melhor is not None
+    print(
+        f"\nMelhor configuracao: lr={melhor[0]}, arquitetura={melhor[1]}, "
+        f"F1={melhor[2]:.4f}, acuracia={melhor[3]:.2f}%"
+    )
 
 
-def main():
-    """Função principal."""
-    
-    print("🧠 REDE NEURAL - EXEMPLO DE CLASSIFICAÇÃO")
-    print("=" * 45)
-    print("Autor: Sávio (https://github.com/SavioCodes)")
-    print("=" * 45)
-    
-    # Experimento 1: Funções de ativação
-    experimento_funcoes_ativacao()
-    
-    # Experimento 2: Normalização
-    experimento_normalizacao()
-    
-    # Experimento 3: Hiperparâmetros
-    experimento_hiperparametros()
-    
-    # Dicas finais
-    print(f"\n💡 LIÇÕES APRENDIDAS:")
-    print("1. ReLU geralmente funciona bem para problemas complexos")
-    print("2. Normalização é CRUCIAL para convergência")
-    print("3. Arquiteturas mais profundas podem ajudar")
-    print("4. Taxa de aprendizado deve ser ajustada cuidadosamente")
-    print("5. F1-score é melhor que acurácia para datasets desbalanceados")
-    
-    print(f"\n📚 PRÓXIMOS PASSOS:")
-    print("- Implementar validação cruzada")
-    print("- Adicionar regularização (dropout, L1/L2)")
-    print("- Testar otimizadores avançados (Adam, RMSprop)")
-    print("- Implementar early stopping")
-    
-    print(f"\n👨‍💻 Criado por Sávio - https://github.com/SavioCodes")
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Exemplos de classificacao sintetica")
+    parser.add_argument("--samples", type=int, default=600)
+    parser.add_argument("--epochs", type=int, default=400)
+    parser.add_argument("--seed", type=int, default=42)
+    args = parser.parse_args()
+
+    print("Rede Neural do Zero - Classificacao")
+    print("===================================")
+    print(f"Samples: {args.samples}")
+    print(f"Epocas: {args.epochs}")
+    print(f"Seed: {args.seed}")
+
+    experimento_funcoes_ativacao(args.samples, args.epochs, args.seed)
+    experimento_normalizacao(args.samples, args.epochs, args.seed)
+    experimento_hiperparametros(args.samples, args.epochs, args.seed)
 
 
 if __name__ == "__main__":

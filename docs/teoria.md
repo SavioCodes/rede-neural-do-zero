@@ -1,218 +1,149 @@
-# 📚 Fundamentos Teóricos das Redes Neurais
+# Fundamentos Teoricos
 
-Este documento explica os conceitos teóricos por trás da implementação da rede neural.
+Este documento resume a base conceitual por tras da implementacao deste repositorio.
 
-## 🧠 Introdução às Redes Neurais
+## O que uma rede neural faz
 
-### O que são Redes Neurais?
+Uma rede neural recebe um vetor de entrada, aplica transformacoes lineares e funcoes nao lineares em camadas sucessivas, e produz uma saida.
+No caso deste projeto, a saida final e uma probabilidade para classificacao binaria.
 
-As redes neurais artificiais são modelos computacionais inspirados no funcionamento do cérebro humano. Elas são compostas por unidades de processamento simples (neurônios artificiais) que trabalham em conjunto para resolver problemas complexos.
+## Componentes principais
 
-### Componentes Básicos
+### Neuronio artificial
 
-#### 1. Neurônio Artificial (Perceptron)
-```
-Entradas: x₁, x₂, ..., xₙ
-Pesos: w₁, w₂, ..., wₙ
-Bias: b
-Saída: y = f(∑(xᵢ × wᵢ) + b)
-```
+Cada neuronio calcula:
 
-#### 2. Função de Ativação
-Introduz não-linearidade no modelo:
-- **Sigmoid**: σ(x) = 1/(1 + e⁻ˣ)
-- **ReLU**: f(x) = max(0, x)
-- **Tanh**: f(x) = (eˣ - e⁻ˣ)/(eˣ + e⁻ˣ)
-
-## 🔄 Forward Propagation (Propagação Direta)
-
-### Processo
-1. Os dados de entrada fluem da primeira camada até a saída
-2. Cada neurônio calcula uma combinação linear das entradas
-3. Aplica uma função de ativação
-4. Passa o resultado para a próxima camada
-
-### Matemática
-Para uma camada l:
-```
-z⁽ˡ⁾ = W⁽ˡ⁾ × a⁽ˡ⁻¹⁾ + b⁽ˡ⁾
-a⁽ˡ⁾ = f(z⁽ˡ⁾)
+```text
+z = x . w + b
+a = f(z)
 ```
 
 Onde:
-- `z⁽ˡ⁾`: Soma ponderada da camada l
-- `W⁽ˡ⁾`: Matriz de pesos da camada l
-- `a⁽ˡ⁻¹⁾`: Ativações da camada anterior
-- `b⁽ˡ⁾`: Vetor de bias da camada l
-- `f`: Função de ativação
 
-## ⬅️ Backpropagation (Retropropagação)
+- `x` e o vetor de entrada
+- `w` sao os pesos aprendidos
+- `b` e o bias
+- `f` e a funcao de ativacao
 
-### Objetivo
-Calcular os gradientes da função de custo em relação aos pesos e biases, permitindo atualizar os parâmetros para minimizar o erro.
+### Camadas
 
-### Algoritmo
-1. **Calcular erro da saída**: δ⁽ᴸ⁾ = (a⁽ᴸ⁾ - y) ⊙ f'(z⁽ᴸ⁾)
-2. **Propagar erro para trás**: δ⁽ˡ⁾ = (W⁽ˡ⁺¹⁾)ᵀ × δ⁽ˡ⁺¹⁾ ⊙ f'(z⁽ˡ⁾)
-3. **Calcular gradientes**:
-   - ∂C/∂W⁽ˡ⁾ = δ⁽ˡ⁾ × (a⁽ˡ⁻¹⁾)ᵀ
-   - ∂C/∂b⁽ˡ⁾ = δ⁽ˡ⁾
+- camada de entrada: recebe as features
+- camadas ocultas: aprendem representacoes intermediarias
+- camada de saida: produz a previsao final
 
-### Notação
-- `⊙`: Produto elemento por elemento (Hadamard)
-- `L`: Índice da última camada
-- `δ⁽ˡ⁾`: Erro da camada l
-- `f'`: Derivada da função de ativação
+## Forward propagation
 
-## 🎯 Função de Custo
+No forward propagation, os dados passam camada por camada ate a saida:
 
-### Erro Quadrático Médio (MSE)
-```
-C = (1/2m) × ∑ᵢ(yᵢ - ŷᵢ)²
+```text
+z(l) = a(l-1) @ W(l) + b(l)
+a(l) = f(z(l))
 ```
 
-### Entropia Cruzada (Cross-Entropy)
-```
-C = -(1/m) × ∑ᵢ[yᵢ × log(ŷᵢ) + (1-yᵢ) × log(1-ŷᵢ)]
-```
+Neste projeto:
 
-## 🔧 Gradiente Descendente
+- as camadas ocultas usam a ativacao escolhida no construtor
+- a camada final usa sigmoid para classificacao binaria
 
-### Atualização dos Parâmetros
-```
-W⁽ˡ⁾ := W⁽ˡ⁾ - α × ∂C/∂W⁽ˡ⁾
-b⁽ˡ⁾ := b⁽ˡ⁾ - α × ∂C/∂b⁽ˡ⁾
-```
+## Backpropagation
 
-Onde `α` é a taxa de aprendizado (learning rate).
+Backpropagation e o processo usado para calcular como cada peso contribuiu para o erro final.
+Com esses gradientes, o modelo atualiza seus parametros por gradiente descendente.
 
-### Tipos de Gradiente Descendente
-1. **Batch**: Usa todo o dataset
-2. **Stochastic (SGD)**: Usa uma amostra por vez
-3. **Mini-batch**: Usa pequenos grupos de amostras
+Em alto nivel:
 
-## ⚖️ Inicialização de Pesos
+1. faz o forward
+2. calcula o erro de saida
+3. propaga esse erro para tras
+4. atualiza pesos e biases
 
-### Importância
-A inicialização adequada dos pesos é crucial para:
-- Evitar vanishing/exploding gradients
-- Garantir convergência
-- Acelerar o treinamento
+## Funcoes de ativacao
 
-### Métodos
+### Sigmoid
 
-#### 1. Inicialização Xavier/Glorot
-```
-W ~ Uniform(-√(6/(nᵢₙ + nₒᵤₜ)), √(6/(nᵢₙ + nₒᵤₜ)))
-```
-Ideal para sigmoid e tanh.
-
-#### 2. Inicialização He
-```
-W ~ Normal(0, √(2/nᵢₙ))
-```
-Ideal para ReLU.
-
-## 🎪 Funções de Ativação Detalhadas
-
-### 1. Sigmoid
-**Função**: σ(x) = 1/(1 + e⁻ˣ)
-**Derivada**: σ'(x) = σ(x) × (1 - σ(x))
-**Características**:
-- Saída entre 0 e 1
-- Interpretável como probabilidade
-- Problema: vanishing gradient
-
-### 2. ReLU (Rectified Linear Unit)
-**Função**: f(x) = max(0, x)
-**Derivada**: f'(x) = 1 se x > 0, senão 0
-**Características**:
-- Computacionalmente eficiente
-- Sem saturação para valores positivos
-- Problema: dead neurons
-
-### 3. Tanh
-**Função**: tanh(x) = (eˣ - e⁻ˣ)/(eˣ + e⁻ˣ)
-**Derivada**: tanh'(x) = 1 - tanh²(x)
-**Características**:
-- Saída entre -1 e 1
-- Zero-centered
-- Similar ao sigmoid, mas melhor
-
-## 📊 Métricas de Avaliação
-
-### Classificação Binária
-
-#### Matriz de Confusão
-```
-             Predito
-Real    |  0  |  1  |
---------|-----|-----|
-   0    | TN  | FP  |
-   1    | FN  | TP  |
+```text
+sigmoid(x) = 1 / (1 + e^(-x))
 ```
 
-#### Métricas Derivadas
-- **Acurácia**: (TP + TN) / (TP + TN + FP + FN)
-- **Precisão**: TP / (TP + FP)
-- **Recall**: TP / (TP + FN)
-- **F1-Score**: 2 × (Precisão × Recall) / (Precisão + Recall)
+Boa para saida binaria, pois produz valores entre 0 e 1.
 
-## 🚫 Problemas Comuns
+### ReLU
 
-### 1. Overfitting
-**Sintomas**: Boa performance no treino, ruim no teste
-**Soluções**:
-- Regularização (L1, L2)
-- Dropout
-- Early stopping
-- Mais dados
+```text
+relu(x) = max(0, x)
+```
 
-### 2. Underfitting
-**Sintomas**: Performance ruim em treino e teste
-**Soluções**:
-- Modelo mais complexo
-- Mais features
-- Menos regularização
+Simples e eficiente, muito usada em camadas ocultas.
 
-### 3. Vanishing Gradient
-**Sintomas**: Gradientes muito pequenos nas primeiras camadas
-**Soluções**:
-- ReLU em vez de sigmoid
-- Inicialização adequada
-- Batch normalization
+### Tanh
 
-### 4. Exploding Gradient
-**Sintomas**: Gradientes muito grandes
-**Soluções**:
-- Gradient clipping
-- Taxa de aprendizado menor
-- Inicialização adequada
+```text
+tanh(x)
+```
 
-## 📖 Referências Teóricas
+Tem saida entre -1 e 1 e pode ajudar quando dados centrados em zero fazem sentido.
 
-1. **Rosenblatt, F. (1958)** - "The Perceptron: A Probabilistic Model"
-2. **Rumelhart, D. E. et al. (1986)** - "Learning representations by back-propagating errors"
-3. **Glorot, X. & Bengio, Y. (2010)** - "Understanding the difficulty of training deep feedforward neural networks"
-4. **He, K. et al. (2015)** - "Delving Deep into Rectifiers"
+### Leaky ReLU
 
-## 🎓 Para Aprofundar
+Uma variacao da ReLU que mantem gradiente pequeno para valores negativos.
 
-### Livros
-- "Neural Networks and Deep Learning" - Michael Nielsen
-- "Deep Learning" - Ian Goodfellow, Yoshua Bengio, Aaron Courville
-- "Pattern Recognition and Machine Learning" - Christopher Bishop
+### Linear
 
-### Cursos Online
-- CS231n: Convolutional Neural Networks (Stanford)
-- Deep Learning Specialization (Coursera)
-- Fast.ai Practical Deep Learning
+Usada como identidade. Neste repositorio ela fica disponivel para experimentos didaticos.
 
-### Implementações de Referência
-- Numpy-based implementations
-- Micrograd (Andrej Karpathy)
-- Neural Networks from Scratch (Harrison Kinsley)
+## Inicializacao de pesos
 
----
-**Autor**: [Sávio](https://github.com/SavioCodes)
-**Última atualização**: Janeiro 2025
+Inicializar bem os pesos ajuda a evitar treinamento instavel.
+
+### Xavier
+
+Boa escolha para sigmoid e tanh.
+
+### He
+
+Boa escolha para ReLU e variantes.
+
+### Aleatoria simples
+
+Util como baseline, mas normalmente menos robusta.
+
+## Metricas
+
+O repositorio trabalha com classificacao binaria e expõe:
+
+- erro quadratico medio como sinal simples de acompanhamento
+- acuracia
+- precisao
+- recall
+- F1-score
+- matriz de confusao
+
+## Normalizacao de dados
+
+Antes de treinar, normalizar os dados costuma ajudar bastante.
+
+O projeto oferece:
+
+- `padrao`: z-score
+- `minmax`: escala para o intervalo [0, 1]
+- `robusto`: usa mediana e IQR
+
+## Reprodutibilidade
+
+Do ponto de vista didatico, reproducibilidade e parte da explicacao.
+Por isso o repositorio usa seeds explicitas e evita depender do estado global do gerador aleatorio do NumPy quando isso nao e necessario.
+
+## Limites intencionais
+
+O projeto nao tenta competir com frameworks de producao.
+Ele foi desenhado para ser:
+
+- pequeno o bastante para estudar
+- previsivel o bastante para testar
+- organizado o bastante para evoluir
+
+## Referencias sugeridas
+
+- Michael Nielsen, Neural Networks and Deep Learning
+- Ian Goodfellow, Yoshua Bengio e Aaron Courville, Deep Learning
+- Andrej Karpathy, micrograd e materiais introdutorios sobre backpropagation
