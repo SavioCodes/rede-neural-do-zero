@@ -63,3 +63,7 @@ dados = FileUtils.carregar_csv("meu_dataset.csv")
 - use `softmax` + `categorical_crossentropy` para multiclasse
 - use saida `linear` + `mse` para regressao
 - prefira seeds explicitas para comparacoes e benchmarks
+
+## Status no projeto
+
+Esta pasta faz parte da estrutura oficial documentada do repositorio e serve de apoio aos exemplos, datasets e benchmarks versionados.

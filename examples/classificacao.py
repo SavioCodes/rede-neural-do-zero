@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
-"""Synthetic classification experiments for the educational network."""
+"""Synthetic classification experiments for the educational network.
+
+Este exemplo continua sendo uma porta de entrada curta para comparar
+arquiteturas binarias sem depender da CLI oficial.
+"""
 
 from __future__ import annotations
 
