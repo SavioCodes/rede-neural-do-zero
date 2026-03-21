@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env python3
+#!/usr/bin/env python3
 """Deterministic evaluation entrypoint for CI and local validation."""
 
 from __future__ import annotations
@@ -13,8 +13,13 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from src.rede_neural import RedeNeural  # noqa: E402
-from src.utils import DataUtils, MetricUtils  # noqa: E402
+from src import (  # noqa: E402
+    DataUtils,
+    MetricUtils,
+    ModelConfig,
+    RedeNeural,
+    TrainingConfig,
+)
 
 
 def run_evaluation(seed: int, epochs: int, samples: int, min_accuracy: float) -> dict:
@@ -38,25 +43,31 @@ def run_evaluation(seed: int, epochs: int, samples: int, min_accuracy: float) ->
         random_state=seed,
     )
 
-    model = RedeNeural(
-        [2, 8, 1],
-        ativacao="relu",
-        inicializacao="he",
-        seed=seed,
-        funcao_custo="binary_crossentropy",
+    model = RedeNeural.from_config(
+        ModelConfig(
+            arquitetura=[2, 8, 1],
+            ativacao="relu",
+            inicializacao="he",
+            seed=seed,
+            funcao_custo="binary_crossentropy",
+        )
     )
-    treino = model.treinar(
+    treino = model.treinar_com_config(
         X_train,
         y_train,
-        epochs=epochs,
-        taxa_aprendizado=0.01,
+        TrainingConfig(
+            epochs=epochs,
+            taxa_aprendizado=0.01,
+            batch_size=32,
+            otimizador="adam",
+            paciencia=40,
+            min_delta=1e-4,
+            l2_lambda=1e-4,
+            gradient_clip=1.0,
+            verbose=False,
+        ),
         validacao_X=X_val,
         validacao_y=y_val,
-        paciencia=40,
-        min_delta=1e-4,
-        batch_size=32,
-        otimizador="adam",
-        verbose=False,
     )
 
     eval_result = model.avaliar(X_test, y_test)

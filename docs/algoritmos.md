@@ -16,7 +16,7 @@ Fluxo adotado:
 1. a entrada `X` vira a primeira ativacao
 2. cada camada calcula `z`
 3. camadas ocultas usam a ativacao configurada
-4. a camada final usa sigmoid
+4. a camada final usa `sigmoid` para binario ou `softmax` para multiclasse
 
 ## Backpropagation
 
@@ -36,67 +36,105 @@ Pontos importantes desta implementacao:
 - o codigo pode trabalhar em batch completo ou mini-batches
 - os gradientes sao calculados do fim para o inicio
 - o gradiente das camadas ocultas depende da derivada da ativacao escolhida
-- o gradiente da saida muda conforme a funcao de custo selecionada
+- o gradiente da saida muda conforme a combinacao `ativacao_saida + funcao_custo`
 
-## Atualizacao de parametros
+## Camada de Saida
+
+### Binario
+
+```text
+saida = sigmoid(z)
+loss = binary_crossentropy ou mse
+```
+
+### Multiclasse
+
+```text
+saida = softmax(z)
+loss = categorical_crossentropy
+```
+
+Quando usamos `softmax` com `categorical_crossentropy`, o gradiente final fica especialmente limpo:
+
+```text
+delta_saida = y_pred - y_true
+```
+
+## Atualizacao de Parametros
 
 Depois do backpropagation, a rede aplica um passo de otimizacao.
 
 ### SGD
-
-No modo mais simples, o codigo faz:
 
 ```text
 W = W - learning_rate * dW
 b = b - learning_rate * db
 ```
 
-Esse fluxo e direto e bom para estudar a ideia central de gradiente descendente.
-
 ### Adam
-
-Quando `otimizador="adam"`, a implementacao mantem duas medias moveis:
 
 ```text
 m = beta1 * m + (1 - beta1) * gradiente
 v = beta2 * v + (1 - beta2) * gradiente^2
-```
-
-Depois, aplica a correcao de vies e atualiza os parametros:
-
-```text
 param = param - learning_rate * m_corrigido / (sqrt(v_corrigido) + epsilon)
 ```
 
-Na pratica, isso costuma acelerar o aprendizado e estabilizar treinos em mini-batch.
+Na pratica, o `Adam` costuma acelerar o aprendizado e estabilizar treinos em mini-batch.
 
-## Funcoes de custo
+## Regularizacao
 
-O modelo suporta duas perdas:
+### L2
 
-### Binary cross-entropy
-
-Usada por padrao, porque combina melhor com a saida sigmoide para classificacao binaria.
+O termo de regularizacao soma o quadrado dos pesos:
 
 ```text
-loss = -media(y * log(p) + (1 - y) * log(1 - p))
+loss_total = loss_base + lambda / (2m) * soma(W^2)
 ```
 
-Nesse caso, o gradiente da saida fica simples:
+Isso penaliza pesos muito grandes e ajuda a reduzir overfitting.
+
+### Dropout
+
+Durante o treino, o modelo aplica mascaras aleatorias nas ativacoes ocultas:
 
 ```text
-delta_saida = y_pred - y_true
+a_dropout = a * mascara / keep_prob
 ```
 
-### MSE
+Aqui usamos a versao invertida do dropout, entao a escala ja fica corrigida no treino.
 
-Mantida como opcao didatica para comparacao.
+### Gradient clipping
+
+Antes da atualizacao, cada gradiente pode ser limitado por norma:
 
 ```text
-loss = media((y_true - y_pred)^2)
+if ||g|| > limite:
+    g = g * limite / ||g||
 ```
 
-Aqui o gradiente da camada de saida ainda precisa multiplicar pela derivada da sigmoid.
+Isso ajuda a estabilizar treinos em arquiteturas mais profundas ou agressivas.
+
+## Callbacks
+
+O treinamento suporta callbacks reutilizaveis.
+
+### `EarlyStopping`
+
+- monitora `loss` ou `val_loss`
+- acompanha paciencia e `min_delta`
+- pode restaurar os melhores pesos
+
+### `History`
+
+- guarda os logs de epoca em memoria
+
+### `CSVLogger`
+
+- salva logs de treino em CSV
+
+### `ModelCheckpoint`
+
+- salva os pesos quando a metrica monitorada melhora
 
 ## Treinamento
 
@@ -105,54 +143,23 @@ O metodo `treinar()` executa:
 1. validacao de `X`, `y` e dados de validacao
 2. divisao opcional em mini-batches
 3. forward propagation
-4. backward propagation
-5. atualizacao de parametros com `sgd` ou `adam`
-6. registro de historico de treino
-7. registro opcional de historico de validacao
+4. backpropagation
+5. regularizacao e gradient clipping
+6. atualizacao de parametros com `sgd` ou `adam`
+7. registro de historico de treino
+8. execucao de callbacks
+9. registro opcional de historico de validacao
 
-O metodo retorna um resumo com as metricas finais do treinamento.
+O metodo retorna um resumo com as metricas finais e metadados importantes do treino.
 
-### Early stopping
+## Configs Declarativas
 
-Quando `paciencia` e informada, o treino monitora a perda de validacao.
-Se nao houver validacao, monitora a perda de treino.
+O projeto tambem oferece:
 
-Isso permite:
+- `ModelConfig`
+- `TrainingConfig`
 
-- interromper treinos que pararam de melhorar
-- reduzir overfitting em exemplos com validacao
-- restaurar os melhores pesos observados durante o processo
-
-### Batch size
-
-O parametro `batch_size` controla quantas amostras entram em cada atualizacao:
-
-- `None` usa todas as amostras de uma vez
-- valores menores ativam mini-batch training
-- lotes menores costumam combinar bem com `Adam`
-
-## Inicializacao
-
-As opcoes de inicializacao disponiveis sao:
-
-### Xavier
-
-```text
-limite = sqrt(6 / (fan_in + fan_out))
-W ~ Uniform(-limite, limite)
-```
-
-### He
-
-```text
-W ~ Normal(0, sqrt(2 / fan_in))
-```
-
-### Aleatoria simples
-
-```text
-W ~ Normal(0, 0.1)
-```
+Essas dataclasses deixam os experimentos mais organizados, mais legiveis e mais faceis de comparar em benchmark e exemplos.
 
 ## Normalizacao de dados
 
@@ -176,28 +183,14 @@ X_norm = (X - mediana) / IQR
 
 Todas as variacoes tratam divisao por zero de forma segura.
 
-## Split treino/teste
-
-O split:
-
-- valida `test_size`
-- garante que haja pelo menos 1 amostra em treino e em teste
-- usa `default_rng(random_state)` para manter reprodutibilidade
-
 ## Metricas de classificacao
 
-O modulo `MetricUtils` calcula:
+O modulo `MetricUtils` cobre:
 
-### Matriz de confusao
-
-```text
-[[TN, FP],
- [FN, TP]]
-```
-
-### Precisao, recall, especificidade e F1-score
-
-As metricas sao derivadas diretamente da matriz de confusao e protegidas contra divisao por zero.
+- matriz de confusao binaria
+- matriz de confusao multiclasse
+- precisao, recall, especificidade e F1 no caso binario
+- accuracy, precision/recall/F1 macro e weighted no caso generico
 
 ## Persistencia de parametros
 
@@ -206,36 +199,18 @@ O metodo `salvar_parametros()` grava:
 - pesos
 - biases
 - arquitetura
-- ativacao
+- ativacao oculta
+- ativacao de saida
 - metodo de inicializacao
 - funcao de custo
 - seed
 
-O metodo `carregar_parametros()` reconstrui o estado do modelo a partir do arquivo `.npz`.
+## Avaliacao e benchmark
 
-## Avaliacao deterministica
+### `scripts/evaluate.py`
 
-O script `scripts/evaluate.py` executa um fluxo padronizado:
+Executa um fluxo deterministico com dataset sintetico, split treino/validacao/teste e metrica de acuracia minima para CI.
 
-1. gera dataset sintetico
-2. normaliza os dados
-3. divide treino, validacao e teste
-4. treina uma arquitetura fixa com seed fixa e early stopping
-5. calcula metricas
-6. salva resumo em JSON e historico em JSONL
+### `scripts/benchmark.py`
 
-Isso permite:
-
-- usar o repositorio em CI
-- comparar mudancas sem flutuar tanto entre execucoes
-- manter uma trilha simples de experimentos
-
-## O que nao esta implementado ainda
-
-Para manter a documentacao honesta, vale registrar o que ainda nao faz parte do codigo:
-
-- regularizacao L1/L2
-- dropout
-- multi-class classification
-
-Esses temas sao boas extensoes futuras, mas nao sao apresentados aqui como recursos prontos.
+Executa comparacoes simples entre configuracoes e salva os resultados em JSON e CSV.

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "rede-neural-do-zero"
-version = "1.4.0"
+version = "1.5.0"
 description = "Educational neural network implementation from scratch using NumPy."
 readme = "README.md"
 requires-python = ">=3.11"
@@ -18,9 +18,11 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
   "pytest>=8,<10",
+  "pytest-cov>=6,<7",
   "black>=24,<25",
   "ruff>=0.8,<1",
   "mypy>=1.11,<2",
+  "pre-commit>=4,<5",
 ]
 
 [tool.black]
@@ -30,6 +32,7 @@ target-version = ["py311"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 python_files = ["test_*.py"]
+addopts = "--cov=src --cov-report=term-missing"
 
 [tool.ruff]
 line-length = 100
@@ -38,3 +41,19 @@ src = ["src", "tests", "scripts", "examples"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I"]
+
+[tool.mypy]
+python_version = "3.11"
+files = ["src"]
+ignore_missing_imports = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+check_untyped_defs = true
+
+[tool.coverage.run]
+branch = true
+source = ["src"]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = false

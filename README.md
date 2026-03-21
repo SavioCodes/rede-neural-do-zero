@@ -4,43 +4,46 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 [![Python](https://img.shields.io/badge/Python-3.11-blue)](https://www.python.org/)
 
-Implementacao educacional de uma rede neural do zero com NumPy, exemplos reproduziveis, documentacao organizada e pipeline simples de qualidade.
+Implementacao educacional de uma rede neural do zero com NumPy, focada em estudo, reproducibilidade e evolucao incremental de recursos importantes de ML.
 
 ## Visao Geral
 
-Este projeto existe para estudar os fundamentos de redes neurais sem esconder a matematica atras de frameworks.
-Ele cobre:
+Este projeto existe para ensinar os fundamentos de redes neurais sem esconder a matematica atras de frameworks.
+Hoje o repositório cobre:
 
 - inicializacao de pesos
-- forward propagation
-- backpropagation
-- funcoes de ativacao
-- metricas de classificacao binaria
-- geracao e normalizacao de datasets
-- avaliacao deterministica para CI
+- forward propagation e backpropagation
+- classificacao binaria e multiclasse
+- funcoes de ativacao e funcoes de custo
+- mini-batch training, `SGD` e `Adam`
+- regularizacao com `L2`, `dropout` e `gradient clipping`
+- callbacks como `EarlyStopping`, `CSVLogger`, `History` e `ModelCheckpoint`
+- configs organizadas com `ModelConfig` e `TrainingConfig`
+- metricas, visualizacoes e benchmark simples
 
 ## Destaques
 
 - `RedeNeural(..., seed=...)` para experimentos reproduziveis
-- `funcao_custo="binary_crossentropy"` ou `"mse"` para comparar perdas
-- `treinar(..., batch_size=..., otimizador="sgd"|"adam")` para batch completo ou mini-batch
-- validacoes de entrada no treino, previsao, metricas e split de dados
-- `prever_classes()` para converter probabilidades em classes binarias
-- historico de treino e validacao salvo no modelo
-- `early stopping` opcional com restauracao dos melhores pesos
-- `scripts/evaluate.py` gerando artefatos JSON e JSONL em `logs/`
-- configuracao centralizada em `pyproject.toml`
-- suporte a `mini-batch training` e ao otimizador `Adam`
+- `funcao_custo="binary_crossentropy"`, `"categorical_crossentropy"` ou `"mse"`
+- `ativacao_saida` automatica: `sigmoid` para binario e `softmax` para multiclasse
+- `treinar(..., batch_size=..., otimizador="sgd"|"adam")`
+- regularizacao por `l2_lambda`, `dropout` e `gradient_clip`
+- callbacks reutilizaveis em `src/callbacks.py`
+- `ModelConfig` e `TrainingConfig` para deixar a API mais organizada
+- `scripts/evaluate.py` para smoke deterministico
+- `scripts/benchmark.py` para comparar configuracoes
+- `pytest`, `coverage`, `ruff`, `mypy` e `pre-commit`
 
 ## Estrutura
 
 ```text
 .github/workflows/   # CI
-docs/                # Notas teoricas e explicacao dos algoritmos
-examples/            # Scripts de demonstracao
-logs/                # Artefatos da avaliacao deterministica
-src/                 # Implementacao principal
-tests/               # Testes unitarios e de integracao
+docs/                # teoria, algoritmos e tutorial
+examples/            # scripts de demonstracao
+logs/                # artefatos de avaliacao e benchmark
+scripts/             # avaliacao e benchmark
+src/                 # implementacao principal
+tests/               # testes unitarios e de integracao
 ```
 
 ## Setup Rapido
@@ -59,7 +62,7 @@ python -m pytest -q
 ```powershell
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
-python -m pip install -r requirements.txt
+python -m pip install -r requirements-dev.txt
 python -m pytest -q
 ```
 
@@ -67,15 +70,18 @@ python -m pytest -q
 
 ```bash
 python -m pip install -r requirements-dev.txt
+pre-commit install
 python -m ruff check .
+python -m mypy src
 python -m pytest -q
 ```
 
 ## Uso Basico
 
+### API direta
+
 ```python
-from src.rede_neural import RedeNeural
-from src.utils import DataUtils
+from src import DataUtils, RedeNeural
 
 X, y = DataUtils.gerar_xor_dataset()
 
@@ -89,25 +95,43 @@ rede = RedeNeural(
 resumo = rede.treinar(
     X,
     y,
-    epochs=2000,
+    epochs=1200,
     taxa_aprendizado=0.05,
-    paciencia=50,
-    min_delta=1e-4,
     batch_size=2,
     otimizador="adam",
     embaralhar=False,
     verbose=False,
 )
 
-probabilidades = rede.prever(X)
-classes = rede.prever_classes(X)
-metricas = rede.avaliar(X, y)
+print(resumo["acuracia_final"])
+print(rede.prever_classes(X))
+```
 
-print(resumo)
-print(probabilidades)
-print(classes)
-print(metricas["loss"])
-print(metricas["acuracia"])
+### API organizada com configs
+
+```python
+from src import ModelConfig, RedeNeural, TrainingConfig
+
+modelo = RedeNeural.from_config(
+    ModelConfig(
+        arquitetura=[2, 16, 12, 3],
+        ativacao="relu",
+        inicializacao="he",
+        seed=42,
+        funcao_custo="categorical_crossentropy",
+    )
+)
+
+config_treino = TrainingConfig(
+    epochs=160,
+    taxa_aprendizado=0.01,
+    batch_size=16,
+    otimizador="adam",
+    l2_lambda=1e-3,
+    dropout=0.1,
+    gradient_clip=1.0,
+    verbose=False,
+)
 ```
 
 ## Exemplos
@@ -115,10 +139,13 @@ print(metricas["acuracia"])
 ```bash
 python examples/xor_exemplo.py
 python examples/classificacao.py
+python examples/multiclasse.py --save-dir results/multiclasse --no-plots
 python examples/exemplo.py --save-dir results/demo --no-plots
 ```
 
-## Avaliacao Reproduzivel
+## Avaliacao e Benchmark
+
+### Avaliacao deterministica
 
 ```bash
 python scripts/evaluate.py --seed 42 --epochs 500 --samples 300
@@ -129,12 +156,17 @@ Arquivos gerados:
 - `logs/eval-summary.json`
 - `logs/eval-history.jsonl`
 
-O sumario inclui:
+### Benchmark simples
 
-- configuracao do modelo
-- seed usada
-- loss, MSE, acuracia, precisao, recall, especificidade e F1-score
-- matriz de confusao
+```bash
+python scripts/benchmark.py --mode binario --samples 240 --epochs 120
+python scripts/benchmark.py --mode multiclasse --samples 240 --epochs 120
+```
+
+Arquivos gerados:
+
+- `logs/benchmark.json`
+- `logs/benchmark.csv`
 
 ## Automacao
 
@@ -144,8 +176,11 @@ Comandos principais:
 make install
 make install-dev
 make lint
+make typecheck
 make test
+make test-cov
 make eval
+make benchmark
 make verify
 ```
 
@@ -153,23 +188,26 @@ make verify
 
 - [Fundamentos teoricos](./docs/teoria.md)
 - [Detalhes dos algoritmos](./docs/algoritmos.md)
+- [Tutorial guiado](./docs/tutorial.md)
 - [Notas sobre datasets](./data/README.md)
 
 ## Decisoes de Projeto
 
 - O foco e clareza didatica, nao performance de producao.
-- A camada de saida usa sigmoid para classificacao binaria.
-- O custo padrao e `binary_crossentropy`, mais apropriado para saida sigmoide.
-- `batch_size=None` mantem o treino em batch completo para estudo passo a passo.
-- `otimizador="adam"` e a opcao recomendada para exemplos maiores com mini-batches.
-- O script de avaliacao e deterministico para reduzir flakiness na CI.
+- A API publica tenta equilibrar simplicidade e extensibilidade.
+- Classificacao binaria usa `sigmoid`; multiclasse usa `softmax`.
+- `batch_size=None` mantem o treino em batch completo para estudo.
+- `Adam` e a opcao recomendada para exemplos maiores.
+- O script de avaliacao continua deterministico para reduzir flakiness na CI.
 - O projeto evita depender do estado global do NumPy quando usa seeds.
 
-## Proximos Passos
+## Qualidade Atual
 
-- exportar artefatos visuais automaticamente em pipelines
-- incluir mais exemplos com datasets externos pequenos
-- experimentar regularizacao e classificacao multiclasse
+- `ruff` para lint
+- `mypy` para type check
+- `pytest` com `coverage`
+- `pre-commit` para checagens locais
+- workflow de CI com lint, type-check, testes, avaliacao e benchmark smoke
 
 ## Licenca
 

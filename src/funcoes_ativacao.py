@@ -86,6 +86,13 @@ class FuncoesAtivacao:
         """Derivada da identidade."""
         return np.ones_like(x)
 
+    @staticmethod
+    def softmax(x: np.ndarray) -> np.ndarray:
+        """Normaliza logits em probabilidades que somam 1 por amostra."""
+        x_deslocado = x - np.max(x, axis=1, keepdims=True)
+        exp_x = np.exp(x_deslocado)
+        return exp_x / np.sum(exp_x, axis=1, keepdims=True)
+
     def _resolver_nome(self, nome_funcao: str) -> str:
         """Normaliza o nome recebido pelo usuario."""
         return nome_funcao.lower().strip()
@@ -131,9 +138,9 @@ class FuncoesAtivacao:
             "relu": "ReLU: simples e eficiente, comum em camadas ocultas.",
             "tanh": "Tanh: saida entre -1 e 1, centrada em zero.",
             "leaky_relu": (
-                "Leaky ReLU: semelhante a ReLU, "
-                "mas mantem gradiente pequeno nos negativos."
+                "Leaky ReLU: semelhante a ReLU, " "mas mantem gradiente pequeno nos negativos."
             ),
             "linear": "Linear: nao distorce a entrada, util em saidas de regressao.",
+            "softmax": "Softmax: transforma logits em distribuicao de probabilidades.",
         }
         return info.get(nome_funcao.lower(), f"Funcao '{nome_funcao}' nao encontrada.")

@@ -11,28 +11,39 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from src.rede_neural import RedeNeural  # noqa: E402
-from src.utils import DataUtils, MetricUtils, VisualizationUtils  # noqa: E402
+from src import (  # noqa: E402
+    CSVLogger,
+    DataUtils,
+    MetricUtils,
+    ModelConfig,
+    RedeNeural,
+    TrainingConfig,
+    VisualizationUtils,
+)
 
 
 def treinar_xor(seed: int) -> tuple[RedeNeural, dict]:
     X_xor, y_xor = DataUtils.gerar_xor_dataset()
-    rede = RedeNeural(
-        [2, 4, 1],
-        ativacao="sigmoid",
-        inicializacao="xavier",
-        seed=seed,
-        funcao_custo="binary_crossentropy",
+    rede = RedeNeural.from_config(
+        ModelConfig(
+            arquitetura=[2, 4, 1],
+            ativacao="sigmoid",
+            inicializacao="xavier",
+            seed=seed,
+            funcao_custo="binary_crossentropy",
+        )
     )
-    rede.treinar(
+    rede.treinar_com_config(
         X_xor,
         y_xor,
-        epochs=1200,
-        taxa_aprendizado=0.05,
-        batch_size=2,
-        otimizador="adam",
-        embaralhar=False,
-        verbose=False,
+        TrainingConfig(
+            epochs=1200,
+            taxa_aprendizado=0.05,
+            batch_size=2,
+            otimizador="adam",
+            embaralhar=False,
+            verbose=False,
+        ),
     )
     resultado = rede.avaliar(X_xor, y_xor)
     return rede, resultado
@@ -45,25 +56,32 @@ def treinar_classificacao(samples: int, seed: int) -> tuple[RedeNeural, dict, tu
         X_norm, y, test_size=0.2, random_state=seed
     )
 
-    rede = RedeNeural(
-        [2, 8, 4, 1],
-        ativacao="relu",
-        inicializacao="he",
-        seed=seed,
-        funcao_custo="binary_crossentropy",
+    rede = RedeNeural.from_config(
+        ModelConfig(
+            arquitetura=[2, 8, 4, 1],
+            ativacao="relu",
+            inicializacao="he",
+            seed=seed,
+            funcao_custo="binary_crossentropy",
+        )
     )
-    rede.treinar(
+    rede.treinar_com_config(
         X_train,
         y_train,
-        epochs=800,
-        taxa_aprendizado=0.01,
+        TrainingConfig(
+            epochs=800,
+            taxa_aprendizado=0.01,
+            paciencia=40,
+            min_delta=1e-4,
+            batch_size=32,
+            otimizador="adam",
+            l2_lambda=1e-4,
+            gradient_clip=1.0,
+            callbacks=[CSVLogger("logs/exemplo-treino.csv")],
+            verbose=False,
+        ),
         validacao_X=X_test,
         validacao_y=y_test,
-        paciencia=40,
-        min_delta=1e-4,
-        batch_size=32,
-        otimizador="adam",
-        verbose=False,
     )
 
     resultado = rede.avaliar(X_test, y_test)
@@ -89,17 +107,22 @@ def salvar_artefatos(
         rede_xor.historico_erro,
         rede_xor.historico_acuracia,
         salvar=str(save_dir / "historico_xor.png"),
+        mostrar=False,
     )
     VisualizationUtils.plotar_historico_treinamento(
         rede_classificacao.historico_erro,
         rede_classificacao.historico_acuracia,
+        rede_classificacao.historico_validacao_erro,
+        rede_classificacao.historico_validacao_acuracia,
         salvar=str(save_dir / "historico_classificacao.png"),
+        mostrar=False,
     )
     VisualizationUtils.plotar_dados_classificacao(
         X_test,
         y_test,
         titulo="Dataset de teste",
         salvar=str(save_dir / "dados_teste.png"),
+        mostrar=False,
     )
     VisualizationUtils.plotar_fronteira_decisao(
         rede_classificacao,
@@ -107,6 +130,7 @@ def salvar_artefatos(
         y_test,
         titulo="Fronteira de decisao",
         salvar=str(save_dir / "fronteira_decisao.png"),
+        mostrar=False,
     )
 
 
@@ -124,6 +148,7 @@ def main() -> None:
     print(f"Samples: {args.samples}")
     print(f"Diretorio de saida: {args.save_dir}")
     print("Treino recomendado: otimizador=adam, batch_size=32")
+    print("API organizada: ModelConfig + TrainingConfig")
 
     rede_xor, resultado_xor = treinar_xor(args.seed)
     rede_classificacao, resultado_classificacao, (_, X_test, _, y_test) = treinar_classificacao(

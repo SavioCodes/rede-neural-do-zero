@@ -5,7 +5,11 @@ Este documento resume a base conceitual por tras da implementacao deste reposito
 ## O que uma rede neural faz
 
 Uma rede neural recebe um vetor de entrada, aplica transformacoes lineares e funcoes nao lineares em camadas sucessivas, e produz uma saida.
-No caso deste projeto, a saida final e uma probabilidade para classificacao binaria.
+
+Neste projeto, a saida final pode representar:
+
+- uma probabilidade binaria
+- uma distribuicao de probabilidades entre multiplas classes
 
 ## Componentes principais
 
@@ -43,7 +47,7 @@ a(l) = f(z(l))
 Neste projeto:
 
 - as camadas ocultas usam a ativacao escolhida no construtor
-- a camada final usa sigmoid para classificacao binaria
+- a camada final usa `sigmoid` ou `softmax`
 
 ## Backpropagation
 
@@ -53,7 +57,7 @@ Com esses gradientes, o modelo atualiza seus parametros por gradiente descendent
 Em alto nivel:
 
 1. faz o forward
-2. calcula a perda de saida
+2. calcula a perda na saida
 3. propaga esse erro para tras
 4. atualiza pesos e biases
 
@@ -67,6 +71,11 @@ sigmoid(x) = 1 / (1 + e^(-x))
 
 Boa para saida binaria, pois produz valores entre 0 e 1.
 
+### Softmax
+
+Transforma logits em probabilidades que somam 1 por amostra.
+Ela e a escolha natural para classificacao multiclasse exclusiva.
+
 ### ReLU
 
 ```text
@@ -76,10 +85,6 @@ relu(x) = max(0, x)
 Simples e eficiente, muito usada em camadas ocultas.
 
 ### Tanh
-
-```text
-tanh(x)
-```
 
 Tem saida entre -1 e 1 e pode ajudar quando dados centrados em zero fazem sentido.
 
@@ -107,38 +112,63 @@ Boa escolha para ReLU e variantes.
 
 Util como baseline, mas normalmente menos robusta.
 
-## Metricas
-
-O repositorio trabalha com classificacao binaria e expoe:
-
-- loss de treino configuravel
-- erro quadratico medio como sinal simples de acompanhamento
-- acuracia
-- precisao
-- recall
-- especificidade
-- balanced accuracy
-- F1-score
-- matriz de confusao
-
 ## Funcoes de custo
 
 ### Binary cross-entropy
 
-E a perda padrao do projeto, porque conversa melhor com a saida sigmoide em classificacao binaria.
+E a perda padrao para classificacao binaria com saida sigmoide.
+
+### Categorical cross-entropy
+
+E a perda mais natural para classificacao multiclasse com softmax.
 
 ### MSE
 
 Tambem esta disponivel como opcao didatica para comparacoes.
 
-## Early stopping
+## Otimizacao
 
-Quando usamos um conjunto de validacao, podemos parar o treino quando a perda deixa de melhorar.
-Esse mecanismo ajuda a:
+O projeto suporta dois modos principais:
 
-- evitar treino desnecessario
-- observar melhor o ponto de melhor generalizacao
-- restaurar automaticamente os melhores pesos encontrados
+- `SGD`
+- `Adam`
+
+`SGD` ajuda a entender a atualizacao basica por gradiente.
+`Adam` adiciona medias moveis dos gradientes e costuma convergir melhor em muitos cenarios praticos.
+
+## Regularizacao
+
+### L2
+
+Penaliza pesos muito grandes e ajuda a suavizar a complexidade do modelo.
+
+### Dropout
+
+Desativa aleatoriamente parte das ativacoes ocultas durante o treino para reduzir co-adaptacao.
+
+### Gradient clipping
+
+Limita a norma dos gradientes para evitar atualizacoes explosivas.
+
+## Callbacks
+
+Do ponto de vista didatico, callbacks ajudam a separar responsabilidades:
+
+- `EarlyStopping` cuida da parada antecipada
+- `History` armazena logs
+- `CSVLogger` salva o historico
+- `ModelCheckpoint` salva os melhores pesos
+
+Esse desenho deixa o loop de treino mais organizado e mais proximo de bibliotecas reais.
+
+## Multiclasse e one-hot
+
+Para tarefas multiclasse, o repositório aceita:
+
+- rotulos inteiros, como `0`, `1`, `2`
+- rotulos em one-hot
+
+Internamente, a rede converte o formato quando necessario para manter a API pratica.
 
 ## Normalizacao de dados
 
@@ -147,7 +177,7 @@ Antes de treinar, normalizar os dados costuma ajudar bastante.
 O projeto oferece:
 
 - `padrao`: z-score
-- `minmax`: escala para o intervalo [0, 1]
+- `minmax`: escala para o intervalo `[0, 1]`
 - `robusto`: usa mediana e IQR
 
 ## Reprodutibilidade

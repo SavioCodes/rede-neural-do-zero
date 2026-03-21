@@ -35,8 +35,14 @@ jobs:
       - name: Lint
         run: python -m ruff check .
 
+      - name: Type check
+        run: python -m mypy src
+
       - name: Run tests
-        run: python -m pytest -q
+        run: python -m pytest -q --cov=src --cov-report=term-missing
 
       - name: Run deterministic evaluation smoke
         run: python scripts/evaluate.py --seed 42 --epochs 400 --samples 240
+
+      - name: Run benchmark smoke
+        run: python scripts/benchmark.py --mode binario --samples 180 --epochs 80

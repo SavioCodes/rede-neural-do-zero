@@ -11,8 +11,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from src.rede_neural import RedeNeural  # noqa: E402
-from src.utils import DataUtils  # noqa: E402
+from src import DataUtils, ModelConfig, RedeNeural, TrainingConfig  # noqa: E402
 
 
 def imprimir_tabela_verdade() -> None:
@@ -40,22 +39,26 @@ def comparar_arquiteturas(epochs: int, taxa_aprendizado: float, seed: int) -> No
 
     melhor = None
     for indice, (arquitetura, nome) in enumerate(arquiteturas):
-        rede = RedeNeural(
-            arquitetura=arquitetura,
-            ativacao="sigmoid",
-            inicializacao="xavier",
-            seed=seed + indice,
-            funcao_custo="binary_crossentropy",
+        rede = RedeNeural.from_config(
+            ModelConfig(
+                arquitetura=arquitetura,
+                ativacao="sigmoid",
+                inicializacao="xavier",
+                seed=seed + indice,
+                funcao_custo="binary_crossentropy",
+            )
         )
-        rede.treinar(
+        rede.treinar_com_config(
             X,
             y,
-            epochs=epochs,
-            taxa_aprendizado=taxa_aprendizado,
-            batch_size=2,
-            otimizador="adam",
-            embaralhar=False,
-            verbose=False,
+            TrainingConfig(
+                epochs=epochs,
+                taxa_aprendizado=taxa_aprendizado,
+                batch_size=2,
+                otimizador="adam",
+                embaralhar=False,
+                verbose=False,
+            ),
         )
         resultado = rede.avaliar(X, y)
 
@@ -76,23 +79,27 @@ def comparar_arquiteturas(epochs: int, taxa_aprendizado: float, seed: int) -> No
 
 def treinamento_detalhado(epochs: int, taxa_aprendizado: float, seed: int) -> None:
     X, y = DataUtils.gerar_xor_dataset()
-    rede = RedeNeural(
-        [2, 4, 1],
-        ativacao="sigmoid",
-        inicializacao="xavier",
-        seed=seed,
-        funcao_custo="binary_crossentropy",
+    rede = RedeNeural.from_config(
+        ModelConfig(
+            arquitetura=[2, 4, 1],
+            ativacao="sigmoid",
+            inicializacao="xavier",
+            seed=seed,
+            funcao_custo="binary_crossentropy",
+        )
     )
 
-    resumo = rede.treinar(
+    resumo = rede.treinar_com_config(
         X,
         y,
-        epochs=epochs,
-        taxa_aprendizado=taxa_aprendizado,
-        batch_size=2,
-        otimizador="adam",
-        embaralhar=False,
-        verbose=False,
+        TrainingConfig(
+            epochs=epochs,
+            taxa_aprendizado=taxa_aprendizado,
+            batch_size=2,
+            otimizador="adam",
+            embaralhar=False,
+            verbose=False,
+        ),
     )
     probabilidades = rede.prever(X)
     classes = rede.prever_classes(X)
@@ -129,6 +136,7 @@ def main() -> None:
     print(f"Epocas: {args.epochs}")
     print(f"Learning rate: {args.learning_rate}")
     print("Treino recomendado: otimizador=adam, batch_size=2")
+    print("API recomendada: ModelConfig + TrainingConfig")
 
     imprimir_tabela_verdade()
     treinamento_detalhado(args.epochs, args.learning_rate, args.seed)

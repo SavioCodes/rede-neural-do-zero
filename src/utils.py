@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import csv
 from pathlib import Path
-from typing import Optional, Tuple
+from typing import Optional, Sequence, Tuple
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -61,9 +61,6 @@ class DataUtils:
         media_classe0 = np.full(n_features, -1.0)
         media_classe1 = np.full(n_features, 1.0)
 
-        # Criamos duas "nuvens" gaussianas com centros diferentes.
-        # Isso produz um problema de classificacao simples, mas suficiente
-        # para demonstrar aprendizado, normalizacao e avaliacao.
         cov_classe0 = np.eye(n_features)
         cov_classe1 = np.eye(n_features)
         cov_classe0[0, 1] = cov_classe0[1, 0] = 0.5
@@ -80,9 +77,91 @@ class DataUtils:
         if noise:
             X = X + rng.normal(0.0, noise, size=X.shape)
 
-        # Embaralhar evita que todas as amostras da mesma classe fiquem juntas.
         indices = rng.permutation(X.shape[0])
         return X[indices], y[indices]
+
+    @staticmethod
+    def gerar_dataset_multiclasse(
+        n_samples: int = 600,
+        n_features: int = 2,
+        n_classes: int = 3,
+        noise: float = 0.12,
+        random_state: Optional[int] = 42,
+    ) -> Tuple[np.ndarray, np.ndarray]:
+        """Generate a synthetic multi-class dataset using Gaussian blobs."""
+        if n_samples < n_classes:
+            raise ValueError("n_samples precisa ser pelo menos igual ao numero de classes.")
+        if n_features < 2:
+            raise ValueError("n_features precisa ser pelo menos 2.")
+        if n_classes < 3:
+            raise ValueError("n_classes precisa ser pelo menos 3.")
+        if noise < 0:
+            raise ValueError("noise nao pode ser negativo.")
+
+        rng = np.random.default_rng(random_state)
+        tamanhos = [n_samples // n_classes] * n_classes
+        for indice in range(n_samples % n_classes):
+            tamanhos[indice] += 1
+
+        angulos = np.linspace(0, 2 * np.pi, n_classes, endpoint=False)
+        blobs_X = []
+        blobs_y = []
+
+        for classe, (angulo, tamanho) in enumerate(zip(angulos, tamanhos)):
+            centro = np.zeros(n_features, dtype=float)
+            centro[0] = 3.0 * np.cos(angulo)
+            centro[1] = 3.0 * np.sin(angulo)
+            if n_features > 2:
+                centro[2:] = np.linspace(-1.0, 1.0, n_features - 2) + classe * 0.2
+
+            cov = np.eye(n_features) * (0.55 + noise)
+            if n_features >= 2:
+                cov[0, 1] = cov[1, 0] = ((-1) ** classe) * 0.15
+
+            X_classe = rng.multivariate_normal(centro, cov, size=tamanho)
+            if noise:
+                X_classe = X_classe + rng.normal(0.0, noise, size=X_classe.shape)
+
+            blobs_X.append(X_classe)
+            blobs_y.append(np.full((tamanho, 1), classe, dtype=float))
+
+        X = np.vstack(blobs_X)
+        y = np.vstack(blobs_y)
+        indices = rng.permutation(X.shape[0])
+        return X[indices], y[indices]
+
+    @staticmethod
+    def one_hot_encode(y: np.ndarray, n_classes: Optional[int] = None) -> np.ndarray:
+        """Convert integer labels to one-hot encoding."""
+        y_array = np.asarray(y)
+        if y_array.ndim == 2 and y_array.shape[1] > 1:
+            return np.asarray(y_array, dtype=float)
+
+        y_indices = np.asarray(y_array).reshape(-1).astype(int)
+        if y_indices.size == 0:
+            raise ValueError("y precisa ter pelo menos uma amostra.")
+        if np.any(y_indices < 0):
+            raise ValueError("Rotulos negativos nao sao suportados em one-hot.")
+
+        total_classes = int(np.max(y_indices)) + 1 if n_classes is None else int(n_classes)
+        if total_classes <= int(np.max(y_indices)):
+            raise ValueError("n_classes precisa ser maior que o maior rotulo presente.")
+
+        one_hot = np.zeros((y_indices.shape[0], total_classes), dtype=float)
+        one_hot[np.arange(y_indices.shape[0]), y_indices] = 1.0
+        return one_hot
+
+    @staticmethod
+    def decodificar_one_hot(y: np.ndarray) -> np.ndarray:
+        """Convert one-hot arrays or logits into class indices."""
+        y_array = np.asarray(y)
+        if y_array.ndim == 1:
+            return y_array.astype(int).reshape(-1, 1)
+        if y_array.ndim != 2:
+            raise ValueError("y precisa ter formato 1D ou 2D para decodificar.")
+        if y_array.shape[1] == 1:
+            return y_array.astype(int)
+        return np.argmax(y_array, axis=1).reshape(-1, 1)
 
     @staticmethod
     def normalizar_dados(X: np.ndarray, metodo: str = "padrao") -> Tuple[np.ndarray, dict]:
@@ -172,7 +251,7 @@ class DataUtils:
 
 
 class VisualizationUtils:
-    """Helpers for plotting training history and 2D classification data."""
+    """Helpers for plotting training history and classification data."""
 
     @staticmethod
     def _resolver_caminho_saida(salvar: Optional[str]) -> Optional[Path]:
@@ -185,35 +264,56 @@ class VisualizationUtils:
         return caminho_saida
 
     @staticmethod
+    def _finalizar_figura(fig, salvar: Optional[str], mostrar: bool) -> None:
+        caminho_saida = VisualizationUtils._resolver_caminho_saida(salvar)
+        if caminho_saida:
+            fig.savefig(caminho_saida, dpi=300, bbox_inches="tight")
+            print(f"Grafico salvo em: {caminho_saida}")
+
+        if mostrar:
+            plt.show()
+        plt.close(fig)
+
+    @staticmethod
     def plotar_historico_treinamento(
         historico_erro: list,
         historico_acuracia: list,
+        historico_validacao_erro: Optional[list] = None,
+        historico_validacao_acuracia: Optional[list] = None,
         salvar: Optional[str] = None,
+        mostrar: bool = True,
     ) -> None:
-        """Plot training loss and accuracy history."""
+        """Plot training and optional validation history."""
         fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 5))
+        epocas = np.arange(1, len(historico_erro) + 1)
 
-        ax1.plot(historico_erro, "b-", linewidth=2)
-        ax1.set_title("Erro durante o treinamento")
+        ax1.plot(epocas, historico_erro, "b-", linewidth=2, label="treino")
+        if historico_validacao_erro:
+            ax1.plot(epocas, historico_validacao_erro, "r--", linewidth=2, label="validacao")
+        ax1.set_title("Loss durante o treinamento")
         ax1.set_xlabel("Epoca")
-        ax1.set_ylabel("Erro")
+        ax1.set_ylabel("Loss")
         ax1.grid(True, alpha=0.3)
+        ax1.legend()
 
-        ax2.plot(historico_acuracia, "g-", linewidth=2)
+        ax2.plot(epocas, historico_acuracia, "g-", linewidth=2, label="treino")
+        if historico_validacao_acuracia:
+            ax2.plot(
+                epocas,
+                historico_validacao_acuracia,
+                color="orange",
+                linestyle="--",
+                linewidth=2,
+                label="validacao",
+            )
         ax2.set_title("Acuracia durante o treinamento")
         ax2.set_xlabel("Epoca")
         ax2.set_ylabel("Acuracia (%)")
         ax2.grid(True, alpha=0.3)
+        ax2.legend()
 
-        plt.tight_layout()
-
-        caminho_saida = VisualizationUtils._resolver_caminho_saida(salvar)
-        if caminho_saida:
-            plt.savefig(caminho_saida, dpi=300, bbox_inches="tight")
-            print(f"Grafico salvo em: {caminho_saida}")
-
-        plt.show()
-        plt.close(fig)
+        fig.tight_layout()
+        VisualizationUtils._finalizar_figura(fig, salvar, mostrar)
 
     @staticmethod
     def plotar_dados_classificacao(
@@ -221,41 +321,46 @@ class VisualizationUtils:
         y: np.ndarray,
         titulo: str = "Dataset de classificacao",
         salvar: Optional[str] = None,
+        mostrar: bool = True,
     ) -> None:
-        """Plot a binary classification dataset using the first two features."""
+        """Plot a classification dataset using the first two features."""
         X_array = DataUtils._garantir_array_2d(X, "X")
-        y_array = DataUtils._garantir_array_2d(y, "y")
+        y_indices = MetricUtils._converter_em_indices(y, limiar=0.5, is_prediction=False)
 
-        if X_array.shape[0] != y_array.shape[0]:
+        if X_array.shape[0] != y_indices.shape[0]:
             raise ValueError("X e y precisam ter a mesma quantidade de amostras.")
 
-        if X_array.shape[1] != 2:
+        if X_array.shape[1] < 2:
+            raise ValueError("Plotagem de classificacao precisa de pelo menos duas features.")
+        if X_array.shape[1] > 2:
             print(
                 "Aviso: plotagem disponivel apenas para dados 2D. "
                 "Usando as duas primeiras features."
             )
             X_array = X_array[:, :2]
 
-        plt.figure(figsize=(8, 6))
+        classes = np.unique(y_indices)
+        fig, ax = plt.subplots(figsize=(8, 6))
+        cmap = plt.get_cmap("tab10", len(classes))
 
-        classe0 = X_array[y_array.ravel() == 0]
-        classe1 = X_array[y_array.ravel() == 1]
+        for indice, classe in enumerate(classes):
+            pontos = X_array[y_indices == classe]
+            ax.scatter(
+                pontos[:, 0],
+                pontos[:, 1],
+                alpha=0.7,
+                s=50,
+                color=cmap(indice),
+                label=f"Classe {int(classe)}",
+            )
 
-        plt.scatter(classe0[:, 0], classe0[:, 1], c="red", alpha=0.6, label="Classe 0", s=50)
-        plt.scatter(classe1[:, 0], classe1[:, 1], c="blue", alpha=0.6, label="Classe 1", s=50)
-        plt.xlabel("Feature 1")
-        plt.ylabel("Feature 2")
-        plt.title(titulo)
-        plt.legend()
-        plt.grid(True, alpha=0.3)
+        ax.set_xlabel("Feature 1")
+        ax.set_ylabel("Feature 2")
+        ax.set_title(titulo)
+        ax.legend()
+        ax.grid(True, alpha=0.3)
 
-        caminho_saida = VisualizationUtils._resolver_caminho_saida(salvar)
-        if caminho_saida:
-            plt.savefig(caminho_saida, dpi=300, bbox_inches="tight")
-            print(f"Grafico salvo em: {caminho_saida}")
-
-        plt.show()
-        plt.close()
+        VisualizationUtils._finalizar_figura(fig, salvar, mostrar)
 
     @staticmethod
     def plotar_fronteira_decisao(
@@ -265,15 +370,17 @@ class VisualizationUtils:
         resolucao: int = 100,
         titulo: str = "Fronteira de decisao",
         salvar: Optional[str] = None,
+        mostrar: bool = True,
     ) -> None:
         """Plot the decision surface for a trained network on 2D data."""
         X_array = DataUtils._garantir_array_2d(X, "X")
-        y_array = DataUtils._garantir_array_2d(y, "y")
+        y_indices = MetricUtils._converter_em_indices(y, limiar=0.5, is_prediction=False)
 
-        if X_array.shape[0] != y_array.shape[0]:
+        if X_array.shape[0] != y_indices.shape[0]:
             raise ValueError("X e y precisam ter a mesma quantidade de amostras.")
-
-        if X_array.shape[1] != 2:
+        if X_array.shape[1] < 2:
+            raise ValueError("Fronteira de decisao exige pelo menos duas features.")
+        if X_array.shape[1] > 2:
             print(
                 "Aviso: fronteira disponivel apenas para dados 2D. "
                 "Usando as duas primeiras features."
@@ -289,47 +396,90 @@ class VisualizationUtils:
         )
 
         grade_pontos = np.c_[xx.ravel(), yy.ravel()]
-        Z = rede_neural.prever(grade_pontos).reshape(xx.shape)
+        predicoes = rede_neural.prever(grade_pontos)
 
-        plt.figure(figsize=(10, 8))
-        plt.contourf(xx, yy, Z, levels=50, alpha=0.3, cmap="RdYlBu")
-        plt.contour(xx, yy, Z, levels=[0.5], colors="black", linestyles="--", linewidths=2)
+        fig, ax = plt.subplots(figsize=(10, 8))
+        if predicoes.shape[1] == 1:
+            Z = predicoes.reshape(xx.shape)
+            ax.contourf(xx, yy, Z, levels=50, alpha=0.3, cmap="RdYlBu")
+            ax.contour(xx, yy, Z, levels=[0.5], colors="black", linestyles="--", linewidths=2)
+        else:
+            Z = np.argmax(predicoes, axis=1).reshape(xx.shape)
+            ax.contourf(
+                xx,
+                yy,
+                Z,
+                levels=np.arange(predicoes.shape[1] + 1) - 0.5,
+                alpha=0.3,
+                cmap="tab10",
+            )
 
-        classe0 = X_array[y_array.ravel() == 0]
-        classe1 = X_array[y_array.ravel() == 1]
+        classes = np.unique(y_indices)
+        cmap = plt.get_cmap("tab10", len(classes))
+        for indice, classe in enumerate(classes):
+            pontos = X_array[y_indices == classe]
+            ax.scatter(
+                pontos[:, 0],
+                pontos[:, 1],
+                alpha=0.8,
+                s=60,
+                color=cmap(indice),
+                label=f"Classe {int(classe)}",
+                edgecolors="black",
+            )
 
-        plt.scatter(
-            classe0[:, 0],
-            classe0[:, 1],
-            c="red",
-            alpha=0.8,
-            label="Classe 0",
-            s=60,
-            edgecolors="black",
+        ax.set_xlabel("Feature 1")
+        ax.set_ylabel("Feature 2")
+        ax.set_title(titulo)
+        ax.legend()
+
+        VisualizationUtils._finalizar_figura(fig, salvar, mostrar)
+
+    @staticmethod
+    def plotar_matriz_confusao(
+        matriz: np.ndarray,
+        labels: Optional[Sequence[str]] = None,
+        titulo: str = "Matriz de confusao",
+        salvar: Optional[str] = None,
+        mostrar: bool = True,
+    ) -> None:
+        """Plot a confusion matrix with numeric annotations."""
+        matriz_array = np.asarray(matriz)
+        if matriz_array.ndim != 2 or matriz_array.shape[0] != matriz_array.shape[1]:
+            raise ValueError("A matriz de confusao precisa ser quadrada.")
+
+        total_classes = matriz_array.shape[0]
+        rotulos = (
+            list(labels)
+            if labels is not None
+            else [str(indice) for indice in range(total_classes)]
         )
-        plt.scatter(
-            classe1[:, 0],
-            classe1[:, 1],
-            c="blue",
-            alpha=0.8,
-            label="Classe 1",
-            s=60,
-            edgecolors="black",
-        )
 
-        plt.xlabel("Feature 1")
-        plt.ylabel("Feature 2")
-        plt.title(titulo)
-        plt.legend()
-        plt.colorbar(label="Probabilidade")
+        fig, ax = plt.subplots(figsize=(6, 5))
+        imagem = ax.imshow(matriz_array, cmap="Blues")
+        plt.colorbar(imagem, ax=ax)
 
-        caminho_saida = VisualizationUtils._resolver_caminho_saida(salvar)
-        if caminho_saida:
-            plt.savefig(caminho_saida, dpi=300, bbox_inches="tight")
-            print(f"Grafico salvo em: {caminho_saida}")
+        ax.set_title(titulo)
+        ax.set_xlabel("Predito")
+        ax.set_ylabel("Real")
+        ax.set_xticks(np.arange(total_classes))
+        ax.set_yticks(np.arange(total_classes))
+        ax.set_xticklabels(rotulos)
+        ax.set_yticklabels(rotulos)
 
-        plt.show()
-        plt.close()
+        for linha in range(total_classes):
+            for coluna in range(total_classes):
+                ax.text(
+                    coluna,
+                    linha,
+                    str(int(matriz_array[linha, coluna])),
+                    ha="center",
+                    va="center",
+                    color="black",
+                )
+
+        fig.tight_layout()
+        VisualizationUtils._finalizar_figura(fig, salvar, mostrar)
 
 
 class FileUtils:
@@ -386,7 +536,7 @@ class FileUtils:
 
 
 class MetricUtils:
-    """Helpers for binary classification metrics."""
+    """Helpers for binary and multi-class classification metrics."""
 
     @staticmethod
     def _validar_threshold(limiar: float) -> None:
@@ -394,34 +544,113 @@ class MetricUtils:
             raise ValueError("limiar precisa estar entre 0 e 1.")
 
     @staticmethod
-    def matriz_confusao(y_true: np.ndarray, y_pred: np.ndarray, limiar: float = 0.5) -> np.ndarray:
-        """Compute a 2x2 confusion matrix for binary classification."""
-        MetricUtils._validar_threshold(limiar)
-        y_true_array = DataUtils._garantir_array_2d(y_true, "y_true")
-        y_pred_array = DataUtils._garantir_array_2d(y_pred, "y_pred")
+    def _converter_em_indices(
+        y: np.ndarray,
+        limiar: float = 0.5,
+        is_prediction: bool = False,
+    ) -> np.ndarray:
+        y_array = np.asarray(y)
+        if y_array.ndim == 1:
+            return y_array.astype(int)
+        if y_array.ndim != 2:
+            raise ValueError("y precisa ter formato 1D ou 2D.")
+        if y_array.shape[1] == 1:
+            valores = y_array.reshape(-1)
+            if is_prediction and np.all((valores >= 0) & (valores <= 1)):
+                return (valores >= limiar).astype(int)
+            return valores.astype(int)
+        return np.argmax(y_array, axis=1).astype(int)
 
-        if y_true_array.shape[0] != y_pred_array.shape[0]:
+    @staticmethod
+    def matriz_confusao(
+        y_true: np.ndarray,
+        y_pred: np.ndarray,
+        limiar: float = 0.5,
+        labels: Optional[Sequence[int]] = None,
+    ) -> np.ndarray:
+        """Compute a confusion matrix for binary or multi-class classification."""
+        MetricUtils._validar_threshold(limiar)
+        y_true_indices = MetricUtils._converter_em_indices(
+            y_true, limiar=limiar, is_prediction=False
+        )
+        y_pred_indices = MetricUtils._converter_em_indices(
+            y_pred, limiar=limiar, is_prediction=True
+        )
+
+        if y_true_indices.shape[0] != y_pred_indices.shape[0]:
             raise ValueError("y_true e y_pred precisam ter a mesma quantidade de amostras.")
 
-        y_pred_bin = (y_pred_array >= limiar).astype(int).ravel()
-        y_true_bin = y_true_array.ravel().astype(int)
+        classes = (
+            np.array(labels, dtype=int)
+            if labels is not None
+            else np.unique(np.concatenate([y_true_indices, y_pred_indices]))
+        )
+        mapa = {classe: indice for indice, classe in enumerate(classes.tolist())}
+        matriz = np.zeros((len(classes), len(classes)), dtype=int)
 
-        # A matriz final fica no formato:
-        # [[TN, FP],
-        #  [FN, TP]]
-        tp = np.sum((y_true_bin == 1) & (y_pred_bin == 1))
-        tn = np.sum((y_true_bin == 0) & (y_pred_bin == 0))
-        fp = np.sum((y_true_bin == 0) & (y_pred_bin == 1))
-        fn = np.sum((y_true_bin == 1) & (y_pred_bin == 0))
+        for classe_real, classe_predita in zip(y_true_indices, y_pred_indices):
+            matriz[mapa[int(classe_real)], mapa[int(classe_predita)]] += 1
 
-        return np.array([[tn, fp], [fn, tp]])
+        return matriz
+
+    @staticmethod
+    def metricas_classificacao(
+        y_true: np.ndarray,
+        y_pred: np.ndarray,
+        limiar: float = 0.5,
+        labels: Optional[Sequence[int]] = None,
+    ) -> dict:
+        """Compute generic classification metrics for binary or multi-class tasks."""
+        cm = MetricUtils.matriz_confusao(y_true, y_pred, limiar=limiar, labels=labels)
+        suportes = cm.sum(axis=1)
+        total = cm.sum()
+        acuracia = float(np.trace(cm) / total) if total > 0 else 0.0
+
+        precisao_por_classe = []
+        recall_por_classe = []
+        f1_por_classe = []
+
+        for indice in range(cm.shape[0]):
+            tp = cm[indice, indice]
+            fp = cm[:, indice].sum() - tp
+            fn = cm[indice, :].sum() - tp
+
+            precisao = tp / (tp + fp) if (tp + fp) > 0 else 0.0
+            recall = tp / (tp + fn) if (tp + fn) > 0 else 0.0
+            f1 = 2 * (precisao * recall) / (precisao + recall) if (precisao + recall) > 0 else 0.0
+
+            precisao_por_classe.append(float(precisao))
+            recall_por_classe.append(float(recall))
+            f1_por_classe.append(float(f1))
+
+        suportes_array = suportes.astype(float)
+        peso_total = suportes_array.sum() if suportes_array.sum() > 0 else 1.0
+
+        return {
+            "acuracia": acuracia,
+            "precision_macro": float(np.mean(precisao_por_classe)),
+            "recall_macro": float(np.mean(recall_por_classe)),
+            "f1_macro": float(np.mean(f1_por_classe)),
+            "precision_weighted": float(np.average(precisao_por_classe, weights=suportes_array)),
+            "recall_weighted": float(np.average(recall_por_classe, weights=suportes_array)),
+            "f1_weighted": float(np.average(f1_por_classe, weights=suportes_array)),
+            "supports": suportes.tolist(),
+            "matriz_confusao": cm,
+            "labels": list(range(cm.shape[0])) if labels is None else list(labels),
+            "n_amostras": int(peso_total),
+        }
 
     @staticmethod
     def precisao_recall_f1(y_true: np.ndarray, y_pred: np.ndarray, limiar: float = 0.5) -> dict:
-        """Compute precision, recall, and F1-score from predicted probabilities."""
+        """Compute classic binary precision, recall, and F1-score."""
         cm = MetricUtils.matriz_confusao(y_true, y_pred, limiar)
-        tn, fp, fn, tp = cm.ravel()
+        if cm.shape != (2, 2):
+            raise ValueError(
+                "precisao_recall_f1 e focada em classificacao binaria. "
+                "Use metricas_classificacao para multiclasse."
+            )
 
+        tn, fp, fn, tp = cm.ravel()
         precisao = tp / (tp + fp) if (tp + fp) > 0 else 0.0
         recall = tp / (tp + fn) if (tp + fn) > 0 else 0.0
         especificidade = tn / (tn + fp) if (tn + fp) > 0 else 0.0

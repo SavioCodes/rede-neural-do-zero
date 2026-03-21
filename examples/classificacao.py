@@ -11,8 +11,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from src.rede_neural import RedeNeural  # noqa: E402
-from src.utils import DataUtils, MetricUtils  # noqa: E402
+from src import DataUtils, MetricUtils, ModelConfig, RedeNeural, TrainingConfig  # noqa: E402
 
 
 def avaliar_modelo(
@@ -29,25 +28,30 @@ def avaliar_modelo(
     batch_size: int,
     otimizador: str,
 ) -> dict:
-    rede = RedeNeural(
-        arquitetura=arquitetura,
-        ativacao=ativacao,
-        inicializacao=inicializacao,
-        seed=seed,
-        funcao_custo="binary_crossentropy",
+    rede = RedeNeural.from_config(
+        ModelConfig(
+            arquitetura=arquitetura,
+            ativacao=ativacao,
+            inicializacao=inicializacao,
+            seed=seed,
+            funcao_custo="binary_crossentropy",
+        )
     )
-    treino = rede.treinar(
+    treino = rede.treinar_com_config(
         X_train,
         y_train,
-        epochs=epochs,
-        taxa_aprendizado=taxa_aprendizado,
+        TrainingConfig(
+            epochs=epochs,
+            taxa_aprendizado=taxa_aprendizado,
+            paciencia=25,
+            min_delta=1e-4,
+            batch_size=batch_size,
+            otimizador=otimizador,
+            gradient_clip=1.0,
+            verbose=False,
+        ),
         validacao_X=X_test,
         validacao_y=y_test,
-        paciencia=25,
-        min_delta=1e-4,
-        batch_size=batch_size,
-        otimizador=otimizador,
-        verbose=False,
     )
     resultado = rede.avaliar(X_test, y_test)
     metricas = MetricUtils.precisao_recall_f1(y_test, resultado["predicoes"])
@@ -202,6 +206,7 @@ def main() -> None:
     print(f"Epocas: {args.epochs}")
     print(f"Seed: {args.seed}")
     print("Treino recomendado: otimizador=adam, batch_size=32")
+    print("API recomendada: ModelConfig + TrainingConfig")
 
     experimento_funcoes_ativacao(args.samples, args.epochs, args.seed)
     experimento_normalizacao(args.samples, args.epochs, args.seed)
