@@ -1,0 +1,15 @@
+nome: benchmark-suite
+descricao: Suite de benchmark multi-dataset usando multiplas seeds.
+comando:
+  - python
+  - -m
+  - src
+  - benchmark
+  - --config
+  - configs/benchmark/suite.yaml
+artefatos_esperados:
+  - logs/benchmark-suite/benchmark.json
+  - logs/benchmark-suite/benchmark-report.md
+  - logs/benchmark-suite/benchmark-summary.csv
+  - logs/benchmark-suite/benchmark-runs.csv
+  - logs/benchmark-suite/benchmark-leaderboard.csv

@@ -1,6 +1,6 @@
 # Notebooks
 
-Os notebooks do projeto ficam na pasta `notebooks/` e foram pensados para apoiar estudo e demonstracao.
+Os notebooks do projeto ficam na pasta `notebooks/`, sao versionados no repositorio e tambem sao exportados para paginas Markdown dentro da documentacao.
 
 ## Arquivos
 
@@ -32,6 +32,12 @@ Os notebooks do projeto ficam na pasta `notebooks/` e foram pensados para apoiar
 - matriz de confusao
 - comparacao de metricas
 
+## Paginas geradas no site
+
+- [Forward e Backward](notebooks/generated/01-forward-backward.md)
+- [Softmax, Dropout e Adam](notebooks/generated/02-softmax-dropout-adam.md)
+- [Datasets Reais e Matriz de Confusao](notebooks/generated/03-datasets-reais-e-matriz-confusao.md)
+
 ## Como abrir
 
 ```bash
@@ -40,3 +46,10 @@ jupyter notebook
 ```
 
 Se voce preferir, tambem pode abrir os arquivos `.ipynb` direto no VS Code.
+
+## Como regenerar
+
+```bash
+python scripts/validate_notebooks.py
+python scripts/export_notebooks_to_docs.py
+```

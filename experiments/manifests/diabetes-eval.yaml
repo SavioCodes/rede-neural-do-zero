@@ -1,0 +1,11 @@
+nome: diabetes-eval
+descricao: Avaliacao deterministica de regressao com gate minimo de score.
+comando:
+  - python
+  - -m
+  - src
+  - evaluate
+  - --config
+  - configs/evaluate/diabetes.toml
+artefatos_esperados:
+  - logs/evaluate-diabetes.json

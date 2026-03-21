@@ -5,7 +5,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 [![Python](https://img.shields.io/badge/Python-3.11-blue)](https://www.python.org/)
 
-Implementacao educacional de rede neural do zero com NumPy, agora organizada como pacote instalavel, CLI oficial, notebooks, datasets reais pequenos e checkpoint completo de treino.
+Implementacao educacional de rede neural do zero com NumPy, organizada como pacote instalavel com CLI oficial, configs versionadas, notebooks, docs navegavel, datasets reais pequenos e checkpoints completos de treino.
 
 ## O que o projeto cobre
 
@@ -18,10 +18,13 @@ Implementacao educacional de rede neural do zero com NumPy, agora organizada com
 - `EarlyStopping`, `History`, `CSVLogger` e `ModelCheckpoint`
 - salvar e retomar treino completo
 - benchmark com multiplas `seeds`, media, desvio e ranking
+- suite multi-dataset com leaderboard e relatorio Markdown
 - datasets reais empacotados: Iris, Wine e Diabetes
-- CLI com `train`, `evaluate`, `benchmark` e `example`
-- docs web com MkDocs Material
+- CLI com `train`, `resume`, `evaluate`, `benchmark`, `example`, `build-docs`, `build-package` e `verify`
+- configs oficiais em JSON, TOML e YAML
+- docs web com MkDocs Material e referencia de API automatica
 - notebooks didaticos para estudo
+- changelog, roadmap, templates e fluxo de contribuicao
 
 ## Instalacao
 
@@ -63,6 +66,17 @@ python -m pip install rede-neural-do-zero
 
 ## Uso rapido
 
+### Pela CLI oficial
+
+```bash
+python -m src train --config configs/train/iris.yaml
+python -m src resume --checkpoint experiments/runs/iris-baseline/model-checkpoint.npz --dataset iris --epochs 40
+python -m src evaluate --config configs/evaluate/diabetes.toml
+python -m src benchmark --config configs/benchmark/suite.yaml
+python -m src example --config configs/example/wine.json
+python -m src verify --build-package
+```
+
 ### Importando como biblioteca
 
 ```python
@@ -91,33 +105,6 @@ resumo = rede.treinar(
 print(resumo["acuracia_final"])
 ```
 
-### Regressao
-
-```python
-from rede_neural_do_zero import DataUtils, RedeNeural
-
-X, y, _ = DataUtils.carregar_dataset_diabetes(normalizar="padrao")
-
-rede = RedeNeural(
-    [X.shape[1], 32, 16, 1],
-    ativacao="relu",
-    inicializacao="he",
-    seed=42,
-    funcao_custo="mse",
-    ativacao_saida="linear",
-)
-```
-
-### Checkpoint completo e resume
-
-```python
-rede.salvar_checkpoint("results/model-checkpoint.npz")
-
-nova_rede = RedeNeural([X.shape[1], 1], ativacao="relu", funcao_custo="mse", ativacao_saida="linear")
-nova_rede.carregar_checkpoint("results/model-checkpoint.npz")
-nova_rede.retomar_treinamento(X, y, epochs_adicionais=40, verbose=False)
-```
-
 ## CLI oficial
 
 Sem instalar script global:
@@ -129,10 +116,14 @@ python -m src --help
 Comandos principais:
 
 ```bash
-python -m src train --dataset iris --epochs 160 --save-dir results/iris
-python -m src evaluate --dataset diabetes --epochs 180 --min-score 0.20
-python -m src benchmark --mode multiclasse --dataset wine --seeds 42,52,62
-python -m src example --dataset xor --save-dir results/xor
+python -m src train --config configs/train/iris.yaml
+python -m src resume --checkpoint experiments/runs/iris-baseline/model-checkpoint.npz --dataset iris --epochs 40
+python -m src evaluate --config configs/evaluate/diabetes.toml
+python -m src benchmark --datasets iris,wine,diabetes --seeds 42,52,62
+python -m src example --config configs/example/wine.json
+python -m src build-docs --strict
+python -m src build-package --check
+python -m src verify --build-package
 ```
 
 Depois de instalar o pacote, tambem funciona:
@@ -168,35 +159,42 @@ Os notebooks ficam em `notebooks/`:
 ## Documentacao
 
 - [Landing page e docs web](https://saviocodes.github.io/rede-neural-do-zero/)
+- [Referencia de API](./docs/api/index.md)
 - [Teoria](./docs/teoria.md)
 - [Algoritmos](./docs/algoritmos.md)
 - [Tutorial](./docs/tutorial.md)
 - [CLI](./docs/cli.md)
 - [Publicacao PyPI](./docs/publishing.md)
+- [Projeto Oficial](./docs/project.md)
 
 ## Build e publicacao
 
 Build local:
 
 ```bash
-python -m build
-python -m twine check dist/*
+python -m src build-package --check
 ```
 
-O repositório inclui:
+O repositorio inclui:
 
 - workflow de CI
 - workflow de docs com GitHub Pages
 - workflow de publicacao no PyPI via Trusted Publishing
+- tags e releases oficiais no GitHub
 
 ## Qualidade
 
 ```bash
-python -m ruff check .
-python -m mypy src rede_neural_do_zero
-python -m pytest -q
-python -m mkdocs build --strict
+python -m src verify --build-package
 ```
+
+## Projeto oficial
+
+- Releases: <https://github.com/SavioCodes/rede-neural-do-zero/releases>
+- Tags: <https://github.com/SavioCodes/rede-neural-do-zero/tags>
+- Contribuicao: [CONTRIBUTING.md](./CONTRIBUTING.md)
+- Roadmap: [ROADMAP.md](./ROADMAP.md)
+- Changelog: [CHANGELOG.md](./CHANGELOG.md)
 
 ## Licenca
 

@@ -32,21 +32,21 @@ python -m pip install .
 python -m pip install -e ".[dev]"
 ```
 
-## Testes rapidos
+## Verificacao rapida
 
 ```bash
-python -m pytest -q
-python scripts/evaluate.py --dataset binario --seed 42 --epochs 150 --samples 240
-python scripts/benchmark.py --mode multiclasse --epochs 80 --seeds 42,52,62
+python -m src verify
+python -m src evaluate --dataset binario --seed 42 --epochs 150 --samples 240
+python -m src benchmark --mode multiclasse --epochs 80 --seeds 42,52,62
 ```
 
 ## Primeiros comandos uteis
 
 ```bash
-python -m src train --dataset iris --epochs 160 --save-dir results/iris
-python -m src evaluate --dataset diabetes --epochs 180 --min-score 0.20
-python -m src benchmark --mode regressao --seeds 42,52,62
-python -m src example --dataset wine --save-dir results/wine
+python -m src train --config configs/train/iris.yaml
+python -m src evaluate --config configs/evaluate/diabetes.toml
+python -m src benchmark --config configs/benchmark/suite.yaml
+python -m src example --config configs/example/wine.json
 ```
 
 ## Importacao via Python
@@ -63,3 +63,10 @@ rede = RedeNeural(
     funcao_custo="categorical_crossentropy",
 )
 ```
+
+## Pastas importantes
+
+- `configs/`: configuracoes oficiais reutilizaveis
+- `experiments/manifests/`: manifestos versionados
+- `experiments/runs/`: destino sugerido para artefatos locais
+- `docs/`: documentacao oficial

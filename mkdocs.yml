@@ -24,6 +24,13 @@ theme:
 
 plugins:
   - search
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            show_source: false
+            show_root_toc_entry: false
+            merge_init_into_class: true
 
 markdown_extensions:
   - admonition
@@ -56,3 +63,16 @@ nav:
       - Tutorial: tutorial.md
   - Material Didatico:
       - Notebooks: notebooks.md
+      - Paginas Geradas: notebooks/generated/index.md
+      - Forward e Backward: notebooks/generated/01-forward-backward.md
+      - Softmax, Dropout e Adam: notebooks/generated/02-softmax-dropout-adam.md
+      - Datasets Reais e Matriz de Confusao: notebooks/generated/03-datasets-reais-e-matriz-confusao.md
+  - Referencia:
+      - Visao Geral: api/index.md
+      - Rede Neural: api/rede-neural.md
+      - Configuracoes: api/configs.md
+      - Callbacks: api/callbacks.md
+      - Experimentos e Benchmark: api/experiments.md
+      - Utilitarios: api/utils.md
+  - Projeto:
+      - Visao Oficial: project.md

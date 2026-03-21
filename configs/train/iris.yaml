@@ -1,0 +1,10 @@
+common:
+  seed: 42
+  no_plots: true
+  no_verbose: true
+
+train:
+  dataset: iris
+  samples: 150
+  epochs: 180
+  save_dir: experiments/runs/iris-baseline

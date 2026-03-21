@@ -1,6 +1,11 @@
 """Public package exports for rede-neural-do-zero."""
 
-from .benchmarking import executar_benchmark
+from .benchmarking import (
+    executar_benchmark,
+    executar_suite_benchmark,
+    gerar_relatorio_markdown,
+    parse_datasets,
+)
 from .callbacks import Callback, CSVLogger, EarlyStopping, History, ModelCheckpoint
 from .config import ModelConfig, TrainingConfig
 from .evaluation import run_evaluation
@@ -9,7 +14,7 @@ from .funcoes_ativacao import FuncoesAtivacao
 from .rede_neural import RedeNeural
 from .utils import DataUtils, FileUtils, MetricUtils, VisualizationUtils
 
-__version__ = "2.0.3"
+__version__ = "2.1.0"
 __author__ = "Savio"
 
 __all__ = [
@@ -31,5 +36,8 @@ __all__ = [
     "criar_configs_padrao",
     "avaliar_modelo",
     "executar_benchmark",
+    "executar_suite_benchmark",
+    "gerar_relatorio_markdown",
+    "parse_datasets",
     "run_evaluation",
 ]

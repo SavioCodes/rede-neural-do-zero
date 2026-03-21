@@ -207,10 +207,10 @@ O metodo `salvar_parametros()` grava:
 
 ## Avaliacao e benchmark
 
-### `scripts/evaluate.py`
+### `src.evaluation.run_evaluation`
 
-Executa um fluxo deterministico com dataset sintetico, split treino/validacao/teste e metrica de acuracia minima para CI.
+Executa um fluxo deterministico com dataset, split treino/validacao/teste e gate minimo de score para validacao local ou CI.
 
-### `scripts/benchmark.py`
+### `src.benchmarking`
 
-Executa comparacoes simples entre configuracoes e salva os resultados em JSON e CSV.
+Executa comparacoes entre configuracoes, agrega medias e desvios por `seed`, suporta suites multi-dataset e gera relatorios em JSON, CSV e Markdown.

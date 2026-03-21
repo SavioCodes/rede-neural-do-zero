@@ -1,4 +1,4 @@
-"""Helpers para benchmark multi-seed reutilizados pela CLI e pelos scripts."""
+"""Helpers para benchmark multi-seed e suites de experimentos."""
 
 from __future__ import annotations
 
@@ -23,6 +23,18 @@ def parse_seeds(texto: str) -> list[int]:
     return seeds
 
 
+def parse_datasets(texto: str) -> list[str]:
+    """Converte `iris,wine` em lista de datasets sem duplicatas."""
+    datasets: list[str] = []
+    for parte in texto.split(","):
+        nome = parte.strip().lower()
+        if nome and nome not in datasets:
+            datasets.append(nome)
+    if not datasets:
+        raise ValueError("Forneca pelo menos um dataset em --datasets.")
+    return datasets
+
+
 def nome_dataset_padrao(modo: str) -> str:
     """Resolve qual dataset usar por modo de benchmark."""
     return {
@@ -30,6 +42,11 @@ def nome_dataset_padrao(modo: str) -> str:
         "multiclasse": "iris",
         "regressao": "diabetes",
     }[modo]
+
+
+def metrica_principal_para_tarefa(tipo_tarefa: str) -> str:
+    """Resolve a metrica principal esperada para cada tipo de tarefa."""
+    return "r2" if tipo_tarefa == "regressao" else "acuracia"
 
 
 def configuracoes_para_dataset(
@@ -200,7 +217,7 @@ def agregar_resultados(resultados: list[dict[str, Any]], tipo_tarefa: str) -> li
     for linha in resultados:
         agrupados.setdefault(str(linha["nome"]), []).append(linha)
 
-    metrica_principal = "r2" if tipo_tarefa == "regressao" else "acuracia"
+    metrica_principal = metrica_principal_para_tarefa(tipo_tarefa)
     agregados = []
     for nome, linhas in agrupados.items():
         principal = [float(linha[metrica_principal]) for linha in linhas]
@@ -234,8 +251,34 @@ def agregar_resultados(resultados: list[dict[str, Any]], tipo_tarefa: str) -> li
     return agregados
 
 
+def _vencedor_relatorio(relatorio: dict[str, Any]) -> dict[str, Any]:
+    """Extrai uma linha curta com o melhor experimento do relatorio."""
+    resumo = relatorio["summary"]
+    if not resumo:
+        return {
+            "dataset": relatorio["dataset"],
+            "modo": relatorio["tipo_tarefa"],
+            "nome": "sem_resultados",
+            "metrica_principal": metrica_principal_para_tarefa(relatorio["tipo_tarefa"]),
+            "score": 0.0,
+        }
+    vencedor = resumo[0]
+    metrica = str(vencedor["metrica_principal"])
+    return {
+        "dataset": relatorio["dataset"],
+        "modo": relatorio["tipo_tarefa"],
+        "nome": vencedor["nome"],
+        "metrica_principal": metrica,
+        "score": float(vencedor[f"{metrica}_media"]),
+        "runs": vencedor["runs"],
+    }
+
+
 def executar_benchmark(
-    dataset_nome: str, amostras: int, seeds: list[int], epochs: int
+    dataset_nome: str,
+    amostras: int,
+    seeds: list[int],
+    epochs: int,
 ) -> dict[str, Any]:
     """Executa benchmark com varias seeds e gera relatorio agregado."""
     dataset_base = carregar_dataset(dataset_nome, seed=seeds[0], samples=amostras)
@@ -257,10 +300,121 @@ def executar_benchmark(
             avaliacao = avaliar_modelo(rede, splits["X_test"], splits["y_test"])
             resultados.append(_linha_resultado(nome, dataset, seed, resumo, avaliacao))
 
-    return {
+    summary = agregar_resultados(resultados, dataset_base.tipo_tarefa)
+    relatorio = {
+        "suite": False,
         "dataset": dataset_base.nome,
+        "datasets": [dataset_base.nome],
         "tipo_tarefa": dataset_base.tipo_tarefa,
         "seeds": seeds,
         "raw_results": resultados,
-        "summary": agregar_resultados(resultados, dataset_base.tipo_tarefa),
+        "summary": summary,
     }
+    relatorio["leaderboard"] = [_vencedor_relatorio(relatorio)]
+    return relatorio
+
+
+def executar_suite_benchmark(
+    dataset_nomes: list[str],
+    amostras: int,
+    seeds: list[int],
+    epochs: int,
+) -> dict[str, Any]:
+    """Executa benchmarks para varios datasets e concatena os resultados."""
+    reports = [
+        executar_benchmark(nome, amostras=amostras, seeds=seeds, epochs=epochs)
+        for nome in dataset_nomes
+    ]
+    raw_results = [linha for report in reports for linha in report["raw_results"]]
+    summary = [linha for report in reports for linha in report["summary"]]
+    leaderboard = [_vencedor_relatorio(report) for report in reports]
+
+    return {
+        "suite": True,
+        "dataset": "suite",
+        "datasets": dataset_nomes,
+        "tipo_tarefa": (
+            "misto"
+            if len({report["tipo_tarefa"] for report in reports}) > 1
+            else reports[0]["tipo_tarefa"]
+        ),
+        "seeds": seeds,
+        "reports": reports,
+        "raw_results": raw_results,
+        "summary": summary,
+        "leaderboard": leaderboard,
+    }
+
+
+def _formatar_numero(valor: Any) -> str:
+    """Formata valores numericos para relatorios humanos."""
+    if isinstance(valor, float):
+        return f"{valor:.4f}"
+    return str(valor)
+
+
+def _tabela_markdown(colunas: list[str], linhas: list[dict[str, Any]]) -> str:
+    """Monta uma tabela Markdown simples."""
+    cabecalho = "| " + " | ".join(colunas) + " |"
+    separador = "| " + " | ".join("---" for _ in colunas) + " |"
+    corpo = [
+        "| " + " | ".join(_formatar_numero(linha.get(coluna, "")) for coluna in colunas) + " |"
+        for linha in linhas
+    ]
+    return "\n".join([cabecalho, separador, *corpo]) if corpo else "\n".join([cabecalho, separador])
+
+
+def _renderizar_relatorio_individual(relatorio: dict[str, Any]) -> str:
+    """Renderiza a secao Markdown de um benchmark individual."""
+    resumo = relatorio["summary"]
+    colunas = [
+        "ranking",
+        "nome",
+        "runs",
+        f"{metrica_principal_para_tarefa(relatorio['tipo_tarefa'])}_media",
+        f"{metrica_principal_para_tarefa(relatorio['tipo_tarefa'])}_desvio",
+        "loss_media",
+        "mse_media",
+    ]
+    if relatorio["tipo_tarefa"] == "regressao":
+        colunas.extend(["mae_media", "rmse_media"])
+    elif relatorio["tipo_tarefa"] == "classificacao_multiclasse":
+        colunas.append("f1_macro_media")
+    else:
+        colunas.append("f1_media")
+
+    linhas = [
+        f"## Dataset `{relatorio['dataset']}`",
+        "",
+        f"- Tipo de tarefa: `{relatorio['tipo_tarefa']}`",
+        f"- Seeds: `{', '.join(str(seed) for seed in relatorio['seeds'])}`",
+        f"- Total de execucoes: `{len(relatorio['raw_results'])}`",
+        "",
+        _tabela_markdown(colunas, resumo),
+    ]
+    return "\n".join(linhas)
+
+
+def gerar_relatorio_markdown(relatorio: dict[str, Any]) -> str:
+    """Converte um relatorio de benchmark em Markdown legivel para docs ou artefatos."""
+    if relatorio.get("suite"):
+        linhas = [
+            "# Relatorio de Benchmark",
+            "",
+            "Esta suite executa varios datasets em sequencia. "
+            "Os scores entre tarefas diferentes nao sao diretamente comparaveis, "
+            "entao o foco e observar o melhor modelo dentro de cada dataset.",
+            "",
+            "## Vencedores por dataset",
+            "",
+            _tabela_markdown(
+                ["dataset", "modo", "nome", "metrica_principal", "score", "runs"],
+                relatorio["leaderboard"],
+            ),
+            "",
+        ]
+        for report in relatorio["reports"]:
+            linhas.extend([_renderizar_relatorio_individual(report), ""])
+        return "\n".join(linhas).strip() + "\n"
+
+    return _renderizar_relatorio_individual(relatorio).strip() + "\n"

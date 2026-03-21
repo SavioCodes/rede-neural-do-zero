@@ -1,6 +1,12 @@
 include README.md
 include LICENSE
+include CHANGELOG.md
+include CONTRIBUTING.md
+include ROADMAP.md
 include mkdocs.yml
 recursive-include docs *.md *.css
+recursive-include configs *.json *.toml *.yaml *.md
+recursive-include experiments *.md *.yaml
 recursive-include notebooks *.ipynb
 recursive-include src/datasets *.csv
+recursive-include scripts *.py

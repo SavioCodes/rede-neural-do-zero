@@ -1,0 +1,31 @@
+name: Bug report
+description: Reporte um problema reproduzivel no projeto.
+title: "[Bug]: "
+labels:
+  - bug
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Descricao
+      description: O que aconteceu e qual era o comportamento esperado?
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Como reproduzir
+      description: Inclua comandos, configs, dataset e passos minimos.
+      placeholder: |
+        1. Rode `python -m src train ...`
+        2. Use o config `configs/...`
+        3. Veja o erro
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Ambiente
+      description: Python, sistema operacional e versao do projeto.
+    validations:
+      required: true

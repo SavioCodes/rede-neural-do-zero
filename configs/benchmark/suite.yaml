@@ -1,0 +1,8 @@
+common:
+  samples: 240
+  epochs: 90
+  seeds: "42,52,62"
+
+benchmark:
+  datasets: "binario,iris,wine,diabetes"
+  output_dir: "logs/benchmark-suite"

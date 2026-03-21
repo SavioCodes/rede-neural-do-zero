@@ -108,6 +108,30 @@ class TestConfigsAndCallbacks(unittest.TestCase):
 
         self.assertEqual(resumo["motivo_parada"], "early_stopping")
         self.assertLess(resumo["epocas_executadas"], 20)
+        self.assertGreaterEqual(rede._melhor_epoch_callback, 1)
+
+    def test_model_checkpoint_com_estado_completo(self) -> None:
+        with tempfile.TemporaryDirectory() as diretorio:
+            checkpoint = ModelCheckpoint(
+                os.path.join(diretorio, "checkpoint-epoca-{epoch}.npz"),
+                monitor="loss",
+                save_best_only=False,
+                save_training_state=True,
+            )
+            rede = RedeNeural([2, 4, 1], ativacao="sigmoid", seed=30)
+            rede.treinar(
+                self.X,
+                self.y,
+                epochs=4,
+                taxa_aprendizado=0.05,
+                batch_size=2,
+                otimizador="adam",
+                callbacks=[checkpoint],
+                verbose=False,
+            )
+
+            self.assertIsNotNone(checkpoint.ultimo_caminho_salvo)
+            self.assertTrue(os.path.exists(checkpoint.ultimo_caminho_salvo))
 
 
 class TestMulticlassAndRegularization(unittest.TestCase):

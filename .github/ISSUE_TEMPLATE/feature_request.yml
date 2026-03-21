@@ -1,0 +1,25 @@
+name: Feature request
+description: Sugira uma melhoria para o projeto.
+title: "[Feature]: "
+labels:
+  - enhancement
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problema ou oportunidade
+      description: Que dor ou limitacao voce quer resolver?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposta
+      description: Descreva a melhoria desejada.
+    validations:
+      required: true
+  - type: textarea
+    id: docs
+    attributes:
+      label: Impacto em docs e CLI
+      description: Quais comandos, exemplos ou paginas precisariam ser atualizados?

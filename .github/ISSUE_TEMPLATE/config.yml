@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Releases
+    url: https://github.com/SavioCodes/rede-neural-do-zero/releases
+    about: Consulte as releases oficiais antes de abrir uma issue.
+  - name: Tags
+    url: https://github.com/SavioCodes/rede-neural-do-zero/tags
+    about: Veja as versoes publicadas do projeto.

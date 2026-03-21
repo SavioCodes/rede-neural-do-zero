@@ -1,0 +1,13 @@
+nome: iris-baseline
+descricao: Treino baseline multiclasse usando o dataset Iris com a CLI oficial.
+comando:
+  - python
+  - -m
+  - src
+  - train
+  - --config
+  - configs/train/iris.yaml
+artefatos_esperados:
+  - experiments/runs/iris-baseline/train-summary.json
+  - experiments/runs/iris-baseline/model-checkpoint.npz
+  - experiments/runs/iris-baseline/effective-config.json

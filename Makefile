@@ -1,4 +1,4 @@
-.PHONY: install install-dev test test-cov lint typecheck eval benchmark format verify build docs docs-serve clean
+.PHONY: install install-dev test test-cov lint typecheck eval benchmark format docs docs-serve build verify notebooks clean
 
 install:
 	python -m pip install -r requirements.txt
@@ -16,27 +16,32 @@ lint:
 	python -m ruff check .
 
 typecheck:
-	python -m mypy src
+	python -m mypy src rede_neural_do_zero
 
 format:
-	python -m black src tests scripts examples
+	python -m black src tests scripts examples rede_neural_do_zero
 
 eval:
-	python scripts/evaluate.py --seed 42 --epochs 500 --samples 300
+	python -m src evaluate --dataset binario --seed 42 --epochs 180 --samples 240
 
 benchmark:
-	python scripts/benchmark.py --mode binario --samples 240 --epochs 120
+	python -m src benchmark --config configs/benchmark/suite.yaml
+
+notebooks:
+	python scripts/validate_notebooks.py
+	python scripts/export_notebooks_to_docs.py
 
 build:
-	python -m build
+	python -m src build-package --check
 
 docs:
-	python -m mkdocs build --strict
+	python -m src build-docs --strict
 
 docs-serve:
 	python -m mkdocs serve
 
-verify: lint typecheck test-cov eval
+verify:
+	python -m src verify --build-package
 
 clean:
-	python -c "from pathlib import Path; [p.unlink() for p in Path('logs').glob('eval-*.json*')]"
+	python -c "from pathlib import Path; [p.unlink() for p in Path('logs').glob('*') if p.is_file() and p.name != '.gitkeep']"

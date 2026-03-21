@@ -5,7 +5,7 @@ from __future__ import annotations
 import csv
 from importlib import resources
 from pathlib import Path
-from typing import Optional, Sequence, Tuple
+from typing import Any, Optional, Sequence, Tuple
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -655,6 +655,21 @@ class FileUtils:
                 writer.writerow(row)
 
         print(f"Dados salvos em: {caminho_arquivo}")
+
+    @staticmethod
+    def salvar_linhas_csv(linhas: list[dict[str, Any]], caminho: str) -> None:
+        """Persiste uma lista de dicionarios, preenchendo colunas ausentes com vazio."""
+        if not linhas:
+            raise ValueError("linhas nao pode ser vazio.")
+
+        fieldnames: list[str] = []
+        for linha in linhas:
+            for chave in linha.keys():
+                if chave not in fieldnames:
+                    fieldnames.append(chave)
+
+        dados = {chave: [linha.get(chave, "") for linha in linhas] for chave in fieldnames}
+        FileUtils.salvar_csv(dados, caminho)
 
     @staticmethod
     def carregar_csv(caminho: str) -> dict:

@@ -1,0 +1,7 @@
+[evaluate]
+dataset = "diabetes"
+samples = 442
+epochs = 220
+seed = 42
+min_score = 0.20
+output = "logs/evaluate-diabetes.json"

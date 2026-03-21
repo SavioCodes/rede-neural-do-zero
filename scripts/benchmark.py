@@ -1,283 +1,26 @@
 #!/usr/bin/env python3
-"""Benchmark mais serio com multiplas seeds e ranking agregado."""
+"""Entrypoint de benchmark reutilizando a camada oficial de `src.benchmarking`."""
 
 from __future__ import annotations
 
 import argparse
 import json
-import statistics
 import sys
 from pathlib import Path
-from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from src import FileUtils, ModelConfig, RedeNeural, TrainingConfig  # noqa: E402
-from src.experiments import (  # noqa: E402
-    DatasetBundle,
-    avaliar_modelo,
-    carregar_dataset,
-    dividir_treino_validacao_teste,
+from src import FileUtils  # noqa: E402
+from src.benchmarking import (  # noqa: E402
+    executar_benchmark,
+    executar_suite_benchmark,
+    gerar_relatorio_markdown,
+    nome_dataset_padrao,
+    parse_datasets,
+    parse_seeds,
 )
-
-
-def _parse_seeds(texto: str) -> list[int]:
-    seeds = [int(parte.strip()) for parte in texto.split(",") if parte.strip()]
-    if not seeds:
-        raise ValueError("Forneca pelo menos uma seed em --seeds.")
-    return seeds
-
-
-def _nome_dataset_padrao(modo: str) -> str:
-    return {
-        "binario": "binario",
-        "multiclasse": "iris",
-        "regressao": "diabetes",
-    }[modo]
-
-
-def _configuracoes_para_dataset(
-    dataset: DatasetBundle, seed: int, epochs: int
-) -> list[tuple[str, ModelConfig, TrainingConfig]]:
-    tipo = dataset.tipo_tarefa
-    input_dim = int(dataset.X.shape[1])
-
-    if tipo == "regressao":
-        return [
-            (
-                "relu_adam",
-                ModelConfig(
-                    arquitetura=[input_dim, 32, 16, 1],
-                    ativacao="relu",
-                    inicializacao="he",
-                    seed=seed,
-                    funcao_custo="mse",
-                    ativacao_saida="linear",
-                ),
-                TrainingConfig(
-                    epochs=epochs,
-                    taxa_aprendizado=0.01,
-                    batch_size=32,
-                    otimizador="adam",
-                    paciencia=35,
-                    l2_lambda=1e-4,
-                    gradient_clip=1.0,
-                    verbose=False,
-                ),
-            ),
-            (
-                "tanh_adam_reg",
-                ModelConfig(
-                    arquitetura=[input_dim, 24, 12, 1],
-                    ativacao="tanh",
-                    inicializacao="xavier",
-                    seed=seed + 1,
-                    funcao_custo="mse",
-                    ativacao_saida="linear",
-                ),
-                TrainingConfig(
-                    epochs=epochs,
-                    taxa_aprendizado=0.008,
-                    batch_size=24,
-                    otimizador="adam",
-                    paciencia=35,
-                    l2_lambda=1e-3,
-                    verbose=False,
-                ),
-            ),
-        ]
-
-    output_dim = (
-        1 if tipo == "classificacao_binaria" else int(len(set(dataset.y.reshape(-1).tolist())))
-    )
-    funcao_custo = "binary_crossentropy" if output_dim == 1 else "categorical_crossentropy"
-
-    configuracoes = [
-        (
-            "relu_adam",
-            ModelConfig(
-                arquitetura=(
-                    [input_dim, 16, 12, output_dim] if output_dim > 1 else [input_dim, 10, 1]
-                ),
-                ativacao="relu",
-                inicializacao="he",
-                seed=seed,
-                funcao_custo=funcao_custo,
-            ),
-            TrainingConfig(
-                epochs=epochs,
-                taxa_aprendizado=0.01,
-                batch_size=16,
-                otimizador="adam",
-                paciencia=25,
-                gradient_clip=1.0,
-                verbose=False,
-            ),
-        ),
-        (
-            "tanh_adam_reg",
-            ModelConfig(
-                arquitetura=[input_dim, 12, output_dim] if output_dim > 1 else [input_dim, 8, 1],
-                ativacao="tanh",
-                inicializacao="xavier",
-                seed=seed + 1,
-                funcao_custo=funcao_custo,
-            ),
-            TrainingConfig(
-                epochs=epochs,
-                taxa_aprendizado=0.01,
-                batch_size=12 if output_dim > 1 else 16,
-                otimizador="adam",
-                paciencia=25,
-                l2_lambda=1e-3,
-                dropout=0.1 if output_dim > 1 else 0.0,
-                verbose=False,
-            ),
-        ),
-    ]
-
-    if output_dim == 1:
-        configuracoes.append(
-            (
-                "sigmoid_sgd",
-                ModelConfig(
-                    arquitetura=[input_dim, 8, 1],
-                    ativacao="sigmoid",
-                    inicializacao="xavier",
-                    seed=seed + 2,
-                    funcao_custo="binary_crossentropy",
-                ),
-                TrainingConfig(
-                    epochs=epochs,
-                    taxa_aprendizado=0.1,
-                    batch_size=None,
-                    otimizador="sgd",
-                    verbose=False,
-                ),
-            )
-        )
-
-    return configuracoes
-
-
-def _linha_resultado(
-    nome_configuracao: str,
-    dataset: DatasetBundle,
-    seed: int,
-    resumo: dict[str, Any],
-    avaliacao: dict[str, Any],
-) -> dict[str, Any]:
-    linha = {
-        "nome": nome_configuracao,
-        "dataset": dataset.nome,
-        "modo": dataset.tipo_tarefa,
-        "seed": seed,
-        "loss": float(avaliacao["loss"]),
-        "mse": float(avaliacao["mse"]),
-        "epochs": int(resumo["epocas_executadas"]),
-        "otimizador": resumo["otimizador"],
-        "batch_size": resumo["batch_size"],
-    }
-
-    if dataset.tipo_tarefa == "regressao":
-        linha["mae"] = float(avaliacao["mae"])
-        linha["rmse"] = float(avaliacao["rmse"])
-        linha["r2"] = float(avaliacao["r2"])
-    elif dataset.tipo_tarefa == "classificacao_multiclasse":
-        metricas = avaliacao["metricas_classificacao"]
-        linha["acuracia"] = float(avaliacao["acuracia"])
-        linha["f1_macro"] = float(metricas["f1_macro"])
-    else:
-        metricas = avaliacao["metricas_classificacao"]
-        linha["acuracia"] = float(avaliacao["acuracia"])
-        linha["f1"] = float(metricas["f1_score"])
-
-    return linha
-
-
-def _agregar_resultados(resultados: list[dict[str, Any]], tipo_tarefa: str) -> list[dict[str, Any]]:
-    agrupados: dict[str, list[dict[str, Any]]] = {}
-    for linha in resultados:
-        agrupados.setdefault(str(linha["nome"]), []).append(linha)
-
-    if tipo_tarefa == "regressao":
-        metrica_principal = "r2"
-        ordenar_reverso = True
-    else:
-        metrica_principal = "acuracia"
-        ordenar_reverso = True
-
-    agregados = []
-    for nome, linhas in agrupados.items():
-        media_principal = statistics.mean(float(linha[metrica_principal]) for linha in linhas)
-        desvio_principal = (
-            statistics.stdev(float(linha[metrica_principal]) for linha in linhas)
-            if len(linhas) > 1
-            else 0.0
-        )
-
-        linha_agregada = {
-            "nome": nome,
-            "dataset": linhas[0]["dataset"],
-            "modo": linhas[0]["modo"],
-            "runs": len(linhas),
-            f"{metrica_principal}_media": media_principal,
-            f"{metrica_principal}_desvio": desvio_principal,
-            "loss_media": statistics.mean(float(linha["loss"]) for linha in linhas),
-            "mse_media": statistics.mean(float(linha["mse"]) for linha in linhas),
-        }
-        if tipo_tarefa == "regressao":
-            linha_agregada["mae_media"] = statistics.mean(float(linha["mae"]) for linha in linhas)
-            linha_agregada["rmse_media"] = statistics.mean(float(linha["rmse"]) for linha in linhas)
-        elif tipo_tarefa == "classificacao_multiclasse":
-            linha_agregada["f1_macro_media"] = statistics.mean(
-                float(linha["f1_macro"]) for linha in linhas
-            )
-        else:
-            linha_agregada["f1_media"] = statistics.mean(float(linha["f1"]) for linha in linhas)
-        agregados.append(linha_agregada)
-
-    agregados.sort(
-        key=lambda linha: float(linha[f"{metrica_principal}_media"]), reverse=ordenar_reverso
-    )
-    for indice, linha in enumerate(agregados, start=1):
-        linha["ranking"] = indice
-        linha["metrica_principal"] = metrica_principal
-    return agregados
-
-
-def executar_benchmark(
-    dataset_nome: str, amostras: int, seeds: list[int], epochs: int
-) -> dict[str, Any]:
-    dataset_base = carregar_dataset(dataset_nome, seed=seeds[0], samples=amostras)
-    resultados: list[dict[str, Any]] = []
-
-    for seed in seeds:
-        dataset = carregar_dataset(dataset_nome, seed=seed, samples=amostras)
-        splits = dividir_treino_validacao_teste(dataset.X, dataset.y, seed=seed)
-
-        for nome, model_config, train_config in _configuracoes_para_dataset(dataset, seed, epochs):
-            rede = RedeNeural.from_config(model_config)
-            resumo = rede.treinar_com_config(
-                splits["X_train"],
-                splits["y_train"],
-                train_config,
-                validacao_X=splits["X_val"],
-                validacao_y=splits["y_val"],
-            )
-            avaliacao = avaliar_modelo(rede, splits["X_test"], splits["y_test"])
-            resultados.append(_linha_resultado(nome, dataset, seed, resumo, avaliacao))
-
-    agregados = _agregar_resultados(resultados, dataset_base.tipo_tarefa)
-    return {
-        "dataset": dataset_base.nome,
-        "tipo_tarefa": dataset_base.tipo_tarefa,
-        "seeds": seeds,
-        "raw_results": resultados,
-        "summary": agregados,
-    }
 
 
 def main() -> None:
@@ -286,37 +29,53 @@ def main() -> None:
         "--mode", choices=["binario", "multiclasse", "regressao"], default="binario"
     )
     parser.add_argument("--dataset", type=str, default=None)
+    parser.add_argument("--datasets", type=str, default=None)
     parser.add_argument("--samples", type=int, default=240)
     parser.add_argument("--epochs", type=int, default=120)
     parser.add_argument("--seeds", type=str, default="42,52,62")
     parser.add_argument("--json-output", type=Path, default=Path("logs/benchmark.json"))
     parser.add_argument("--csv-output", type=Path, default=Path("logs/benchmark-summary.csv"))
     parser.add_argument("--raw-csv-output", type=Path, default=Path("logs/benchmark-runs.csv"))
+    parser.add_argument(
+        "--leaderboard-output",
+        type=Path,
+        default=Path("logs/benchmark-leaderboard.csv"),
+    )
+    parser.add_argument(
+        "--markdown-output",
+        type=Path,
+        default=Path("logs/benchmark-report.md"),
+    )
     args = parser.parse_args()
 
-    dataset_nome = args.dataset or _nome_dataset_padrao(args.mode)
-    seeds = _parse_seeds(args.seeds)
-    relatorio = executar_benchmark(dataset_nome, args.samples, seeds, args.epochs)
+    seeds = parse_seeds(args.seeds)
+    dataset_nomes = (
+        parse_datasets(args.datasets)
+        if args.datasets
+        else [args.dataset or nome_dataset_padrao(args.mode)]
+    )
+    if len(dataset_nomes) == 1:
+        relatorio = executar_benchmark(dataset_nomes[0], args.samples, seeds, args.epochs)
+    else:
+        relatorio = executar_suite_benchmark(dataset_nomes, args.samples, seeds, args.epochs)
 
     args.json_output.parent.mkdir(parents=True, exist_ok=True)
+    args.markdown_output.parent.mkdir(parents=True, exist_ok=True)
     args.json_output.write_text(json.dumps(relatorio, indent=2), encoding="utf-8")
+    args.markdown_output.write_text(gerar_relatorio_markdown(relatorio), encoding="utf-8")
 
     resumo = relatorio["summary"]
     brutos = relatorio["raw_results"]
-    FileUtils.salvar_csv(
-        {chave: [linha[chave] for linha in resumo] for chave in resumo[0].keys()},
-        str(args.csv_output),
-    )
-    FileUtils.salvar_csv(
-        {chave: [linha[chave] for linha in brutos] for chave in brutos[0].keys()},
-        str(args.raw_csv_output),
-    )
+    vencedores = relatorio["leaderboard"]
+    FileUtils.salvar_linhas_csv(resumo, str(args.csv_output))
+    FileUtils.salvar_linhas_csv(brutos, str(args.raw_csv_output))
+    FileUtils.salvar_linhas_csv(vencedores, str(args.leaderboard_output))
 
     print("Benchmark concluido")
-    print(f"Dataset: {relatorio['dataset']}")
-    print(f"Seeds: {relatorio['seeds']}")
-    for linha in resumo:
-        print(linha)
+    print(f"Datasets: {', '.join(dataset_nomes)}")
+    print(f"Seeds: {seeds}")
+    print(f"Saida JSON: {args.json_output}")
+    print(f"Saida Markdown: {args.markdown_output}")
 
 
 if __name__ == "__main__":

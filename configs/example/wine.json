@@ -1,0 +1,10 @@
+{
+  "example": {
+    "dataset": "wine",
+    "epochs": 140,
+    "seed": 42,
+    "save_dir": "results/example-wine",
+    "no_plots": true,
+    "no_verbose": true
+  }
+}

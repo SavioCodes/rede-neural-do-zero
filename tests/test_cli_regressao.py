@@ -16,7 +16,14 @@ import numpy as np
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 
 from src import DataUtils, RedeNeural  # noqa: E402
-from src.benchmarking import executar_benchmark  # noqa: E402
+from src.benchmarking import (  # noqa: E402
+    executar_benchmark,
+    executar_suite_benchmark,
+    gerar_relatorio_markdown,
+    parse_datasets,
+)
+from src.cli import build_parser  # noqa: E402
+from src.cli_config import aplicar_config_cli  # noqa: E402
 from src.utils import MetricUtils  # noqa: E402
 
 
@@ -154,6 +161,58 @@ class TestBenchmarkECli(unittest.TestCase):
         self.assertEqual(len(relatorio["seeds"]), 2)
         self.assertTrue(relatorio["summary"])
         self.assertIn("ranking", relatorio["summary"][0])
+        self.assertTrue(relatorio["leaderboard"])
+
+    def test_benchmark_suite_e_markdown(self) -> None:
+        relatorio = executar_suite_benchmark(
+            ["iris", "diabetes"],
+            amostras=150,
+            seeds=[2, 4],
+            epochs=25,
+        )
+
+        markdown = gerar_relatorio_markdown(relatorio)
+        self.assertTrue(relatorio["suite"])
+        self.assertEqual(relatorio["datasets"], ["iris", "diabetes"])
+        self.assertEqual(len(relatorio["leaderboard"]), 2)
+        self.assertIn("## Dataset `iris`", markdown)
+        self.assertIn("## Dataset `diabetes`", markdown)
+
+    def test_parse_datasets_remove_duplicatas(self) -> None:
+        self.assertEqual(parse_datasets("iris, wine, iris"), ["iris", "wine"])
+
+    def test_config_cli_aplica_yaml_sem_sobrescrever_flag_explicita(self) -> None:
+        with tempfile.TemporaryDirectory() as diretorio:
+            config_path = Path(diretorio) / "train.yaml"
+            config_path.write_text(
+                "\n".join(
+                    [
+                        "common:",
+                        "  no_plots: true",
+                        "train:",
+                        "  dataset: iris",
+                        "  epochs: 180",
+                        "  save_dir: experiments/runs/config-test",
+                    ]
+                ),
+                encoding="utf-8",
+            )
+
+            parser, parsers_por_comando = build_parser()
+            args = parser.parse_args(
+                ["train", "--config", str(config_path), "--epochs", "25", "--no-verbose"]
+            )
+            args, valores = aplicar_config_cli(
+                args,
+                parsers_por_comando["train"],
+                ["--config", str(config_path), "--epochs", "25", "--no-verbose"],
+            )
+
+            self.assertEqual(args.dataset, "iris")
+            self.assertEqual(args.epochs, 25)
+            self.assertEqual(args.save_dir, "experiments/runs/config-test")
+            self.assertTrue(args.no_plots)
+            self.assertIn("dataset", valores)
 
     def test_cli_train_gera_artefatos(self) -> None:
         with tempfile.TemporaryDirectory() as diretorio:
@@ -185,6 +244,29 @@ class TestBenchmarkECli(unittest.TestCase):
             payload = json.loads(summary_path.read_text(encoding="utf-8"))
             self.assertEqual(payload["dataset"], "xor")
             self.assertIn("training", payload)
+
+    def test_cli_train_com_config_gera_config_efetiva(self) -> None:
+        with tempfile.TemporaryDirectory() as diretorio:
+            save_dir = Path(diretorio) / "cli-config"
+            subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "src",
+                    "train",
+                    "--config",
+                    "configs/train/iris.yaml",
+                    "--save-dir",
+                    str(save_dir),
+                ],
+                check=True,
+                cwd=Path(__file__).resolve().parents[1],
+            )
+
+            effective_config = save_dir / "effective-config.json"
+            payload = json.loads(effective_config.read_text(encoding="utf-8"))
+            self.assertEqual(payload["dataset"], "iris")
+            self.assertEqual(payload["save_dir"], str(save_dir))
 
 
 if __name__ == "__main__":

@@ -113,8 +113,8 @@ Esse exemplo mostra:
 Rode:
 
 ```bash
-python scripts/benchmark.py --mode binario
-python scripts/benchmark.py --mode multiclasse
+python -m src benchmark --mode binario
+python -m src benchmark --config configs/benchmark/suite.yaml
 ```
 
 Isso ajuda a responder perguntas como:
@@ -128,10 +128,8 @@ Isso ajuda a responder perguntas como:
 Comandos uteis:
 
 ```bash
-python -m ruff check .
-python -m mypy src
-python -m pytest -q
-python scripts/evaluate.py
+python -m src verify
+python -m src evaluate --config configs/evaluate/diabetes.toml
 ```
 
 ## 9. Melhor jeito de continuar estudando
