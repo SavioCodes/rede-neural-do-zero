@@ -1,97 +1,128 @@
-﻿# rede-neural-do-zero
+# rede-neural-do-zero
 
 [![CI](https://github.com/SavioCodes/rede-neural-do-zero/actions/workflows/ci.yml/badge.svg)](https://github.com/SavioCodes/rede-neural-do-zero/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 [![Python](https://img.shields.io/badge/Python-3.11-blue)](https://www.python.org/)
 
-Educational neural network implementation from scratch with a reproducible evaluation pipeline.
+Implementacao educacional de uma rede neural do zero com NumPy, testes automatizados e pipeline de avaliacao reproduzivel.
 
-PT-BR: Implementacao didatica com foco em reproducibilidade e qualidade de engenharia.
+## Visao Geral
 
-## Why This Exists
+Este repositorio existe para estudar o funcionamento interno de uma rede neural sem depender de frameworks de alto nivel.
+O projeto cobre:
 
-This repository was created to understand core neural network mechanics without high-level frameworks.
-It includes training logic, utility modules, tests, and evaluation scripts.
+- inicializacao de pesos
+- forward propagation
+- backpropagation
+- funcoes de ativacao
+- utilitarios de dados e metricas
+- exemplos executaveis
+- avaliacao deterministica para CI
 
-## Architecture
+## Destaques
 
-```mermaid
-flowchart LR
-  Data[Dataset Utils] --> Preprocess[Normalization + Split]
-  Preprocess --> Model[RedeNeural]
-  Model --> Train[Backprop Training]
-  Train --> Eval[Evaluation Metrics]
-  Eval --> Logs[JSON/JSONL Logs]
-```
+- `RedeNeural(..., seed=...)` para experimentos reproduziveis sem depender do estado global do NumPy
+- validacoes de entrada para treino, previsao, split e normalizacao
+- `prever_classes()` para converter probabilidades em classes binarias
+- historico de treino e de validacao salvo no objeto
+- script de avaliacao que gera artefatos JSON e JSONL em `logs/`
 
-## Tech Stack
-
-- Python 3.8+
-- NumPy, pandas, matplotlib
-- pytest for tests
-
-## Repository Structure
+## Estrutura
 
 ```text
-src/         # Neural network implementation and helpers
-tests/       # Unit and integration tests
-examples/    # Usage examples
-docs/        # Theory and algorithm notes
-scripts/     # Reproducible evaluation scripts
-logs/        # Evaluation logs (tracked with .gitkeep)
+src/         # Implementacao principal da rede neural e utilitarios
+tests/       # Testes unitarios e de integracao
+examples/    # Exemplos de uso
+scripts/     # Scripts auxiliares, incluindo avaliacao deterministica
+docs/        # Notas teoricas e algoritmos
+logs/        # Saida da avaliacao (mantido com .gitkeep)
+data/        # Dados e notas de datasets
 ```
 
-## Quickstart
+## Setup Rapido
+
+### Windows (PowerShell)
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install -r requirements.txt
+python -m pytest -q
+```
+
+### Linux/macOS
 
 ```bash
 python -m venv .venv
-pip install -r requirements.txt
-pytest -q
+source .venv/bin/activate
+python -m pip install -r requirements.txt
+python -m pytest -q
 ```
 
-## Reproducible Evaluation
+## Uso Basico
+
+```python
+import numpy as np
+
+from src.rede_neural import RedeNeural
+from src.utils import DataUtils
+
+X, y = DataUtils.gerar_xor_dataset()
+
+rede = RedeNeural([2, 4, 1], ativacao="sigmoid", inicializacao="xavier", seed=42)
+resumo = rede.treinar(X, y, epochs=2000, taxa_aprendizado=0.5, verbose=False)
+
+probabilidades = rede.prever(X)
+classes = rede.prever_classes(X)
+metricas = rede.avaliar(X, y)
+
+print(resumo)
+print(probabilidades)
+print(classes)
+print(metricas["acuracia"])
+```
+
+## Avaliacao Reproduzivel
 
 ```bash
 python scripts/evaluate.py --seed 42 --epochs 500 --samples 300
 ```
 
-The script writes:
+Arquivos gerados:
 
 - `logs/eval-summary.json`
 - `logs/eval-history.jsonl`
 
-## Test and Quality Gates
+O sumario salvo inclui configuracao do modelo, seed, metrica de erro, acuracia, precisao, recall e F1-score.
+
+## Qualidade
+
+Comandos principais:
 
 ```bash
-pytest -q
+python -m pytest -q
 python scripts/evaluate.py --seed 42 --epochs 400 --samples 240
 ```
 
-## Operational Signals
+CI atual:
 
-- The repo uses deterministic evaluation to keep results comparable and reduce CI noise.
-- Theory notes, scripts, and generated logs are tracked as part of the engineering story, not split from the implementation.
-- The experiment loop is reproducible from the terminal, producing JSON and JSONL artifacts from a fixed-seed run.
+- executa testes automatizados
+- roda um smoke test deterministico da avaliacao
+- usa Python 3.11
 
-```bash
-pytest -q
-python scripts/evaluate.py --seed 42 --epochs 400 --samples 240
-```
+## Decisoes de Projeto
 
-## Technical Decisions and Trade-offs
+- O foco e aprendizado e clareza, nao performance de producao.
+- A camada de saida usa sigmoid para classificacao binaria.
+- A avaliacao e deterministicamente configurada para reduzir flakiness na CI.
+- Os utilitarios evitam alterar o estado global do gerador aleatorio quando recebem `random_state`.
 
-- Framework-free implementation improves learning depth at the cost of production features.
-- Deterministic evaluation (fixed seed) reduces CI flakiness.
-- JSON/JSONL logs are lightweight and portable for future experiment tracking.
+## Proximos Passos
 
-## Roadmap
+- adicionar comparacoes de hiperparametros com exportacao de resultados
+- gerar artefatos de visualizacao para analise de fronteira de decisao
+- expandir exemplos com persistencia de modelos e avaliacao em datasets customizados
 
-- [ ] Add richer experiment configurations (learning-rate sweeps)
-- [ ] Add confusion-matrix plot export in CI artifacts
-- [ ] Add notebook-free benchmark report generation
+## Licenca
 
-## License
-
-MIT. See [LICENSE](./LICENSE).
-
-PT-BR: Este projeto continua sendo um material educacional aberto para estudo de redes neurais artificiais.
+MIT. Veja [LICENSE](./LICENSE).

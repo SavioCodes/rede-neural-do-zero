@@ -7,175 +7,213 @@ import numpy as np
 import matplotlib.pyplot as plt
 from typing import Tuple, Optional
 import csv
-import os
+from pathlib import Path
 
 
 class DataUtils:
     """UtilitÃ¡rios para manipulaÃ§Ã£o e geraÃ§Ã£o de dados."""
-    
+
+    @staticmethod
+    def _garantir_array_2d(X: np.ndarray, nome: str) -> np.ndarray:
+        X_array = np.asarray(X, dtype=float)
+        if X_array.ndim != 2:
+            raise ValueError(f"{nome} deve ter formato 2D: (amostras, features).")
+        if X_array.shape[0] == 0:
+            raise ValueError(f"{nome} precisa ter pelo menos uma amostra.")
+        if not np.all(np.isfinite(X_array)):
+            raise ValueError(f"{nome} precisa conter apenas valores finitos.")
+        return X_array
+
     @staticmethod
     def gerar_xor_dataset() -> Tuple[np.ndarray, np.ndarray]:
         """
         Gera o dataset clÃ¡ssico XOR.
-        
+
         Returns:
             tuple: (X, y) onde X sÃ£o as entradas e y sÃ£o as saÃ­das
         """
-        X = np.array([
-            [0, 0],
-            [0, 1],
-            [1, 0],
-            [1, 1]
-        ])
-        
-        y = np.array([
-            [0],
-            [1],
-            [1],
-            [0]
-        ])
-        
+        X = np.array(
+            [
+                [0, 0],
+                [0, 1],
+                [1, 0],
+                [1, 1],
+            ],
+            dtype=float,
+        )
+
+        y = np.array([[0], [1], [1], [0]], dtype=float)
+
         return X, y
-    
+
     @staticmethod
-    def gerar_dataset_classificacao(n_samples: int = 1000, n_features: int = 2, 
-                                   noise: float = 0.1, random_state: int = 42) -> Tuple[np.ndarray, np.ndarray]:
+    def gerar_dataset_classificacao(
+        n_samples: int = 1000,
+        n_features: int = 2,
+        noise: float = 0.1,
+        random_state: Optional[int] = 42,
+    ) -> Tuple[np.ndarray, np.ndarray]:
         """
         Gera um dataset sintÃ©tico para classificaÃ§Ã£o binÃ¡ria.
-        
+
         Args:
             n_samples: NÃºmero de amostras
             n_features: NÃºmero de features
             noise: NÃ­vel de ruÃ­do
             random_state: Seed para reprodutibilidade
-            
+
         Returns:
             tuple: (X, y) dataset gerado
         """
-        np.random.seed(random_state)
-        
-        # Gerar duas classes
-        n_per_class = n_samples // 2
-        
-        # Classe 0: centrada em (-1, -1)
-        X_class0 = np.random.multivariate_normal(
-            mean=[-1, -1], 
-            cov=[[1, 0.5], [0.5, 1]], 
-            size=n_per_class
-        )
-        y_class0 = np.zeros((n_per_class, 1))
-        
-        # Classe 1: centrada em (1, 1)
-        X_class1 = np.random.multivariate_normal(
-            mean=[1, 1], 
-            cov=[[1, -0.5], [-0.5, 1]], 
-            size=n_per_class
-        )
-        y_class1 = np.ones((n_per_class, 1))
-        
-        # Combinar dados
+        if n_samples < 2:
+            raise ValueError("n_samples precisa ser pelo menos 2.")
+        if n_features < 2:
+            raise ValueError("n_features precisa ser pelo menos 2.")
+        if noise < 0:
+            raise ValueError("noise nao pode ser negativo.")
+
+        rng = np.random.default_rng(random_state)
+        n_class0 = n_samples // 2
+        n_class1 = n_samples - n_class0
+
+        media_classe0 = np.full(n_features, -1.0)
+        media_classe1 = np.full(n_features, 1.0)
+
+        cov_classe0 = np.eye(n_features)
+        cov_classe1 = np.eye(n_features)
+        cov_classe0[0, 1] = cov_classe0[1, 0] = 0.5
+        cov_classe1[0, 1] = cov_classe1[1, 0] = -0.5
+
+        X_class0 = rng.multivariate_normal(media_classe0, cov_classe0, size=n_class0)
+        X_class1 = rng.multivariate_normal(media_classe1, cov_classe1, size=n_class1)
+
+        y_class0 = np.zeros((n_class0, 1))
+        y_class1 = np.ones((n_class1, 1))
+
         X = np.vstack([X_class0, X_class1])
         y = np.vstack([y_class0, y_class1])
-        
-        # Adicionar ruÃ­do
-        X += np.random.normal(0, noise, X.shape)
-        
-        # Embaralhar
-        indices = np.random.permutation(n_samples)
-        X = X[indices]
-        y = y[indices]
-        
-        return X, y
-    
+
+        if noise:
+            X = X + rng.normal(0.0, noise, size=X.shape)
+
+        indices = rng.permutation(X.shape[0])
+        return X[indices], y[indices]
+
     @staticmethod
     def normalizar_dados(X: np.ndarray, metodo: str = 'padrao') -> Tuple[np.ndarray, dict]:
         """
         Normaliza os dados usando diferentes mÃ©todos.
-        
+
         Args:
             X: Dados de entrada
             metodo: 'padrao' (z-score), 'minmax', ou 'robusto'
-            
+
         Returns:
             tuple: (dados_normalizados, parametros_normalizacao)
         """
+        X_array = DataUtils._garantir_array_2d(X, "X")
+
         if metodo == 'padrao':
-            media = np.mean(X, axis=0)
-            desvio = np.std(X, axis=0)
+            media = np.mean(X_array, axis=0)
+            desvio = np.std(X_array, axis=0)
             desvio_seguro = np.where(desvio == 0, 1.0, desvio)
-            X_norm = (X - media) / desvio_seguro
+            X_norm = (X_array - media) / desvio_seguro
             params = {'media': media, 'desvio': desvio, 'metodo': 'padrao'}
-            
+
         elif metodo == 'minmax':
-            minimo = np.min(X, axis=0)
-            maximo = np.max(X, axis=0)
+            minimo = np.min(X_array, axis=0)
+            maximo = np.max(X_array, axis=0)
             faixa = maximo - minimo
             faixa_segura = np.where(faixa == 0, 1.0, faixa)
-            X_norm = (X - minimo) / faixa_segura
+            X_norm = (X_array - minimo) / faixa_segura
             params = {'minimo': minimo, 'maximo': maximo, 'metodo': 'minmax'}
-            
+
         elif metodo == 'robusto':
-            mediana = np.median(X, axis=0)
-            iqr = np.percentile(X, 75, axis=0) - np.percentile(X, 25, axis=0)
+            mediana = np.median(X_array, axis=0)
+            iqr = np.percentile(X_array, 75, axis=0) - np.percentile(X_array, 25, axis=0)
             iqr_seguro = np.where(iqr == 0, 1.0, iqr)
-            X_norm = (X - mediana) / iqr_seguro
+            X_norm = (X_array - mediana) / iqr_seguro
             params = {'mediana': mediana, 'iqr': iqr, 'metodo': 'robusto'}
-            
+
         else:
             raise ValueError(f"MÃ©todo '{metodo}' nÃ£o reconhecido. Use 'padrao', 'minmax' ou 'robusto'.")
-        
+
         return X_norm, params
-    
+
     @staticmethod
     def aplicar_normalizacao(X: np.ndarray, params: dict) -> np.ndarray:
         """
         Aplica normalizaÃ§Ã£o usando parÃ¢metros salvos.
-        
+
         Args:
             X: Dados para normalizar
             params: ParÃ¢metros de normalizaÃ§Ã£o salvos
-            
+
         Returns:
             np.ndarray: Dados normalizados
         """
+        if 'metodo' not in params:
+            raise ValueError("params precisa conter a chave 'metodo'.")
+
+        X_array = DataUtils._garantir_array_2d(X, "X")
         metodo = params['metodo']
-        
+
         if metodo == 'padrao':
             desvio_seguro = np.where(params['desvio'] == 0, 1.0, params['desvio'])
-            return (X - params['media']) / desvio_seguro
-        elif metodo == 'minmax':
+            return (X_array - params['media']) / desvio_seguro
+        if metodo == 'minmax':
             faixa = params['maximo'] - params['minimo']
             faixa_segura = np.where(faixa == 0, 1.0, faixa)
-            return (X - params['minimo']) / faixa_segura
-        elif metodo == 'robusto':
+            return (X_array - params['minimo']) / faixa_segura
+        if metodo == 'robusto':
             iqr_seguro = np.where(params['iqr'] == 0, 1.0, params['iqr'])
-            return (X - params['mediana']) / iqr_seguro
-    
+            return (X_array - params['mediana']) / iqr_seguro
+
+        raise ValueError(f"MÃ©todo '{metodo}' nÃ£o reconhecido nos parÃ¢metros salvos.")
+
     @staticmethod
-    def dividir_treino_teste(X: np.ndarray, y: np.ndarray, 
-                           test_size: float = 0.2, random_state: int = 42) -> Tuple[np.ndarray, ...]:
+    def dividir_treino_teste(
+        X: np.ndarray,
+        y: np.ndarray,
+        test_size: float = 0.2,
+        random_state: Optional[int] = 42,
+    ) -> Tuple[np.ndarray, ...]:
         """
         Divide os dados em treino e teste.
-        
+
         Args:
             X: Features
             y: Labels
             test_size: ProporÃ§Ã£o para teste (0.0 a 1.0)
             random_state: Seed para reprodutibilidade
-            
+
         Returns:
             tuple: (X_train, X_test, y_train, y_test)
         """
-        np.random.seed(random_state)
-        n_samples = X.shape[0]
-        n_test = int(n_samples * test_size)
-        
-        # Indices aleatÃ³rios
-        indices = np.random.permutation(n_samples)
+        if not 0 < test_size < 1:
+            raise ValueError("test_size precisa estar entre 0 e 1.")
+
+        X_array = DataUtils._garantir_array_2d(X, "X")
+        y_array = DataUtils._garantir_array_2d(y, "y")
+
+        if X_array.shape[0] != y_array.shape[0]:
+            raise ValueError("X e y precisam ter a mesma quantidade de amostras.")
+
+        n_samples = X_array.shape[0]
+        n_test = int(round(n_samples * test_size))
+        n_test = min(max(n_test, 1), n_samples - 1)
+
+        rng = np.random.default_rng(random_state)
+        indices = rng.permutation(n_samples)
         test_indices = indices[:n_test]
         train_indices = indices[n_test:]
-        
-        return X[train_indices], X[test_indices], y[train_indices], y[test_indices]
+
+        return (
+            X_array[train_indices],
+            X_array[test_indices],
+            y_array[train_indices],
+            y_array[test_indices],
+        )
 
 
 class VisualizationUtils:
@@ -211,10 +249,14 @@ class VisualizationUtils:
         plt.tight_layout()
         
         if salvar:
-            plt.savefig(salvar, dpi=300, bbox_inches='tight')
-            print(f"GrÃ¡fico salvo em: {salvar}")
-        
+            caminho_saida = Path(salvar)
+            if caminho_saida.parent != Path('.'):
+                caminho_saida.parent.mkdir(parents=True, exist_ok=True)
+            plt.savefig(caminho_saida, dpi=300, bbox_inches='tight')
+            print(f"GrÃ¡fico salvo em: {caminho_saida}")
+
         plt.show()
+        plt.close(fig)
     
     @staticmethod
     def plotar_dados_classificacao(X: np.ndarray, y: np.ndarray, titulo: str = "Dataset de ClassificaÃ§Ã£o",
@@ -249,10 +291,14 @@ class VisualizationUtils:
         plt.grid(True, alpha=0.3)
         
         if salvar:
-            plt.savefig(salvar, dpi=300, bbox_inches='tight')
-            print(f"GrÃ¡fico salvo em: {salvar}")
-        
+            caminho_saida = Path(salvar)
+            if caminho_saida.parent != Path('.'):
+                caminho_saida.parent.mkdir(parents=True, exist_ok=True)
+            plt.savefig(caminho_saida, dpi=300, bbox_inches='tight')
+            print(f"GrÃ¡fico salvo em: {caminho_saida}")
+
         plt.show()
+        plt.close()
     
     @staticmethod
     def plotar_fronteira_decisao(rede_neural, X: np.ndarray, y: np.ndarray, 
@@ -308,10 +354,14 @@ class VisualizationUtils:
         plt.colorbar(label='Probabilidade')
         
         if salvar:
-            plt.savefig(salvar, dpi=300, bbox_inches='tight')
-            print(f"GrÃ¡fico salvo em: {salvar}")
-        
+            caminho_saida = Path(salvar)
+            if caminho_saida.parent != Path('.'):
+                caminho_saida.parent.mkdir(parents=True, exist_ok=True)
+            plt.savefig(caminho_saida, dpi=300, bbox_inches='tight')
+            print(f"GrÃ¡fico salvo em: {caminho_saida}")
+
         plt.show()
+        plt.close()
 
 
 class FileUtils:
@@ -326,10 +376,11 @@ class FileUtils:
             dados: DicionÃ¡rio com os dados
             caminho: Caminho do arquivo
         """
-        # Criar diretÃ³rio se nÃ£o existir
-        os.makedirs(os.path.dirname(caminho), exist_ok=True)
-        
-        with open(caminho, 'w', newline='', encoding='utf-8') as f:
+        caminho_arquivo = Path(caminho)
+        if caminho_arquivo.parent != Path('.'):
+            caminho_arquivo.parent.mkdir(parents=True, exist_ok=True)
+
+        with caminho_arquivo.open('w', newline='', encoding='utf-8') as f:
             writer = csv.DictWriter(f, fieldnames=dados.keys())
             writer.writeheader()
             
@@ -339,7 +390,7 @@ class FileUtils:
                 row = {key: values[i] for key, values in dados.items()}
                 writer.writerow(row)
         
-        print(f"Dados salvos em: {caminho}")
+        print(f"Dados salvos em: {caminho_arquivo}")
     
     @staticmethod
     def carregar_csv(caminho: str) -> dict:
@@ -354,7 +405,9 @@ class FileUtils:
         """
         dados = {}
         
-        with open(caminho, 'r', encoding='utf-8') as f:
+        caminho_arquivo = Path(caminho)
+
+        with caminho_arquivo.open('r', encoding='utf-8') as f:
             reader = csv.DictReader(f)
             
             # Inicializar listas
@@ -371,7 +424,7 @@ class FileUtils:
                         # Se nÃ£o conseguir, manter como string
                         dados[field].append(value)
         
-        print(f"Dados carregados de: {caminho}")
+        print(f"Dados carregados de: {caminho_arquivo}")
         return dados
 
 
@@ -419,13 +472,13 @@ class MetricUtils:
         tn, fp, fn, tp = cm.ravel()
         
         # Evitar divisÃ£o por zero
-        precisao = tp / (tp + fp) if (tp + fp) > 0 else 0
-        recall = tp / (tp + fn) if (tp + fn) > 0 else 0
-        f1 = 2 * (precisao * recall) / (precisao + recall) if (precisao + recall) > 0 else 0
+        precisao = tp / (tp + fp) if (tp + fp) > 0 else 0.0
+        recall = tp / (tp + fn) if (tp + fn) > 0 else 0.0
+        f1 = 2 * (precisao * recall) / (precisao + recall) if (precisao + recall) > 0 else 0.0
         
         return {
-            'precisao': precisao,
-            'recall': recall,
-            'f1_score': f1,
+            'precisao': float(precisao),
+            'recall': float(recall),
+            'f1_score': float(f1),
             'matriz_confusao': cm
         }

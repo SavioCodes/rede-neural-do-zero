@@ -1,20 +1,17 @@
-"""
-Rede Neural do Zero - Implementação em Python puro
-Autor: Sávio (https://github.com/SavioCodes)
-"""
+"""Public package exports for rede-neural-do-zero."""
 
-from .rede_neural import RedeNeural
 from .funcoes_ativacao import FuncoesAtivacao
-from .utils import DataUtils, VisualizationUtils, FileUtils, MetricUtils
+from .rede_neural import RedeNeural
+from .utils import DataUtils, FileUtils, MetricUtils, VisualizationUtils
 
-__version__ = "1.0.0"
-__author__ = "Sávio"
+__version__ = "1.1.0"
+__author__ = "Savio"
 
 __all__ = [
-    'RedeNeural',
-    'FuncoesAtivacao', 
-    'DataUtils',
-    'VisualizationUtils',
-    'FileUtils',
-    'MetricUtils'
+    "RedeNeural",
+    "FuncoesAtivacao",
+    "DataUtils",
+    "VisualizationUtils",
+    "FileUtils",
+    "MetricUtils",
 ]

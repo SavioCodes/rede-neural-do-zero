@@ -36,7 +36,7 @@ def run_evaluation(seed: int, epochs: int, samples: int, min_accuracy: float) ->
         random_state=seed,
     )
 
-    model = RedeNeural([2, 8, 1], ativacao="relu", inicializacao="he")
+    model = RedeNeural([2, 8, 1], ativacao="relu", inicializacao="he", seed=seed)
     model.treinar(
         X_train,
         y_train,
@@ -53,6 +53,12 @@ def run_evaluation(seed: int, epochs: int, samples: int, min_accuracy: float) ->
         "seed": seed,
         "epochs": epochs,
         "samples": samples,
+        "model": {
+            "arquitetura": model.arquitetura,
+            "ativacao": model.ativacao,
+            "inicializacao": model.inicializacao,
+            "seed": model.seed,
+        },
         "metrics": {
             "mse": float(eval_result["erro"]),
             "accuracy": float(eval_result["acuracia"]),
