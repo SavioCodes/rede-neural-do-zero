@@ -11,6 +11,7 @@ permissions:
 
 jobs:
   build-and-publish:
+    if: ${{ vars.PYPI_PUBLISH_ENABLED == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout

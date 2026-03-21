@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "rede-neural-do-zero"
-version = "2.0.0"
+version = "2.0.1"
 description = "Educational neural network implementation from scratch using NumPy, CLI, docs, and packaged datasets."
 readme = "README.md"
 requires-python = ">=3.11"
@@ -79,6 +79,7 @@ addopts = "--cov=src --cov-report=term-missing"
 line-length = 100
 target-version = "py311"
 src = ["src", "rede_neural_do_zero", "tests", "scripts", "examples"]
+extend-exclude = ["notebooks"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I"]
