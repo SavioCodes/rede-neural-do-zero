@@ -8,6 +8,7 @@ import json
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
+from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
@@ -20,6 +21,12 @@ from src.experiments import (  # noqa: E402
     criar_configs_padrao,
     dividir_treino_validacao_teste,
 )
+
+
+def _json_default(value: Any) -> Any:
+    if hasattr(value, "tolist"):
+        return value.tolist()
+    raise TypeError(f"Tipo nao serializavel: {type(value)!r}")
 
 
 def run_evaluation(seed: int, epochs: int, samples: int, dataset: str, min_score: float) -> dict:
@@ -131,9 +138,12 @@ def main() -> None:
     args.json_output.parent.mkdir(parents=True, exist_ok=True)
     args.history_output.parent.mkdir(parents=True, exist_ok=True)
 
-    args.json_output.write_text(json.dumps(summary, indent=2), encoding="utf-8")
+    args.json_output.write_text(
+        json.dumps(summary, indent=2, default=_json_default),
+        encoding="utf-8",
+    )
     with args.history_output.open("a", encoding="utf-8") as fp:
-        fp.write(json.dumps(summary) + "\n")
+        fp.write(json.dumps(summary, default=_json_default) + "\n")
 
     print("Evaluation completed")
     print(f"Dataset: {summary['dataset']}")
