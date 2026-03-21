@@ -29,7 +29,7 @@ Fluxo sugerido:
 2. atualizar `src/__init__.py` e `CHANGELOG.md`
 3. validar com `python -m src verify --build-package`
 4. commitar a mudanca
-5. criar uma tag, por exemplo `v2.1.0`
+5. criar uma tag, por exemplo `v2.1.1`
 6. publicar a release no GitHub
 7. deixar o workflow publicar o pacote no PyPI
 

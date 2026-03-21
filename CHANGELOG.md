@@ -2,6 +2,18 @@
 
 Todas as mudancas relevantes deste projeto passam a ser registradas aqui seguindo versionamento semantico.
 
+## [2.1.1] - 2026-03-21
+
+### Added
+
+- formularios de issue para documentacao e perguntas
+- links oficiais de roadmap, changelog e docs dentro da configuracao de issues
+
+### Changed
+
+- formularios de bug e feature ficaram mais guiados por area afetada
+- pagina oficial do projeto agora destaca melhor a gestao de issues
+
 ## [2.1.0] - 2026-03-21
 
 ### Added

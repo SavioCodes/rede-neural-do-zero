@@ -4,6 +4,21 @@ title: "[Feature]: "
 labels:
   - enhancement
 body:
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area da melhoria
+      description: Onde essa melhoria se encaixa melhor?
+      options:
+        - CLI oficial
+        - Benchmark e avaliacao
+        - Datasets
+        - Documentacao
+        - Build e publicacao
+        - Exemplos e notebooks
+        - Governanca do projeto
+    validations:
+      required: true
   - type: textarea
     id: problem
     attributes:
@@ -23,3 +38,8 @@ body:
     attributes:
       label: Impacto em docs e CLI
       description: Quais comandos, exemplos ou paginas precisariam ser atualizados?
+  - type: textarea
+    id: success
+    attributes:
+      label: Como saberemos que ficou bom
+      description: Descreva rapidamente o resultado esperado ou criterio de pronto.

@@ -14,7 +14,7 @@ from .funcoes_ativacao import FuncoesAtivacao
 from .rede_neural import RedeNeural
 from .utils import DataUtils, FileUtils, MetricUtils, VisualizationUtils
 
-__version__ = "2.1.0"
+__version__ = "2.1.1"
 __author__ = "Savio"
 
 __all__ = [

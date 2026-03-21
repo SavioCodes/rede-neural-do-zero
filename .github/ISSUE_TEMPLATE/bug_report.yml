@@ -4,6 +4,20 @@ title: "[Bug]: "
 labels:
   - bug
 body:
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area afetada
+      description: Escolha a parte principal do projeto impactada.
+      options:
+        - CLI oficial
+        - Benchmark e avaliacao
+        - Datasets
+        - Documentacao
+        - Pacote e build
+        - Exemplo ou notebook
+    validations:
+      required: true
   - type: textarea
     id: description
     attributes:
@@ -29,3 +43,8 @@ body:
       description: Python, sistema operacional e versao do projeto.
     validations:
       required: true
+  - type: textarea
+    id: validation
+    attributes:
+      label: Validacao adicional
+      description: Se ja rodou `python -m src verify`, logs ou prints uteis podem entrar aqui.

@@ -1,0 +1,31 @@
+name: Documentation request
+description: Sugira melhorias na documentacao oficial, exemplos ou guias.
+title: "[Docs]: "
+labels:
+  - documentation
+body:
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area da documentacao
+      options:
+        - README
+        - Docs web
+        - CLI
+        - API reference
+        - Notebooks
+        - Exemplos
+    validations:
+      required: true
+  - type: textarea
+    id: issue
+    attributes:
+      label: O que esta confuso ou faltando
+      description: Explique qual parte da documentacao precisa melhorar.
+    validations:
+      required: true
+  - type: textarea
+    id: suggestion
+    attributes:
+      label: Sugestao
+      description: Se tiver uma forma de melhorar, descreva aqui.
