@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import csv
+from importlib import resources
 from pathlib import Path
 from typing import Optional, Sequence, Tuple
 
@@ -12,6 +13,24 @@ import numpy as np
 
 class DataUtils:
     """Helpers for generating, normalizing, and splitting datasets."""
+
+    _DATASETS_REAIS: dict[str, dict[str, object]] = {
+        "iris": {
+            "tipo_tarefa": "classificacao_multiclasse",
+            "class_names": ["setosa", "versicolor", "virginica"],
+            "target_name": "species",
+        },
+        "wine": {
+            "tipo_tarefa": "classificacao_multiclasse",
+            "class_names": ["class_0", "class_1", "class_2"],
+            "target_name": "wine_class",
+        },
+        "diabetes": {
+            "tipo_tarefa": "regressao",
+            "class_names": None,
+            "target_name": "disease_progression",
+        },
+    }
 
     @staticmethod
     def _garantir_array_2d(X: np.ndarray, nome: str) -> np.ndarray:
@@ -129,6 +148,107 @@ class DataUtils:
         y = np.vstack(blobs_y)
         indices = rng.permutation(X.shape[0])
         return X[indices], y[indices]
+
+    @staticmethod
+    def gerar_dataset_regressao(
+        n_samples: int = 240,
+        n_features: int = 3,
+        noise: float = 0.15,
+        random_state: Optional[int] = 42,
+    ) -> Tuple[np.ndarray, np.ndarray]:
+        """Generate a smooth synthetic regression dataset with mild nonlinearity."""
+        if n_samples < 2:
+            raise ValueError("n_samples precisa ser pelo menos 2.")
+        if n_features < 1:
+            raise ValueError("n_features precisa ser pelo menos 1.")
+        if noise < 0:
+            raise ValueError("noise nao pode ser negativo.")
+
+        rng = np.random.default_rng(random_state)
+        X = rng.uniform(-2.5, 2.5, size=(n_samples, n_features))
+        pesos = np.linspace(0.8, 1.6, n_features)
+        base = X @ pesos
+        componente_nonlinear = 0.8 * np.sin(1.5 * X[:, 0])
+        if n_features > 1:
+            componente_nonlinear += -0.35 * (X[:, 1] ** 2)
+        if n_features > 2:
+            componente_nonlinear += 0.25 * X[:, 2] ** 3
+
+        y = base + componente_nonlinear
+        if noise:
+            y = y + rng.normal(0.0, noise, size=n_samples)
+
+        return X.astype(float), y.reshape(-1, 1).astype(float)
+
+    @staticmethod
+    def listar_datasets_reais() -> list[str]:
+        """List packaged real datasets available in the project."""
+        return sorted(DataUtils._DATASETS_REAIS.keys())
+
+    @staticmethod
+    def _ler_dataset_csv(nome: str) -> tuple[np.ndarray, np.ndarray, dict[str, object]]:
+        """Load a packaged CSV dataset shipped with the project."""
+        nome_normalizado = nome.lower().strip()
+        if nome_normalizado not in DataUtils._DATASETS_REAIS:
+            raise ValueError(
+                f"Dataset real '{nome}' nao encontrado. "
+                f"Opcoes: {DataUtils.listar_datasets_reais()}"
+            )
+
+        caminho = resources.files("src.datasets").joinpath(f"{nome_normalizado}.csv")
+        with caminho.open("r", encoding="utf-8") as arquivo:
+            reader = csv.DictReader(arquivo)
+            if reader.fieldnames is None or "target" not in reader.fieldnames:
+                raise ValueError("O dataset precisa conter cabecalho e coluna 'target'.")
+
+            feature_names = [campo for campo in reader.fieldnames if campo != "target"]
+            X_rows: list[list[float]] = []
+            y_rows: list[float] = []
+            for row in reader:
+                X_rows.append([float(row[campo]) for campo in feature_names])
+                y_rows.append(float(row["target"]))
+
+        X = np.asarray(X_rows, dtype=float)
+        y = np.asarray(y_rows, dtype=float).reshape(-1, 1)
+        metadata: dict[str, object] = {
+            "nome": nome_normalizado,
+            "feature_names": feature_names,
+            **DataUtils._DATASETS_REAIS[nome_normalizado],
+        }
+        return X, y, metadata
+
+    @staticmethod
+    def carregar_dataset_real(
+        nome: str,
+        normalizar: Optional[str] = None,
+    ) -> tuple[np.ndarray, np.ndarray, dict[str, object]]:
+        """Load a packaged real dataset and optionally normalize its features."""
+        X, y, metadata = DataUtils._ler_dataset_csv(nome)
+        if normalizar:
+            X, params = DataUtils.normalizar_dados(X, metodo=normalizar)
+            metadata = {**metadata, "normalizacao": params}
+        return X, y, metadata
+
+    @staticmethod
+    def carregar_dataset_iris(
+        normalizar: Optional[str] = None,
+    ) -> tuple[np.ndarray, np.ndarray, dict[str, object]]:
+        """Load the packaged Iris dataset."""
+        return DataUtils.carregar_dataset_real("iris", normalizar=normalizar)
+
+    @staticmethod
+    def carregar_dataset_wine(
+        normalizar: Optional[str] = None,
+    ) -> tuple[np.ndarray, np.ndarray, dict[str, object]]:
+        """Load the packaged Wine dataset."""
+        return DataUtils.carregar_dataset_real("wine", normalizar=normalizar)
+
+    @staticmethod
+    def carregar_dataset_diabetes(
+        normalizar: Optional[str] = None,
+    ) -> tuple[np.ndarray, np.ndarray, dict[str, object]]:
+        """Load the packaged Diabetes regression dataset."""
+        return DataUtils.carregar_dataset_real("diabetes", normalizar=normalizar)
 
     @staticmethod
     def one_hot_encode(y: np.ndarray, n_classes: Optional[int] = None) -> np.ndarray:
@@ -450,9 +570,7 @@ class VisualizationUtils:
 
         total_classes = matriz_array.shape[0]
         rotulos = (
-            list(labels)
-            if labels is not None
-            else [str(indice) for indice in range(total_classes)]
+            list(labels) if labels is not None else [str(indice) for indice in range(total_classes)]
         )
 
         fig, ax = plt.subplots(figsize=(6, 5))
@@ -479,6 +597,34 @@ class VisualizationUtils:
                 )
 
         fig.tight_layout()
+        VisualizationUtils._finalizar_figura(fig, salvar, mostrar)
+
+    @staticmethod
+    def plotar_regressao(
+        y_true: np.ndarray,
+        y_pred: np.ndarray,
+        titulo: str = "Valores reais vs previstos",
+        salvar: Optional[str] = None,
+        mostrar: bool = True,
+    ) -> None:
+        """Plot regression predictions against true values."""
+        y_true_array = np.asarray(y_true, dtype=float).reshape(-1)
+        y_pred_array = np.asarray(y_pred, dtype=float).reshape(-1)
+        if y_true_array.shape[0] != y_pred_array.shape[0]:
+            raise ValueError("y_true e y_pred precisam ter a mesma quantidade de amostras.")
+
+        fig, ax = plt.subplots(figsize=(7, 6))
+        ax.scatter(y_true_array, y_pred_array, alpha=0.7, edgecolors="black")
+
+        minimo = float(min(np.min(y_true_array), np.min(y_pred_array)))
+        maximo = float(max(np.max(y_true_array), np.max(y_pred_array)))
+        ax.plot([minimo, maximo], [minimo, maximo], linestyle="--", color="black", linewidth=2)
+
+        ax.set_title(titulo)
+        ax.set_xlabel("Valor real")
+        ax.set_ylabel("Valor previsto")
+        ax.grid(True, alpha=0.3)
+
         VisualizationUtils._finalizar_figura(fig, salvar, mostrar)
 
 
@@ -638,6 +784,37 @@ class MetricUtils:
             "matriz_confusao": cm,
             "labels": list(range(cm.shape[0])) if labels is None else list(labels),
             "n_amostras": int(peso_total),
+        }
+
+    @staticmethod
+    def metricas_regressao(y_true: np.ndarray, y_pred: np.ndarray) -> dict:
+        """Compute core regression metrics for educational experiments."""
+        y_true_array = np.asarray(y_true, dtype=float).reshape(-1)
+        y_pred_array = np.asarray(y_pred, dtype=float).reshape(-1)
+        if y_true_array.shape[0] != y_pred_array.shape[0]:
+            raise ValueError("y_true e y_pred precisam ter a mesma quantidade de amostras.")
+        if y_true_array.shape[0] == 0:
+            raise ValueError("As metricas de regressao exigem pelo menos uma amostra.")
+
+        residuos = y_true_array - y_pred_array
+        mse = float(np.mean(residuos**2))
+        mae = float(np.mean(np.abs(residuos)))
+        rmse = float(np.sqrt(mse))
+
+        soma_quadrados_total = float(np.sum((y_true_array - np.mean(y_true_array)) ** 2))
+        soma_quadrados_residuos = float(np.sum(residuos**2))
+        r2 = (
+            0.0
+            if soma_quadrados_total == 0
+            else float(1 - soma_quadrados_residuos / soma_quadrados_total)
+        )
+
+        return {
+            "mse": mse,
+            "mae": mae,
+            "rmse": rmse,
+            "r2": r2,
+            "n_amostras": int(y_true_array.shape[0]),
         }
 
     @staticmethod

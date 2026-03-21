@@ -1,12 +1,45 @@
 # Dados
 
-Esta pasta guarda referencias e pequenos arquivos de dados usados pelos exemplos do projeto.
+O projeto agora trabalha com datasets sinteticos e com datasets reais pequenos empacotados no proprio pacote.
 
-## Arquivos atuais
+## Datasets sinteticos
+
+- `XOR`
+- classificacao binaria
+- classificacao multiclasse
+- regressao
+
+Exemplo:
+
+```python
+from rede_neural_do_zero import DataUtils
+
+X, y = DataUtils.gerar_dataset_regressao(n_samples=240, random_state=42)
+```
+
+## Datasets reais empacotados
+
+Os CSVs reais ficam em `src/datasets/` e sao distribuidos junto com o pacote:
+
+- `iris.csv`
+- `wine.csv`
+- `diabetes.csv`
+
+Eles podem ser carregados assim:
+
+```python
+from rede_neural_do_zero import DataUtils
+
+X, y, meta = DataUtils.carregar_dataset_iris(normalizar="padrao")
+print(meta["feature_names"])
+print(meta["tipo_tarefa"])
+```
+
+## Arquivos auxiliares do repositório
 
 ### `examples/xor_dataset.csv`
 
-Dataset classico do problema XOR.
+Dataset classico do problema XOR, mantido como artefato didatico simples.
 
 Campos:
 
@@ -14,40 +47,10 @@ Campos:
 - `x2`
 - `y`
 
-## Como gerar dados em memoria
-
-### XOR
-
-```python
-from src import DataUtils
-
-X, y = DataUtils.gerar_xor_dataset()
-```
-
-### Classificacao binaria
-
-```python
-from src import DataUtils
-
-X, y = DataUtils.gerar_dataset_classificacao(n_samples=1000, random_state=42)
-```
-
-### Classificacao multiclasse
-
-```python
-from src import DataUtils
-
-X, y = DataUtils.gerar_dataset_multiclasse(
-    n_samples=600,
-    n_classes=3,
-    random_state=42,
-)
-```
-
 ## Como ler um CSV customizado
 
 ```python
-from src import FileUtils
+from rede_neural_do_zero import FileUtils
 
 dados = FileUtils.carregar_csv("meu_dataset.csv")
 ```
@@ -55,13 +58,8 @@ dados = FileUtils.carregar_csv("meu_dataset.csv")
 ## Recomendacoes
 
 - normalize as features antes do treino
-- mantenha treino e teste separados
-- garanta consistencia entre numero de colunas e arquitetura da rede
-- prefira seeds explicitas para comparacoes
-- para multiclasse, escolha `categorical_crossentropy` e saida `softmax`
-
-## Proximas extensoes naturais
-
-- datasets pequenos de benchmark para classificacao binaria e multiclasse
-- conjuntos de dados externos com script de preparacao
-- exemplos de importacao e avaliacao com CSVs customizados
+- mantenha treino, validacao e teste separados
+- alinhe a arquitetura com o numero de features e saidas
+- use `softmax` + `categorical_crossentropy` para multiclasse
+- use saida `linear` + `mse` para regressao
+- prefira seeds explicitas para comparacoes e benchmarks

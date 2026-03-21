@@ -1,36 +1,30 @@
-#!/usr/bin/env python3
-"""Benchmark mais serio com multiplas seeds e ranking agregado."""
+"""Helpers para benchmark multi-seed reutilizados pela CLI e pelos scripts."""
 
 from __future__ import annotations
 
-import argparse
-import json
 import statistics
-import sys
-from pathlib import Path
 from typing import Any
 
-ROOT = Path(__file__).resolve().parents[1]
-if str(ROOT) not in sys.path:
-    sys.path.insert(0, str(ROOT))
-
-from src import FileUtils, ModelConfig, RedeNeural, TrainingConfig  # noqa: E402
-from src.experiments import (  # noqa: E402
+from .config import ModelConfig, TrainingConfig
+from .experiments import (
     DatasetBundle,
     avaliar_modelo,
     carregar_dataset,
     dividir_treino_validacao_teste,
 )
+from .rede_neural import RedeNeural
 
 
-def _parse_seeds(texto: str) -> list[int]:
+def parse_seeds(texto: str) -> list[int]:
+    """Converte `42,52,62` em lista de inteiros."""
     seeds = [int(parte.strip()) for parte in texto.split(",") if parte.strip()]
     if not seeds:
         raise ValueError("Forneca pelo menos uma seed em --seeds.")
     return seeds
 
 
-def _nome_dataset_padrao(modo: str) -> str:
+def nome_dataset_padrao(modo: str) -> str:
+    """Resolve qual dataset usar por modo de benchmark."""
     return {
         "binario": "binario",
         "multiclasse": "iris",
@@ -38,9 +32,12 @@ def _nome_dataset_padrao(modo: str) -> str:
     }[modo]
 
 
-def _configuracoes_para_dataset(
-    dataset: DatasetBundle, seed: int, epochs: int
+def configuracoes_para_dataset(
+    dataset: DatasetBundle,
+    seed: int,
+    epochs: int,
 ) -> list[tuple[str, ModelConfig, TrainingConfig]]:
+    """Monta configuracoes de modelo para comparar em benchmark."""
     tipo = dataset.tipo_tarefa
     input_dim = int(dataset.X.shape[1])
 
@@ -197,34 +194,25 @@ def _linha_resultado(
     return linha
 
 
-def _agregar_resultados(resultados: list[dict[str, Any]], tipo_tarefa: str) -> list[dict[str, Any]]:
+def agregar_resultados(resultados: list[dict[str, Any]], tipo_tarefa: str) -> list[dict[str, Any]]:
+    """Calcula medias, desvios e ranking por configuracao."""
     agrupados: dict[str, list[dict[str, Any]]] = {}
     for linha in resultados:
         agrupados.setdefault(str(linha["nome"]), []).append(linha)
 
-    if tipo_tarefa == "regressao":
-        metrica_principal = "r2"
-        ordenar_reverso = True
-    else:
-        metrica_principal = "acuracia"
-        ordenar_reverso = True
-
+    metrica_principal = "r2" if tipo_tarefa == "regressao" else "acuracia"
     agregados = []
     for nome, linhas in agrupados.items():
-        media_principal = statistics.mean(float(linha[metrica_principal]) for linha in linhas)
-        desvio_principal = (
-            statistics.stdev(float(linha[metrica_principal]) for linha in linhas)
-            if len(linhas) > 1
-            else 0.0
-        )
-
+        principal = [float(linha[metrica_principal]) for linha in linhas]
         linha_agregada = {
             "nome": nome,
             "dataset": linhas[0]["dataset"],
             "modo": linhas[0]["modo"],
             "runs": len(linhas),
-            f"{metrica_principal}_media": media_principal,
-            f"{metrica_principal}_desvio": desvio_principal,
+            f"{metrica_principal}_media": statistics.mean(principal),
+            f"{metrica_principal}_desvio": (
+                statistics.stdev(principal) if len(principal) > 1 else 0.0
+            ),
             "loss_media": statistics.mean(float(linha["loss"]) for linha in linhas),
             "mse_media": statistics.mean(float(linha["mse"]) for linha in linhas),
         }
@@ -239,9 +227,7 @@ def _agregar_resultados(resultados: list[dict[str, Any]], tipo_tarefa: str) -> l
             linha_agregada["f1_media"] = statistics.mean(float(linha["f1"]) for linha in linhas)
         agregados.append(linha_agregada)
 
-    agregados.sort(
-        key=lambda linha: float(linha[f"{metrica_principal}_media"]), reverse=ordenar_reverso
-    )
+    agregados.sort(key=lambda linha: float(linha[f"{metrica_principal}_media"]), reverse=True)
     for indice, linha in enumerate(agregados, start=1):
         linha["ranking"] = indice
         linha["metrica_principal"] = metrica_principal
@@ -251,6 +237,7 @@ def _agregar_resultados(resultados: list[dict[str, Any]], tipo_tarefa: str) -> l
 def executar_benchmark(
     dataset_nome: str, amostras: int, seeds: list[int], epochs: int
 ) -> dict[str, Any]:
+    """Executa benchmark com varias seeds e gera relatorio agregado."""
     dataset_base = carregar_dataset(dataset_nome, seed=seeds[0], samples=amostras)
     resultados: list[dict[str, Any]] = []
 
@@ -258,7 +245,7 @@ def executar_benchmark(
         dataset = carregar_dataset(dataset_nome, seed=seed, samples=amostras)
         splits = dividir_treino_validacao_teste(dataset.X, dataset.y, seed=seed)
 
-        for nome, model_config, train_config in _configuracoes_para_dataset(dataset, seed, epochs):
+        for nome, model_config, train_config in configuracoes_para_dataset(dataset, seed, epochs):
             rede = RedeNeural.from_config(model_config)
             resumo = rede.treinar_com_config(
                 splits["X_train"],
@@ -270,54 +257,10 @@ def executar_benchmark(
             avaliacao = avaliar_modelo(rede, splits["X_test"], splits["y_test"])
             resultados.append(_linha_resultado(nome, dataset, seed, resumo, avaliacao))
 
-    agregados = _agregar_resultados(resultados, dataset_base.tipo_tarefa)
     return {
         "dataset": dataset_base.nome,
         "tipo_tarefa": dataset_base.tipo_tarefa,
         "seeds": seeds,
         "raw_results": resultados,
-        "summary": agregados,
+        "summary": agregar_resultados(resultados, dataset_base.tipo_tarefa),
     }
-
-
-def main() -> None:
-    parser = argparse.ArgumentParser(description="Benchmark multi-seed do projeto")
-    parser.add_argument(
-        "--mode", choices=["binario", "multiclasse", "regressao"], default="binario"
-    )
-    parser.add_argument("--dataset", type=str, default=None)
-    parser.add_argument("--samples", type=int, default=240)
-    parser.add_argument("--epochs", type=int, default=120)
-    parser.add_argument("--seeds", type=str, default="42,52,62")
-    parser.add_argument("--json-output", type=Path, default=Path("logs/benchmark.json"))
-    parser.add_argument("--csv-output", type=Path, default=Path("logs/benchmark-summary.csv"))
-    parser.add_argument("--raw-csv-output", type=Path, default=Path("logs/benchmark-runs.csv"))
-    args = parser.parse_args()
-
-    dataset_nome = args.dataset or _nome_dataset_padrao(args.mode)
-    seeds = _parse_seeds(args.seeds)
-    relatorio = executar_benchmark(dataset_nome, args.samples, seeds, args.epochs)
-
-    args.json_output.parent.mkdir(parents=True, exist_ok=True)
-    args.json_output.write_text(json.dumps(relatorio, indent=2), encoding="utf-8")
-
-    resumo = relatorio["summary"]
-    brutos = relatorio["raw_results"]
-    FileUtils.salvar_csv(
-        {chave: [linha[chave] for linha in resumo] for chave in resumo[0].keys()},
-        str(args.csv_output),
-    )
-    FileUtils.salvar_csv(
-        {chave: [linha[chave] for linha in brutos] for chave in brutos[0].keys()},
-        str(args.raw_csv_output),
-    )
-
-    print("Benchmark concluido")
-    print(f"Dataset: {relatorio['dataset']}")
-    print(f"Seeds: {relatorio['seeds']}")
-    for linha in resumo:
-        print(linha)
-
-
-if __name__ == "__main__":
-    main()

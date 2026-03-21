@@ -1,0 +1,6 @@
+include README.md
+include LICENSE
+include mkdocs.yml
+recursive-include docs *.md *.css
+recursive-include notebooks *.ipynb
+recursive-include src/datasets *.csv

@@ -1,0 +1,58 @@
+site_name: Rede Neural do Zero
+site_description: Projeto educacional de rede neural do zero com NumPy, CLI, notebooks e docs navegavel.
+site_url: https://saviocodes.github.io/rede-neural-do-zero/
+repo_url: https://github.com/SavioCodes/rede-neural-do-zero
+repo_name: SavioCodes/rede-neural-do-zero
+
+theme:
+  name: material
+  language: pt-BR
+  favicon: null
+  logo: null
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.top
+    - content.code.copy
+    - content.action.edit
+    - search.highlight
+    - search.suggest
+  palette:
+    - scheme: default
+      primary: teal
+      accent: amber
+
+plugins:
+  - search
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - def_list
+  - footnotes
+  - md_in_html
+  - pymdownx.details
+  - pymdownx.highlight
+  - pymdownx.inlinehilite
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+
+extra_css:
+  - stylesheets/extra.css
+
+nav:
+  - Inicio: index.md
+  - Comecando:
+      - Instalar e Rodar: getting-started.md
+      - CLI Oficial: cli.md
+      - Datasets: datasets.md
+      - Publicacao PyPI: publishing.md
+  - Fundamentos:
+      - Teoria: teoria.md
+      - Algoritmos: algoritmos.md
+      - Tutorial: tutorial.md
+  - Material Didatico:
+      - Notebooks: notebooks.md

@@ -1,4 +1,4 @@
-.PHONY: install install-dev test test-cov lint typecheck eval benchmark format verify clean
+.PHONY: install install-dev test test-cov lint typecheck eval benchmark format verify build docs docs-serve clean
 
 install:
 	python -m pip install -r requirements.txt
@@ -26,6 +26,15 @@ eval:
 
 benchmark:
 	python scripts/benchmark.py --mode binario --samples 240 --epochs 120
+
+build:
+	python -m build
+
+docs:
+	python -m mkdocs build --strict
+
+docs-serve:
+	python -m mkdocs serve
 
 verify: lint typecheck test-cov eval
 

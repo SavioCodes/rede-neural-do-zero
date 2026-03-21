@@ -1,19 +1,22 @@
-name: CI
+name: Docs
 
 on:
   push:
     branches: [main]
-  pull_request:
-    branches: [main]
+  workflow_dispatch:
 
 permissions:
   contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
 
 jobs:
-  quality:
+  build:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -32,23 +35,24 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install -r requirements-dev.txt
 
-      - name: Lint
-        run: python -m ruff check .
-
-      - name: Type check
-        run: python -m mypy src
-
-      - name: Run tests
-        run: python -m pytest -q --cov=src --cov-report=term-missing
-
-      - name: Run deterministic evaluation smoke
-        run: python scripts/evaluate.py --seed 42 --epochs 400 --samples 240
-
-      - name: Run benchmark smoke
-        run: python scripts/benchmark.py --mode binario --samples 180 --epochs 80
-
-      - name: Build package
-        run: python -m build
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
 
       - name: Build docs
         run: python -m mkdocs build --strict
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./site
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

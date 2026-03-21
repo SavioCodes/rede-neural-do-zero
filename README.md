@@ -1,60 +1,36 @@
 # rede-neural-do-zero
 
 [![CI](https://github.com/SavioCodes/rede-neural-do-zero/actions/workflows/ci.yml/badge.svg)](https://github.com/SavioCodes/rede-neural-do-zero/actions/workflows/ci.yml)
+[![Docs](https://img.shields.io/badge/docs-MkDocs%20Material-00897B)](https://saviocodes.github.io/rede-neural-do-zero/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 [![Python](https://img.shields.io/badge/Python-3.11-blue)](https://www.python.org/)
 
-Implementacao educacional de uma rede neural do zero com NumPy, focada em estudo, reproducibilidade e evolucao incremental de recursos importantes de ML.
+Implementacao educacional de rede neural do zero com NumPy, agora organizada como pacote instalavel, CLI oficial, notebooks, datasets reais pequenos e checkpoint completo de treino.
 
-## Visao Geral
+## O que o projeto cobre
 
-Este projeto existe para ensinar os fundamentos de redes neurais sem esconder a matematica atras de frameworks.
-Hoje o repositório cobre:
+- forward e backward propagation
+- classificacao binaria, multiclasse e regressao
+- `sigmoid`, `relu`, `tanh`, `leaky_relu`, `linear` e `softmax`
+- `binary_crossentropy`, `categorical_crossentropy` e `mse`
+- mini-batch, `SGD` e `Adam`
+- `L2`, `dropout` e `gradient clipping`
+- `EarlyStopping`, `History`, `CSVLogger` e `ModelCheckpoint`
+- salvar e retomar treino completo
+- benchmark com multiplas `seeds`, media, desvio e ranking
+- datasets reais empacotados: Iris, Wine e Diabetes
+- CLI com `train`, `evaluate`, `benchmark` e `example`
+- docs web com MkDocs Material
+- notebooks didaticos para estudo
 
-- inicializacao de pesos
-- forward propagation e backpropagation
-- classificacao binaria e multiclasse
-- funcoes de ativacao e funcoes de custo
-- mini-batch training, `SGD` e `Adam`
-- regularizacao com `L2`, `dropout` e `gradient clipping`
-- callbacks como `EarlyStopping`, `CSVLogger`, `History` e `ModelCheckpoint`
-- configs organizadas com `ModelConfig` e `TrainingConfig`
-- metricas, visualizacoes e benchmark simples
+## Instalacao
 
-## Destaques
-
-- `RedeNeural(..., seed=...)` para experimentos reproduziveis
-- `funcao_custo="binary_crossentropy"`, `"categorical_crossentropy"` ou `"mse"`
-- `ativacao_saida` automatica: `sigmoid` para binario e `softmax` para multiclasse
-- `treinar(..., batch_size=..., otimizador="sgd"|"adam")`
-- regularizacao por `l2_lambda`, `dropout` e `gradient_clip`
-- callbacks reutilizaveis em `src/callbacks.py`
-- `ModelConfig` e `TrainingConfig` para deixar a API mais organizada
-- `scripts/evaluate.py` para smoke deterministico
-- `scripts/benchmark.py` para comparar configuracoes
-- `pytest`, `coverage`, `ruff`, `mypy` e `pre-commit`
-
-## Estrutura
-
-```text
-.github/workflows/   # CI
-docs/                # teoria, algoritmos e tutorial
-examples/            # scripts de demonstracao
-logs/                # artefatos de avaliacao e benchmark
-scripts/             # avaliacao e benchmark
-src/                 # implementacao principal
-tests/               # testes unitarios e de integracao
-```
-
-## Setup Rapido
-
-### Runtime basico
+### Desenvolvimento
 
 ```bash
 python -m venv .venv
-source .venv/bin/activate  # Linux/macOS
-python -m pip install -r requirements.txt
-python -m pytest -q
+source .venv/bin/activate
+python -m pip install -r requirements-dev.txt
 ```
 
 ### PowerShell
@@ -63,151 +39,164 @@ python -m pytest -q
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 python -m pip install -r requirements-dev.txt
-python -m pytest -q
 ```
 
-### Ambiente de desenvolvimento
+### Como pacote
+
+Instalacao local:
 
 ```bash
-python -m pip install -r requirements-dev.txt
-pre-commit install
-python -m ruff check .
-python -m mypy src
-python -m pytest -q
+python -m pip install .
 ```
 
-## Uso Basico
+Instalacao editavel:
 
-### API direta
+```bash
+python -m pip install -e ".[dev]"
+```
+
+Quando publicado no PyPI:
+
+```bash
+python -m pip install rede-neural-do-zero
+```
+
+## Uso rapido
+
+### Importando como biblioteca
 
 ```python
-from src import DataUtils, RedeNeural
+from rede_neural_do_zero import DataUtils, RedeNeural
 
-X, y = DataUtils.gerar_xor_dataset()
+X, y, meta = DataUtils.carregar_dataset_iris(normalizar="padrao")
 
 rede = RedeNeural(
-    [2, 4, 1],
-    ativacao="sigmoid",
-    inicializacao="xavier",
+    [X.shape[1], 16, 12, 3],
+    ativacao="relu",
+    inicializacao="he",
     seed=42,
-    funcao_custo="binary_crossentropy",
+    funcao_custo="categorical_crossentropy",
 )
+
 resumo = rede.treinar(
     X,
     y,
-    epochs=1200,
-    taxa_aprendizado=0.05,
-    batch_size=2,
-    otimizador="adam",
-    embaralhar=False,
-    verbose=False,
-)
-
-print(resumo["acuracia_final"])
-print(rede.prever_classes(X))
-```
-
-### API organizada com configs
-
-```python
-from src import ModelConfig, RedeNeural, TrainingConfig
-
-modelo = RedeNeural.from_config(
-    ModelConfig(
-        arquitetura=[2, 16, 12, 3],
-        ativacao="relu",
-        inicializacao="he",
-        seed=42,
-        funcao_custo="categorical_crossentropy",
-    )
-)
-
-config_treino = TrainingConfig(
     epochs=160,
     taxa_aprendizado=0.01,
     batch_size=16,
     otimizador="adam",
-    l2_lambda=1e-3,
-    dropout=0.1,
-    gradient_clip=1.0,
     verbose=False,
+)
+
+print(resumo["acuracia_final"])
+```
+
+### Regressao
+
+```python
+from rede_neural_do_zero import DataUtils, RedeNeural
+
+X, y, _ = DataUtils.carregar_dataset_diabetes(normalizar="padrao")
+
+rede = RedeNeural(
+    [X.shape[1], 32, 16, 1],
+    ativacao="relu",
+    inicializacao="he",
+    seed=42,
+    funcao_custo="mse",
+    ativacao_saida="linear",
 )
 ```
 
-## Exemplos
+### Checkpoint completo e resume
 
-```bash
-python examples/xor_exemplo.py
-python examples/classificacao.py
-python examples/multiclasse.py --save-dir results/multiclasse --no-plots
-python examples/exemplo.py --save-dir results/demo --no-plots
+```python
+rede.salvar_checkpoint("results/model-checkpoint.npz")
+
+nova_rede = RedeNeural([X.shape[1], 1], ativacao="relu", funcao_custo="mse", ativacao_saida="linear")
+nova_rede.carregar_checkpoint("results/model-checkpoint.npz")
+nova_rede.retomar_treinamento(X, y, epochs_adicionais=40, verbose=False)
 ```
 
-## Avaliacao e Benchmark
+## CLI oficial
 
-### Avaliacao deterministica
-
-```bash
-python scripts/evaluate.py --seed 42 --epochs 500 --samples 300
-```
-
-Arquivos gerados:
-
-- `logs/eval-summary.json`
-- `logs/eval-history.jsonl`
-
-### Benchmark simples
+Sem instalar script global:
 
 ```bash
-python scripts/benchmark.py --mode binario --samples 240 --epochs 120
-python scripts/benchmark.py --mode multiclasse --samples 240 --epochs 120
+python -m src --help
 ```
-
-Arquivos gerados:
-
-- `logs/benchmark.json`
-- `logs/benchmark.csv`
-
-## Automacao
 
 Comandos principais:
 
 ```bash
-make install
-make install-dev
-make lint
-make typecheck
-make test
-make test-cov
-make eval
-make benchmark
-make verify
+python -m src train --dataset iris --epochs 160 --save-dir results/iris
+python -m src evaluate --dataset diabetes --epochs 180 --min-score 0.20
+python -m src benchmark --mode multiclasse --dataset wine --seeds 42,52,62
+python -m src example --dataset xor --save-dir results/xor
 ```
+
+Depois de instalar o pacote, tambem funciona:
+
+```bash
+rede-neural-do-zero --help
+rnz --help
+```
+
+## Datasets disponiveis
+
+### Sinteticos
+
+- `xor`
+- `binario`
+- `multiclasse`
+- `regressao`
+
+### Reais empacotados
+
+- `iris`
+- `wine`
+- `diabetes`
+
+## Notebooks
+
+Os notebooks ficam em `notebooks/`:
+
+- `01_forward_backward.ipynb`
+- `02_softmax_dropout_adam.ipynb`
+- `03_datasets_reais_e_matriz_confusao.ipynb`
 
 ## Documentacao
 
-- [Fundamentos teoricos](./docs/teoria.md)
-- [Detalhes dos algoritmos](./docs/algoritmos.md)
-- [Tutorial guiado](./docs/tutorial.md)
-- [Notas sobre datasets](./data/README.md)
+- [Landing page e docs web](https://saviocodes.github.io/rede-neural-do-zero/)
+- [Teoria](./docs/teoria.md)
+- [Algoritmos](./docs/algoritmos.md)
+- [Tutorial](./docs/tutorial.md)
+- [CLI](./docs/cli.md)
+- [Publicacao PyPI](./docs/publishing.md)
 
-## Decisoes de Projeto
+## Build e publicacao
 
-- O foco e clareza didatica, nao performance de producao.
-- A API publica tenta equilibrar simplicidade e extensibilidade.
-- Classificacao binaria usa `sigmoid`; multiclasse usa `softmax`.
-- `batch_size=None` mantem o treino em batch completo para estudo.
-- `Adam` e a opcao recomendada para exemplos maiores.
-- O script de avaliacao continua deterministico para reduzir flakiness na CI.
-- O projeto evita depender do estado global do NumPy quando usa seeds.
+Build local:
 
-## Qualidade Atual
+```bash
+python -m build
+python -m twine check dist/*
+```
 
-- `ruff` para lint
-- `mypy` para type check
-- `pytest` com `coverage`
-- `pre-commit` para checagens locais
-- workflow de CI com lint, type-check, testes, avaliacao e benchmark smoke
+O repositório inclui:
+
+- workflow de CI
+- workflow de docs com GitHub Pages
+- workflow de publicacao no PyPI via Trusted Publishing
+
+## Qualidade
+
+```bash
+python -m ruff check .
+python -m mypy src rede_neural_do_zero
+python -m pytest -q
+python -m mkdocs build --strict
+```
 
 ## Licenca
 

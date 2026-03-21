@@ -130,12 +130,14 @@ class ModelCheckpoint(Callback):
         monitor: str = "val_loss",
         mode: str = "min",
         save_best_only: bool = True,
+        save_training_state: bool = False,
     ) -> None:
         super().__init__()
         self.caminho = caminho
         self.monitor = monitor
         self.mode = mode
         self.save_best_only = save_best_only
+        self.save_training_state = save_training_state
         self.best_value = float("inf") if mode == "min" else float("-inf")
         self.ultimo_caminho_salvo: Optional[str] = None
 
@@ -169,7 +171,10 @@ class ModelCheckpoint(Callback):
 
         self.best_value = valor_atual
         caminho = self._formatar_caminho(epoch, logs)
-        self.model.salvar_parametros(caminho)
+        if self.save_training_state:
+            self.model.salvar_checkpoint(caminho)
+        else:
+            self.model.salvar_parametros(caminho)
         self.ultimo_caminho_salvo = caminho
 
 

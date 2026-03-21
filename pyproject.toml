@@ -1,19 +1,38 @@
 [build-system]
-requires = ["setuptools>=68"]
+requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "rede-neural-do-zero"
-version = "1.5.0"
-description = "Educational neural network implementation from scratch using NumPy."
+version = "2.0.0"
+description = "Educational neural network implementation from scratch using NumPy, CLI, docs, and packaged datasets."
 readme = "README.md"
 requires-python = ">=3.11"
-license = { text = "MIT" }
+license = "MIT"
 authors = [{ name = "Savio" }]
+keywords = ["neural-network", "numpy", "education", "machine-learning", "deep-learning"]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Education",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.11",
+  "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
 dependencies = [
   "numpy>=1.26,<3",
   "matplotlib>=3.8,<4",
 ]
+
+[project.urls]
+Homepage = "https://github.com/SavioCodes/rede-neural-do-zero"
+Repository = "https://github.com/SavioCodes/rede-neural-do-zero"
+Documentation = "https://saviocodes.github.io/rede-neural-do-zero/"
+Issues = "https://github.com/SavioCodes/rede-neural-do-zero/issues"
+Releases = "https://github.com/SavioCodes/rede-neural-do-zero/releases"
+
+[project.scripts]
+rede-neural-do-zero = "rede_neural_do_zero.cli:main"
+rnz = "rede_neural_do_zero.cli:main"
 
 [project.optional-dependencies]
 dev = [
@@ -23,7 +42,29 @@ dev = [
   "ruff>=0.8,<1",
   "mypy>=1.11,<2",
   "pre-commit>=4,<5",
+  "build>=1.2,<2",
+  "twine>=6,<7",
+  "mkdocs>=1.6,<2",
+  "mkdocs-material>=9.7,<10",
+  "nbformat>=5.10,<6",
 ]
+docs = [
+  "mkdocs>=1.6,<2",
+  "mkdocs-material>=9.7,<10",
+]
+publish = [
+  "build>=1.2,<2",
+  "twine>=6,<7",
+]
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+include = ["src*", "rede_neural_do_zero*"]
+
+[tool.setuptools.package-data]
+"src.datasets" = ["*.csv"]
 
 [tool.black]
 line-length = 100
@@ -37,14 +78,14 @@ addopts = "--cov=src --cov-report=term-missing"
 [tool.ruff]
 line-length = 100
 target-version = "py311"
-src = ["src", "tests", "scripts", "examples"]
+src = ["src", "rede_neural_do_zero", "tests", "scripts", "examples"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I"]
 
 [tool.mypy]
 python_version = "3.11"
-files = ["src"]
+files = ["src", "rede_neural_do_zero"]
 ignore_missing_imports = true
 warn_redundant_casts = true
 warn_unused_ignores = true
