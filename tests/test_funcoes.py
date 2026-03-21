@@ -248,10 +248,14 @@ class TestMetricUtils(unittest.TestCase):
 
         self.assertIn("precisao", metricas)
         self.assertIn("recall", metricas)
+        self.assertIn("especificidade", metricas)
+        self.assertIn("balanced_accuracy", metricas)
         self.assertIn("f1_score", metricas)
         self.assertIn("matriz_confusao", metricas)
         self.assertTrue(0 <= metricas["precisao"] <= 1)
         self.assertTrue(0 <= metricas["recall"] <= 1)
+        self.assertTrue(0 <= metricas["especificidade"] <= 1)
+        self.assertTrue(0 <= metricas["balanced_accuracy"] <= 1)
         self.assertTrue(0 <= metricas["f1_score"] <= 1)
         self.assertIsInstance(metricas["precisao"], float)
 

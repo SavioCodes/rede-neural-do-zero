@@ -14,6 +14,7 @@ class RedeNeural:
     """Rede neural simples voltada para estudo de classificacao binaria."""
 
     _INICIALIZACOES_VALIDAS = {"xavier", "he", "aleatorio"}
+    _FUNCOES_CUSTO_VALIDAS = {"binary_crossentropy", "mse"}
 
     def __init__(
         self,
@@ -21,6 +22,7 @@ class RedeNeural:
         ativacao: str = "sigmoid",
         inicializacao: str = "xavier",
         seed: Optional[int] = None,
+        funcao_custo: str = "binary_crossentropy",
     ) -> None:
         """Constroi a rede e inicializa seus parametros.
 
@@ -29,24 +31,31 @@ class RedeNeural:
             ativacao: Funcao usada nas camadas ocultas.
             inicializacao: Estrategia usada para sortear os pesos iniciais.
             seed: Seed opcional para reproducibilidade.
+            funcao_custo: Perda usada no treinamento.
         """
         self._validar_arquitetura(arquitetura)
 
         self.funcoes = FuncoesAtivacao()
         self.ativacao = self._validar_ativacao(ativacao)
         self.inicializacao = self._validar_inicializacao(inicializacao)
+        self.funcao_custo = self._validar_funcao_custo(funcao_custo)
         self.seed = seed
 
         self.arquitetura = [int(neuronios) for neuronios in arquitetura]
         self.num_camadas = len(self.arquitetura)
         self._rng = np.random.default_rng(seed)
 
+        self._resetar_historicos()
+        self._inicializar_parametros(self.inicializacao)
+
+    def _resetar_historicos(self) -> None:
+        """Limpa o historico armazenado a cada novo treinamento."""
         self.historico_erro: list[float] = []
+        self.historico_mse: list[float] = []
         self.historico_acuracia: list[float] = []
         self.historico_validacao_erro: list[float] = []
+        self.historico_validacao_mse: list[float] = []
         self.historico_validacao_acuracia: list[float] = []
-
-        self._inicializar_parametros(self.inicializacao)
 
     def _validar_arquitetura(self, arquitetura: List[int]) -> None:
         """Garante que a arquitetura tenha pelo menos entrada e saida validas."""
@@ -75,6 +84,16 @@ class RedeNeural:
                 f"Opcoes: {sorted(self._INICIALIZACOES_VALIDAS)}"
             )
         return inicializacao_normalizada
+
+    def _validar_funcao_custo(self, funcao_custo: str) -> str:
+        """Normaliza e valida a funcao de custo usada no treinamento."""
+        funcao_custo_normalizada = funcao_custo.lower()
+        if funcao_custo_normalizada not in self._FUNCOES_CUSTO_VALIDAS:
+            raise ValueError(
+                f"Funcao de custo '{funcao_custo}' nao reconhecida. "
+                f"Opcoes: {sorted(self._FUNCOES_CUSTO_VALIDAS)}"
+            )
+        return funcao_custo_normalizada
 
     def _validar_limiar(self, limiar: float) -> None:
         """Confere se o limiar esta no intervalo usado por probabilidades."""
@@ -139,12 +158,7 @@ class RedeNeural:
         return validacao_X_array, validacao_y_array
 
     def _inicializar_parametros(self, metodo: str) -> None:
-        """Inicializa pesos e biases camada por camada.
-
-        Cada matriz de pesos liga uma camada na proxima.
-        Se a camada atual tem `fan_in` neuronios e a proxima tem `fan_out`,
-        o shape dos pesos sera `(fan_in, fan_out)`.
-        """
+        """Inicializa pesos e biases camada por camada."""
         self.pesos = []
         self.biases = []
 
@@ -166,22 +180,13 @@ class RedeNeural:
             self.biases.append(np.zeros((1, saida_size)))
 
     def _aplicar_ativacao(self, indice_camada: int, z: np.ndarray) -> np.ndarray:
-        """Escolhe a ativacao adequada para a camada atual.
-
-        A ultima camada usa sigmoid porque a rede foi desenhada para classificacao
-        binaria, enquanto as camadas ocultas usam a ativacao escolhida no construtor.
-        """
+        """Escolhe a ativacao adequada para a camada atual."""
         if indice_camada == self.num_camadas - 2:
             return self.funcoes.sigmoid(z)
         return self.funcoes.aplicar(z, self.ativacao)
 
     def _forward_propagation(self, X: np.ndarray) -> tuple[List[np.ndarray], List[np.ndarray]]:
-        """Executa o fluxo de ida pela rede.
-
-        Guardamos:
-        - `ativacoes`: saida de cada camada, necessaria no backward.
-        - `z_values`: soma ponderada antes da ativacao, tambem necessaria no backward.
-        """
+        """Executa o fluxo de ida pela rede."""
         ativacoes = [X]
         z_values = []
 
@@ -192,25 +197,34 @@ class RedeNeural:
 
         return ativacoes, z_values
 
+    def _calcular_delta_saida(
+        self,
+        y: np.ndarray,
+        ativacao_saida: np.ndarray,
+        z_saida: np.ndarray,
+    ) -> np.ndarray:
+        """Calcula o gradiente na camada de saida.
+
+        Para classificacao binaria com sigmoid:
+        - BCE produz um gradiente simples: y_pred - y_true
+        - MSE ainda precisa multiplicar pela derivada da sigmoid
+        """
+        if self.funcao_custo == "binary_crossentropy":
+            return ativacao_saida - y
+        return (ativacao_saida - y) * self.funcoes.sigmoid_derivada(z_saida)
+
     def _backward_propagation(
         self,
         y: np.ndarray,
         ativacoes: List[np.ndarray],
         z_values: List[np.ndarray],
     ) -> tuple[List[np.ndarray], List[np.ndarray]]:
-        """Calcula os gradientes por backpropagation.
-
-        Ideia principal:
-        1. calculamos o erro da camada de saida
-        2. propagamos esse erro de tras para frente
-        3. para cada camada, extraimos gradientes de pesos e biases
-        """
+        """Calcula os gradientes por backpropagation."""
         m = y.shape[0]
         gradientes_pesos: List[np.ndarray] = []
         gradientes_biases: List[np.ndarray] = []
 
-        # Na saida, a rede produz probabilidades e comparamos com y.
-        delta = ativacoes[-1] - y
+        delta = self._calcular_delta_saida(y, ativacoes[-1], z_values[-1])
 
         for indice in reversed(range(self.num_camadas - 1)):
             dW = np.dot(ativacoes[indice].T, delta) / m
@@ -220,8 +234,6 @@ class RedeNeural:
             gradientes_biases.insert(0, db)
 
             if indice > 0:
-                # Para voltar uma camada, redistribuimos o erro pelos pesos
-                # atuais e multiplicamos pela derivada da ativacao oculta.
                 delta_z = self.funcoes.derivada(z_values[indice - 1], self.ativacao)
                 delta = np.dot(delta, self.pesos[indice].T) * delta_z
 
@@ -238,9 +250,22 @@ class RedeNeural:
             self.pesos[indice] -= taxa_aprendizado * gradientes_pesos[indice]
             self.biases[indice] -= taxa_aprendizado * gradientes_biases[indice]
 
-    def _calcular_erro(self, y_true: np.ndarray, y_pred: np.ndarray) -> float:
-        """Calcula o erro quadratico medio."""
+    def _calcular_mse(self, y_true: np.ndarray, y_pred: np.ndarray) -> float:
+        """Calcula o erro quadratico medio, util como metrica complementar."""
         return float(np.mean((y_true - y_pred) ** 2))
+
+    def _calcular_loss(self, y_true: np.ndarray, y_pred: np.ndarray) -> float:
+        """Calcula a perda configurada para o modelo."""
+        if self.funcao_custo == "mse":
+            return self._calcular_mse(y_true, y_pred)
+
+        y_pred_seguro = np.clip(y_pred, 1e-10, 1 - 1e-10)
+        loss = -np.mean(y_true * np.log(y_pred_seguro) + (1 - y_true) * np.log(1 - y_pred_seguro))
+        return float(loss)
+
+    def _calcular_erro(self, y_true: np.ndarray, y_pred: np.ndarray) -> float:
+        """Mantem compatibilidade com o restante do projeto usando a perda atual."""
+        return self._calcular_loss(y_true, y_pred)
 
     def _calcular_acuracia(
         self,
@@ -254,15 +279,26 @@ class RedeNeural:
         y_true_binarias = (y_true >= limiar).astype(int)
         return float(np.mean(predicoes_binarias == y_true_binarias) * 100)
 
-    def _calcular_metricas_epoca(
-        self,
-        y_true: np.ndarray,
-        y_pred: np.ndarray,
-    ) -> tuple[float, float]:
+    def _calcular_metricas_epoca(self, y_true: np.ndarray, y_pred: np.ndarray) -> dict[str, float]:
         """Agrupa as metricas usadas ao final de cada epoca."""
-        erro = self._calcular_erro(y_true, y_pred)
-        acuracia = self._calcular_acuracia(y_true, y_pred)
-        return erro, acuracia
+        return {
+            "loss": self._calcular_loss(y_true, y_pred),
+            "mse": self._calcular_mse(y_true, y_pred),
+            "acuracia": self._calcular_acuracia(y_true, y_pred),
+        }
+
+    def _copiar_parametros(self) -> tuple[List[np.ndarray], List[np.ndarray]]:
+        """Cria um snapshot dos parametros atuais para restauracao futura."""
+        return [peso.copy() for peso in self.pesos], [bias.copy() for bias in self.biases]
+
+    def _restaurar_parametros(
+        self,
+        pesos: List[np.ndarray],
+        biases: List[np.ndarray],
+    ) -> None:
+        """Restaura pesos e biases a partir de um snapshot."""
+        self.pesos = [peso.copy() for peso in pesos]
+        self.biases = [bias.copy() for bias in biases]
 
     def contar_parametros(self) -> int:
         """Conta quantos parametros treinaveis a rede possui."""
@@ -275,6 +311,7 @@ class RedeNeural:
             "camadas_treinaveis": self.num_camadas - 1,
             "ativacao_oculta": self.ativacao,
             "ativacao_saida": "sigmoid",
+            "funcao_custo": self.funcao_custo,
             "inicializacao": self.inicializacao,
             "seed": self.seed,
             "parametros_treinaveis": self.contar_parametros(),
@@ -289,18 +326,23 @@ class RedeNeural:
         verbose: bool = True,
         validacao_X: Optional[np.ndarray] = None,
         validacao_y: Optional[np.ndarray] = None,
+        paciencia: Optional[int] = None,
+        min_delta: float = 0.0,
+        restaurar_melhores_pesos: bool = True,
     ) -> dict:
         """Treina a rede com gradiente descendente em batch completo.
 
-        Observacao importante:
-        o historico armazenado reflete o estado da rede *depois* da atualizacao
-        dos pesos em cada epoca. Isso deixa o historico mais intuitivo para estudo.
+        `early stopping` pode acompanhar a perda de validacao, se existir, ou
+        a perda de treino, caso contrario.
         """
         if epochs <= 0:
             raise ValueError("epochs precisa ser maior que zero.")
-
         if taxa_aprendizado <= 0:
             raise ValueError("taxa_aprendizado precisa ser maior que zero.")
+        if paciencia is not None and paciencia <= 0:
+            raise ValueError("paciencia precisa ser maior que zero quando informada.")
+        if min_delta < 0:
+            raise ValueError("min_delta nao pode ser negativo.")
 
         X_array = self._validar_entrada(X)
         y_array = self._validar_rotulos(y, X_array.shape[0])
@@ -308,69 +350,108 @@ class RedeNeural:
             validacao_X, validacao_y
         )
 
-        self.historico_erro = []
-        self.historico_acuracia = []
-        self.historico_validacao_erro = []
-        self.historico_validacao_acuracia = []
+        self._resetar_historicos()
 
         intervalo_log = max(1, epochs // 10)
+        melhor_monitor = float("inf")
+        epocas_sem_melhoria = 0
+        melhor_snapshot: Optional[tuple[List[np.ndarray], List[np.ndarray]]] = None
+        motivo_parada = "epochs_concluidas"
 
         for epoch in range(epochs):
             ativacoes, z_values = self._forward_propagation(X_array)
             grad_pesos, grad_biases = self._backward_propagation(y_array, ativacoes, z_values)
             self._atualizar_parametros(grad_pesos, grad_biases, taxa_aprendizado)
 
-            # Recalculamos o forward apos atualizar pesos para que o historico
-            # represente exatamente o estado atual do modelo.
-            ativacoes_atualizadas, _ = self._forward_propagation(X_array)
-            y_pred = ativacoes_atualizadas[-1]
-            erro, acuracia = self._calcular_metricas_epoca(y_array, y_pred)
+            ativacoes_treino, _ = self._forward_propagation(X_array)
+            metricas_treino = self._calcular_metricas_epoca(y_array, ativacoes_treino[-1])
 
-            self.historico_erro.append(erro)
-            self.historico_acuracia.append(acuracia)
+            self.historico_erro.append(metricas_treino["loss"])
+            self.historico_mse.append(metricas_treino["mse"])
+            self.historico_acuracia.append(metricas_treino["acuracia"])
 
-            resumo_validacao = None
+            metricas_validacao = None
             if validacao_X_array is not None and validacao_y_array is not None:
                 ativacoes_validacao, _ = self._forward_propagation(validacao_X_array)
-                val_pred = ativacoes_validacao[-1]
-                val_erro, val_acuracia = self._calcular_metricas_epoca(validacao_y_array, val_pred)
-                self.historico_validacao_erro.append(val_erro)
-                self.historico_validacao_acuracia.append(val_acuracia)
-                resumo_validacao = (val_erro, val_acuracia)
+                metricas_validacao = self._calcular_metricas_epoca(
+                    validacao_y_array,
+                    ativacoes_validacao[-1],
+                )
+                self.historico_validacao_erro.append(metricas_validacao["loss"])
+                self.historico_validacao_mse.append(metricas_validacao["mse"])
+                self.historico_validacao_acuracia.append(metricas_validacao["acuracia"])
+
+            monitor_atual = (
+                metricas_validacao["loss"]
+                if metricas_validacao is not None
+                else metricas_treino["loss"]
+            )
+
+            if monitor_atual < melhor_monitor - min_delta:
+                melhor_monitor = monitor_atual
+                epocas_sem_melhoria = 0
+                melhor_snapshot = self._copiar_parametros()
+            else:
+                epocas_sem_melhoria += 1
 
             if verbose and (epoch == 0 or (epoch + 1) % intervalo_log == 0 or epoch == epochs - 1):
                 print(
                     f"Epoca {epoch + 1:4d}/{epochs}: "
-                    f"Erro = {erro:.4f}, Acuracia = {acuracia:.2f}%"
+                    f"Loss = {metricas_treino['loss']:.4f}, "
+                    f"MSE = {metricas_treino['mse']:.4f}, "
+                    f"Acuracia = {metricas_treino['acuracia']:.2f}%"
                 )
-                if resumo_validacao is not None:
+                if metricas_validacao is not None:
                     print(
                         "              Validacao: "
-                        f"Erro = {resumo_validacao[0]:.4f}, "
-                        f"Acuracia = {resumo_validacao[1]:.2f}%"
+                        f"Loss = {metricas_validacao['loss']:.4f}, "
+                        f"MSE = {metricas_validacao['mse']:.4f}, "
+                        f"Acuracia = {metricas_validacao['acuracia']:.2f}%"
                     )
 
+            if paciencia is not None and epocas_sem_melhoria >= paciencia:
+                motivo_parada = "early_stopping"
+                if restaurar_melhores_pesos and melhor_snapshot is not None:
+                    self._restaurar_parametros(*melhor_snapshot)
+                break
+
+        resumo_treino_final = self._calcular_metricas_epoca(y_array, self.prever(X_array))
         resumo = {
-            "erro_final": self.historico_erro[-1],
-            "acuracia_final": self.historico_acuracia[-1],
+            "erro_final": resumo_treino_final["loss"],
+            "loss_final": resumo_treino_final["loss"],
+            "mse_final": resumo_treino_final["mse"],
+            "acuracia_final": resumo_treino_final["acuracia"],
             "melhor_erro": min(self.historico_erro),
+            "melhor_mse": min(self.historico_mse),
             "melhor_acuracia": max(self.historico_acuracia),
-            "epochs": epochs,
+            "epochs_planejadas": epochs,
+            "epocas_executadas": len(self.historico_erro),
             "taxa_aprendizado": float(taxa_aprendizado),
+            "funcao_custo": self.funcao_custo,
             "parametros_treinaveis": self.contar_parametros(),
+            "motivo_parada": motivo_parada,
+            "early_stopping_ativado": paciencia is not None,
         }
 
-        if self.historico_validacao_erro:
-            resumo["erro_validacao_final"] = self.historico_validacao_erro[-1]
-            resumo["acuracia_validacao_final"] = self.historico_validacao_acuracia[-1]
+        if validacao_X_array is not None and validacao_y_array is not None:
+            resumo_validacao_final = self._calcular_metricas_epoca(
+                validacao_y_array,
+                self.prever(validacao_X_array),
+            )
+            resumo["erro_validacao_final"] = resumo_validacao_final["loss"]
+            resumo["loss_validacao_final"] = resumo_validacao_final["loss"]
+            resumo["mse_validacao_final"] = resumo_validacao_final["mse"]
+            resumo["acuracia_validacao_final"] = resumo_validacao_final["acuracia"]
 
         if verbose:
             print("\n" + "=" * 50)
             print("TREINAMENTO CONCLUIDO")
             print("=" * 50)
-            print(f"Erro final: {resumo['erro_final']:.4f}")
+            print(f"Loss final: {resumo['loss_final']:.4f}")
+            print(f"MSE final: {resumo['mse_final']:.4f}")
             print(f"Acuracia final: {resumo['acuracia_final']:.2f}%")
             print(f"Melhor acuracia: {resumo['melhor_acuracia']:.2f}%")
+            print(f"Epocas executadas: {resumo['epocas_executadas']}")
             print(f"Parametros treinaveis: {resumo['parametros_treinaveis']}")
 
         return resumo
@@ -391,10 +472,14 @@ class RedeNeural:
         X_array = self._validar_entrada(X)
         y_array = self._validar_rotulos(y, X_array.shape[0])
         predicoes = self.prever(X_array)
+        metricas = self._calcular_metricas_epoca(y_array, predicoes)
 
         return {
-            "erro": self._calcular_erro(y_array, predicoes),
-            "acuracia": self._calcular_acuracia(y_array, predicoes),
+            "erro": metricas["loss"],
+            "loss": metricas["loss"],
+            "mse": metricas["mse"],
+            "acuracia": metricas["acuracia"],
+            "funcao_custo": self.funcao_custo,
             "predicoes": predicoes,
         }
 
@@ -406,6 +491,7 @@ class RedeNeural:
             "arquitetura": list(self.arquitetura),
             "ativacao": self.ativacao,
             "inicializacao": self.inicializacao,
+            "funcao_custo": self.funcao_custo,
             "seed": self.seed,
         }
 
@@ -426,6 +512,7 @@ class RedeNeural:
             "arquitetura": np.array(self.arquitetura, dtype=int),
             "ativacao": np.array([self.ativacao], dtype=object),
             "inicializacao": np.array([self.inicializacao], dtype=object),
+            "funcao_custo": np.array([self.funcao_custo], dtype=object),
             "seed": np.array([self.seed], dtype=object),
         }
         np.savez(caminho_arquivo, **parametros)
@@ -448,14 +535,16 @@ class RedeNeural:
                 str(dados["inicializacao"].tolist()[0])
             )
 
+        if "funcao_custo" in dados.files:
+            self.funcao_custo = self._validar_funcao_custo(
+                str(dados["funcao_custo"].tolist()[0])
+            )
+
         if "seed" in dados.files:
             seed_salva = dados["seed"].tolist()[0]
             self.seed = None if seed_salva is None else int(seed_salva)
 
         self.num_camadas = len(self.arquitetura)
         self._rng = np.random.default_rng(self.seed)
-        self.historico_erro = []
-        self.historico_acuracia = []
-        self.historico_validacao_erro = []
-        self.historico_validacao_acuracia = []
+        self._resetar_historicos()
         print(f"Parametros carregados de: {caminho}")

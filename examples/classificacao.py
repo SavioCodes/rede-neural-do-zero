@@ -32,16 +32,30 @@ def avaliar_modelo(
         ativacao=ativacao,
         inicializacao=inicializacao,
         seed=seed,
+        funcao_custo="binary_crossentropy",
     )
-    rede.treinar(X_train, y_train, epochs=epochs, taxa_aprendizado=taxa_aprendizado, verbose=False)
+    rede.treinar(
+        X_train,
+        y_train,
+        epochs=epochs,
+        taxa_aprendizado=taxa_aprendizado,
+        validacao_X=X_test,
+        validacao_y=y_test,
+        paciencia=25,
+        min_delta=1e-4,
+        verbose=False,
+    )
     resultado = rede.avaliar(X_test, y_test)
     metricas = MetricUtils.precisao_recall_f1(y_test, resultado["predicoes"])
     return {
         "acuracia": resultado["acuracia"],
+        "loss": resultado["loss"],
         "erro": resultado["erro"],
+        "mse": resultado["mse"],
         "f1": metricas["f1_score"],
         "precisao": metricas["precisao"],
         "recall": metricas["recall"],
+        "especificidade": metricas["especificidade"],
     }
 
 
@@ -54,7 +68,7 @@ def experimento_funcoes_ativacao(samples: int, epochs: int, seed: int) -> None:
 
     print("\nComparando funcoes de ativacao")
     print("------------------------------")
-    print(f"{'funcao':<14}{'acuracia':<12}{'f1':<10}{'erro':<12}")
+    print(f"{'funcao':<14}{'acuracia':<12}{'f1':<10}{'loss':<12}")
 
     for indice, funcao in enumerate(["sigmoid", "relu", "tanh", "leaky_relu"]):
         inicializacao = "he" if "relu" in funcao else "xavier"
@@ -72,7 +86,7 @@ def experimento_funcoes_ativacao(samples: int, epochs: int, seed: int) -> None:
         )
         print(
             f"{funcao:<14}{resultado['acuracia']:<12.2f}"
-            f"{resultado['f1']:<10.4f}{resultado['erro']:<12.6f}"
+            f"{resultado['f1']:<10.4f}{resultado['loss']:<12.6f}"
         )
 
 
@@ -83,7 +97,7 @@ def experimento_normalizacao(samples: int, epochs: int, seed: int) -> None:
 
     print("\nComparando metodos de normalizacao")
     print("----------------------------------")
-    print(f"{'metodo':<14}{'acuracia':<12}{'f1':<10}{'erro':<12}")
+    print(f"{'metodo':<14}{'acuracia':<12}{'f1':<10}{'loss':<12}")
 
     for indice, metodo in enumerate(["padrao", "minmax", "robusto"]):
         X_norm, _ = DataUtils.normalizar_dados(X, metodo=metodo)
@@ -104,7 +118,7 @@ def experimento_normalizacao(samples: int, epochs: int, seed: int) -> None:
         )
         print(
             f"{metodo:<14}{resultado['acuracia']:<12.2f}"
-            f"{resultado['f1']:<10.4f}{resultado['erro']:<12.6f}"
+            f"{resultado['f1']:<10.4f}{resultado['loss']:<12.6f}"
         )
 
 

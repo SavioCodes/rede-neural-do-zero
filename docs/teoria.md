@@ -53,7 +53,7 @@ Com esses gradientes, o modelo atualiza seus parametros por gradiente descendent
 Em alto nivel:
 
 1. faz o forward
-2. calcula o erro de saida
+2. calcula a perda de saida
 3. propaga esse erro para tras
 4. atualiza pesos e biases
 
@@ -109,14 +109,36 @@ Util como baseline, mas normalmente menos robusta.
 
 ## Metricas
 
-O repositorio trabalha com classificacao binaria e expõe:
+O repositorio trabalha com classificacao binaria e expoe:
 
+- loss de treino configuravel
 - erro quadratico medio como sinal simples de acompanhamento
 - acuracia
 - precisao
 - recall
+- especificidade
+- balanced accuracy
 - F1-score
 - matriz de confusao
+
+## Funcoes de custo
+
+### Binary cross-entropy
+
+E a perda padrao do projeto, porque conversa melhor com a saida sigmoide em classificacao binaria.
+
+### MSE
+
+Tambem esta disponivel como opcao didatica para comparacoes.
+
+## Early stopping
+
+Quando usamos um conjunto de validacao, podemos parar o treino quando a perda deixa de melhorar.
+Esse mecanismo ajuda a:
+
+- evitar treino desnecessario
+- observar melhor o ponto de melhor generalizacao
+- restaurar automaticamente os melhores pesos encontrados
 
 ## Normalizacao de dados
 

@@ -424,11 +424,15 @@ class MetricUtils:
 
         precisao = tp / (tp + fp) if (tp + fp) > 0 else 0.0
         recall = tp / (tp + fn) if (tp + fn) > 0 else 0.0
+        especificidade = tn / (tn + fp) if (tn + fp) > 0 else 0.0
+        balanced_accuracy = (recall + especificidade) / 2
         f1 = 2 * (precisao * recall) / (precisao + recall) if (precisao + recall) > 0 else 0.0
 
         return {
             "precisao": float(precisao),
             "recall": float(recall),
+            "especificidade": float(especificidade),
+            "balanced_accuracy": float(balanced_accuracy),
             "f1_score": float(f1),
             "matriz_confusao": cm,
         }

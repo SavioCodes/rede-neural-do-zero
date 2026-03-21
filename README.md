@@ -22,9 +22,11 @@ Ele cobre:
 ## Destaques
 
 - `RedeNeural(..., seed=...)` para experimentos reproduziveis
+- `funcao_custo="binary_crossentropy"` ou `"mse"` para comparar perdas
 - validacoes de entrada no treino, previsao, metricas e split de dados
 - `prever_classes()` para converter probabilidades em classes binarias
 - historico de treino e validacao salvo no modelo
+- `early stopping` opcional com restauracao dos melhores pesos
 - `scripts/evaluate.py` gerando artefatos JSON e JSONL em `logs/`
 - configuracao centralizada em `pyproject.toml`
 
@@ -75,8 +77,22 @@ from src.utils import DataUtils
 
 X, y = DataUtils.gerar_xor_dataset()
 
-rede = RedeNeural([2, 4, 1], ativacao="sigmoid", inicializacao="xavier", seed=42)
-resumo = rede.treinar(X, y, epochs=2000, taxa_aprendizado=0.5, verbose=False)
+rede = RedeNeural(
+    [2, 4, 1],
+    ativacao="sigmoid",
+    inicializacao="xavier",
+    seed=42,
+    funcao_custo="binary_crossentropy",
+)
+resumo = rede.treinar(
+    X,
+    y,
+    epochs=2000,
+    taxa_aprendizado=0.5,
+    paciencia=50,
+    min_delta=1e-4,
+    verbose=False,
+)
 
 probabilidades = rede.prever(X)
 classes = rede.prever_classes(X)
@@ -85,6 +101,7 @@ metricas = rede.avaliar(X, y)
 print(resumo)
 print(probabilidades)
 print(classes)
+print(metricas["loss"])
 print(metricas["acuracia"])
 ```
 
@@ -111,7 +128,7 @@ O sumario inclui:
 
 - configuracao do modelo
 - seed usada
-- MSE, acuracia, precisao, recall e F1-score
+- loss, MSE, acuracia, precisao, recall, especificidade e F1-score
 - matriz de confusao
 
 ## Automacao
@@ -137,14 +154,15 @@ make verify
 
 - O foco e clareza didatica, nao performance de producao.
 - A camada de saida usa sigmoid para classificacao binaria.
+- O custo padrao e `binary_crossentropy`, mais apropriado para saida sigmoide.
 - O script de avaliacao e deterministico para reduzir flakiness na CI.
 - O projeto evita depender do estado global do NumPy quando usa seeds.
 
 ## Proximos Passos
 
-- adicionar outras funcoes de custo para comparacao didatica
 - exportar artefatos visuais automaticamente em pipelines
 - incluir mais exemplos com datasets externos pequenos
+- experimentar mini-batches e otimizadores mais avancados
 
 ## Licenca
 

@@ -25,7 +25,7 @@ Depois do forward, o modelo calcula gradientes para todos os pesos e biases.
 Estrutura geral:
 
 ```text
-delta_saida = y_pred - y_true
+delta_saida = gradiente_da_loss_na_saida
 dW = a_anterior.T @ delta / m
 db = soma(delta) / m
 delta_anterior = (delta @ W.T) * derivada_ativacao(z_anterior)
@@ -36,6 +36,35 @@ Pontos importantes desta implementacao:
 - o codigo trabalha em batch completo
 - os gradientes sao calculados do fim para o inicio
 - o gradiente das camadas ocultas depende da derivada da ativacao escolhida
+- o gradiente da saida muda conforme a funcao de custo selecionada
+
+## Funcoes de custo
+
+O modelo suporta duas perdas:
+
+### Binary cross-entropy
+
+Usada por padrao, porque combina melhor com a saida sigmoide para classificacao binaria.
+
+```text
+loss = -media(y * log(p) + (1 - y) * log(1 - p))
+```
+
+Nesse caso, o gradiente da saida fica simples:
+
+```text
+delta_saida = y_pred - y_true
+```
+
+### MSE
+
+Mantida como opcao didatica para comparacao.
+
+```text
+loss = media((y_true - y_pred)^2)
+```
+
+Aqui o gradiente da camada de saida ainda precisa multiplicar pela derivada da sigmoid.
 
 ## Treinamento
 
@@ -49,6 +78,17 @@ O metodo `treinar()` executa:
 6. registro opcional de historico de validacao
 
 O metodo retorna um resumo com as metricas finais do treinamento.
+
+### Early stopping
+
+Quando `paciencia` e informada, o treino monitora a perda de validacao.
+Se nao houver validacao, monitora a perda de treino.
+
+Isso permite:
+
+- interromper treinos que pararam de melhorar
+- reduzir overfitting em exemplos com validacao
+- restaurar os melhores pesos observados durante o processo
 
 ## Inicializacao
 
@@ -114,7 +154,7 @@ O modulo `MetricUtils` calcula:
  [FN, TP]]
 ```
 
-### Precisao, recall e F1-score
+### Precisao, recall, especificidade e F1-score
 
 As metricas sao derivadas diretamente da matriz de confusao e protegidas contra divisao por zero.
 
@@ -127,6 +167,7 @@ O metodo `salvar_parametros()` grava:
 - arquitetura
 - ativacao
 - metodo de inicializacao
+- funcao de custo
 - seed
 
 O metodo `carregar_parametros()` reconstrui o estado do modelo a partir do arquivo `.npz`.
@@ -137,8 +178,8 @@ O script `scripts/evaluate.py` executa um fluxo padronizado:
 
 1. gera dataset sintetico
 2. normaliza os dados
-3. divide treino e teste
-4. treina uma arquitetura fixa com seed fixa
+3. divide treino, validacao e teste
+4. treina uma arquitetura fixa com seed fixa e early stopping
 5. calcula metricas
 6. salva resumo em JSON e historico em JSONL
 
@@ -156,7 +197,6 @@ Para manter a documentacao honesta, vale registrar o que ainda nao faz parte do 
 - otimizadores como Adam
 - regularizacao L1/L2
 - dropout
-- early stopping
 - multi-class classification
 
 Esses temas sao boas extensoes futuras, mas nao sao apresentados aqui como recursos prontos.

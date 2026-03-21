@@ -28,6 +28,7 @@ class TestRedeNeural(unittest.TestCase):
         self.assertEqual(self.rede.num_camadas, 3)
         self.assertEqual(self.rede.ativacao, "sigmoid")
         self.assertEqual(self.rede.inicializacao, "xavier")
+        self.assertEqual(self.rede.funcao_custo, "binary_crossentropy")
         self.assertEqual(self.rede.seed, 123)
         self.assertEqual(len(self.rede.pesos), 2)
         self.assertEqual(len(self.rede.biases), 2)
@@ -71,6 +72,13 @@ class TestRedeNeural(unittest.TestCase):
 
         self.assertLessEqual(erro_final, erro_inicial + 0.1)
 
+    def test_diferentes_funcoes_custo(self) -> None:
+        for funcao_custo in ["binary_crossentropy", "mse"]:
+            with self.subTest(funcao_custo=funcao_custo):
+                rede = RedeNeural([2, 4, 1], ativacao="sigmoid", seed=8, funcao_custo=funcao_custo)
+                resumo = rede.treinar(self.X_test, self.y_test, epochs=50, verbose=False)
+                self.assertEqual(resumo["funcao_custo"], funcao_custo)
+
     def test_xor_aprendizado(self) -> None:
         rede_xor = RedeNeural([2, 4, 1], ativacao="sigmoid", seed=7)
         rede_xor.treinar(self.X_test, self.y_test, epochs=2000, taxa_aprendizado=0.5, verbose=False)
@@ -107,9 +115,13 @@ class TestRedeNeural(unittest.TestCase):
         resultado = self.rede.avaliar(self.X_test, self.y_test)
 
         self.assertIn("erro", resultado)
+        self.assertIn("loss", resultado)
+        self.assertIn("mse", resultado)
         self.assertIn("acuracia", resultado)
         self.assertIn("predicoes", resultado)
         self.assertIsInstance(resultado["erro"], float)
+        self.assertIsInstance(resultado["loss"], float)
+        self.assertIsInstance(resultado["mse"], float)
         self.assertIsInstance(resultado["acuracia"], float)
         self.assertEqual(resultado["predicoes"].shape, (4, 1))
 
@@ -117,8 +129,10 @@ class TestRedeNeural(unittest.TestCase):
         self.rede.treinar(self.X_test, self.y_test, epochs=10, verbose=False)
 
         self.assertEqual(len(self.rede.historico_erro), 10)
+        self.assertEqual(len(self.rede.historico_mse), 10)
         self.assertEqual(len(self.rede.historico_acuracia), 10)
         self.assertTrue(all(isinstance(x, float) for x in self.rede.historico_erro))
+        self.assertTrue(all(isinstance(x, float) for x in self.rede.historico_mse))
         self.assertTrue(all(isinstance(x, float) for x in self.rede.historico_acuracia))
 
     def test_treinar_retorna_resumo_e_historico_validacao(self) -> None:
@@ -135,9 +149,11 @@ class TestRedeNeural(unittest.TestCase):
         self.assertIn("acuracia_final", resumo)
         self.assertIn("erro_validacao_final", resumo)
         self.assertIn("melhor_erro", resumo)
+        self.assertIn("melhor_mse", resumo)
         self.assertIn("melhor_acuracia", resumo)
         self.assertIn("parametros_treinaveis", resumo)
         self.assertEqual(len(self.rede.historico_validacao_erro), 3)
+        self.assertEqual(len(self.rede.historico_validacao_mse), 3)
         self.assertEqual(len(self.rede.historico_validacao_acuracia), 3)
 
     def test_resumo_treinamento_reflete_estado_atual_da_rede(self) -> None:
@@ -153,10 +169,25 @@ class TestRedeNeural(unittest.TestCase):
         self.assertEqual(resumo_modelo["arquitetura"], self.arquitetura_simples)
         self.assertEqual(resumo_modelo["ativacao_oculta"], "sigmoid")
         self.assertEqual(resumo_modelo["ativacao_saida"], "sigmoid")
+        self.assertEqual(resumo_modelo["funcao_custo"], "binary_crossentropy")
         self.assertEqual(
             resumo_modelo["parametros_treinaveis"],
             self.rede.contar_parametros(),
         )
+
+    def test_early_stopping(self) -> None:
+        resumo = self.rede.treinar(
+            self.X_test,
+            self.y_test,
+            epochs=20,
+            paciencia=2,
+            min_delta=1e9,
+            verbose=False,
+        )
+
+        self.assertTrue(resumo["early_stopping_ativado"])
+        self.assertEqual(resumo["motivo_parada"], "early_stopping")
+        self.assertLess(resumo["epocas_executadas"], resumo["epochs_planejadas"])
 
     def test_salvar_carregar_parametros(self) -> None:
         self.rede.treinar(self.X_test, self.y_test, epochs=50, verbose=False)
@@ -171,6 +202,7 @@ class TestRedeNeural(unittest.TestCase):
 
         np.testing.assert_array_almost_equal(pred_original, pred_carregada, decimal=10)
         self.assertEqual(rede_nova.inicializacao, self.rede.inicializacao)
+        self.assertEqual(rede_nova.funcao_custo, self.rede.funcao_custo)
         self.assertEqual(rede_nova.seed, self.rede.seed)
 
         if os.path.exists(caminho):

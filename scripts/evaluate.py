@@ -31,13 +31,29 @@ def run_evaluation(seed: int, epochs: int, samples: int, min_accuracy: float) ->
         test_size=0.2,
         random_state=seed,
     )
+    X_train, X_val, y_train, y_val = DataUtils.dividir_treino_teste(
+        X_train,
+        y_train,
+        test_size=0.25,
+        random_state=seed,
+    )
 
-    model = RedeNeural([2, 8, 1], ativacao="relu", inicializacao="he", seed=seed)
-    model.treinar(
+    model = RedeNeural(
+        [2, 8, 1],
+        ativacao="relu",
+        inicializacao="he",
+        seed=seed,
+        funcao_custo="binary_crossentropy",
+    )
+    treino = model.treinar(
         X_train,
         y_train,
         epochs=epochs,
         taxa_aprendizado=0.02,
+        validacao_X=X_val,
+        validacao_y=y_val,
+        paciencia=40,
+        min_delta=1e-4,
         verbose=False,
     )
 
@@ -49,17 +65,23 @@ def run_evaluation(seed: int, epochs: int, samples: int, min_accuracy: float) ->
         "seed": seed,
         "epochs": epochs,
         "samples": samples,
-        "model": {
-            "arquitetura": model.arquitetura,
-            "ativacao": model.ativacao,
-            "inicializacao": model.inicializacao,
-            "seed": model.seed,
+        "data_split": {
+            "train_samples": int(X_train.shape[0]),
+            "validation_samples": int(X_val.shape[0]),
+            "test_samples": int(X_test.shape[0]),
         },
+        "model": {
+            **model.resumir_modelo(),
+        },
+        "training": treino,
         "metrics": {
-            "mse": float(eval_result["erro"]),
+            "loss": float(eval_result["loss"]),
+            "mse": float(eval_result["mse"]),
             "accuracy": float(eval_result["acuracia"]),
             "precision": float(prf["precisao"]),
             "recall": float(prf["recall"]),
+            "specificity": float(prf["especificidade"]),
+            "balanced_accuracy": float(prf["balanced_accuracy"]),
             "f1_score": float(prf["f1_score"]),
             "confusion_matrix": prf["matriz_confusao"].tolist(),
         },
@@ -97,6 +119,7 @@ def main() -> None:
 
     print("Evaluation completed")
     print(f"Accuracy: {summary['metrics']['accuracy']:.2f}%")
+    print(f"Loss: {summary['metrics']['loss']:.6f}")
     print(f"MSE: {summary['metrics']['mse']:.6f}")
     print(f"Output: {args.json_output}")
 

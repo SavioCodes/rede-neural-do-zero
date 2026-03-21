@@ -17,7 +17,13 @@ from src.utils import DataUtils, MetricUtils, VisualizationUtils  # noqa: E402
 
 def treinar_xor(seed: int) -> tuple[RedeNeural, dict]:
     X_xor, y_xor = DataUtils.gerar_xor_dataset()
-    rede = RedeNeural([2, 4, 1], ativacao="sigmoid", inicializacao="xavier", seed=seed)
+    rede = RedeNeural(
+        [2, 4, 1],
+        ativacao="sigmoid",
+        inicializacao="xavier",
+        seed=seed,
+        funcao_custo="binary_crossentropy",
+    )
     rede.treinar(X_xor, y_xor, epochs=1500, taxa_aprendizado=0.5, verbose=False)
     resultado = rede.avaliar(X_xor, y_xor)
     return rede, resultado
@@ -30,15 +36,23 @@ def treinar_classificacao(samples: int, seed: int) -> tuple[RedeNeural, dict, tu
         X_norm, y, test_size=0.2, random_state=seed
     )
 
-    rede = RedeNeural([2, 8, 4, 1], ativacao="relu", inicializacao="he", seed=seed)
+    rede = RedeNeural(
+        [2, 8, 4, 1],
+        ativacao="relu",
+        inicializacao="he",
+        seed=seed,
+        funcao_custo="binary_crossentropy",
+    )
     rede.treinar(
         X_train,
         y_train,
         epochs=800,
         taxa_aprendizado=0.02,
-        verbose=False,
         validacao_X=X_test,
         validacao_y=y_test,
+        paciencia=40,
+        min_delta=1e-4,
+        verbose=False,
     )
 
     resultado = rede.avaliar(X_test, y_test)
@@ -109,14 +123,18 @@ def main() -> None:
     print("\nResumo XOR")
     print("----------")
     print(f"Acuracia: {resultado_xor['acuracia']:.2f}%")
-    print(f"Erro: {resultado_xor['erro']:.6f}")
+    print(f"Loss: {resultado_xor['loss']:.6f}")
+    print(f"MSE: {resultado_xor['mse']:.6f}")
 
     print("\nResumo classificacao")
     print("--------------------")
     print(f"Acuracia: {resultado_classificacao['acuracia']:.2f}%")
-    print(f"Erro: {resultado_classificacao['erro']:.6f}")
+    print(f"Loss: {resultado_classificacao['loss']:.6f}")
+    print(f"MSE: {resultado_classificacao['mse']:.6f}")
     print(f"Precisao: {metricas['precisao']:.4f}")
     print(f"Recall: {metricas['recall']:.4f}")
+    print(f"Especificidade: {metricas['especificidade']:.4f}")
+    print(f"Balanced accuracy: {metricas['balanced_accuracy']:.4f}")
     print(f"F1-score: {metricas['f1_score']:.4f}")
     print(f"Matriz de confusao:\n{metricas['matriz_confusao']}")
 

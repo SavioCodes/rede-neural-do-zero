@@ -45,6 +45,7 @@ def comparar_arquiteturas(epochs: int, taxa_aprendizado: float, seed: int) -> No
             ativacao="sigmoid",
             inicializacao="xavier",
             seed=seed + indice,
+            funcao_custo="binary_crossentropy",
         )
         rede.treinar(X, y, epochs=epochs, taxa_aprendizado=taxa_aprendizado, verbose=False)
         resultado = rede.avaliar(X, y)
@@ -66,7 +67,13 @@ def comparar_arquiteturas(epochs: int, taxa_aprendizado: float, seed: int) -> No
 
 def treinamento_detalhado(epochs: int, taxa_aprendizado: float, seed: int) -> None:
     X, y = DataUtils.gerar_xor_dataset()
-    rede = RedeNeural([2, 4, 1], ativacao="sigmoid", inicializacao="xavier", seed=seed)
+    rede = RedeNeural(
+        [2, 4, 1],
+        ativacao="sigmoid",
+        inicializacao="xavier",
+        seed=seed,
+        funcao_custo="binary_crossentropy",
+    )
 
     resumo = rede.treinar(X, y, epochs=epochs, taxa_aprendizado=taxa_aprendizado, verbose=False)
     probabilidades = rede.prever(X)
