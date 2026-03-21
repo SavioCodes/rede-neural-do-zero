@@ -90,6 +90,10 @@ class TestFuncoesAtivacao(unittest.TestCase):
             resultado = self.funcoes.aplicar(self.x_test, nome)
             self.assertEqual(resultado.shape, self.x_test.shape)
 
+    def test_aplicar_funcao_com_nome_formatado(self) -> None:
+        resultado = self.funcoes.aplicar(self.x_test, "  ReLU ")
+        np.testing.assert_array_equal(resultado, self.funcoes.relu(self.x_test))
+
     def test_aplicar_derivada(self) -> None:
         for nome in ["sigmoid", "relu", "tanh", "leaky_relu", "linear"]:
             resultado = self.funcoes.derivada(self.x_test, nome)

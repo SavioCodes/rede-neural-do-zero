@@ -61,6 +61,9 @@ class DataUtils:
         media_classe0 = np.full(n_features, -1.0)
         media_classe1 = np.full(n_features, 1.0)
 
+        # Criamos duas "nuvens" gaussianas com centros diferentes.
+        # Isso produz um problema de classificacao simples, mas suficiente
+        # para demonstrar aprendizado, normalizacao e avaliacao.
         cov_classe0 = np.eye(n_features)
         cov_classe1 = np.eye(n_features)
         cov_classe0[0, 1] = cov_classe0[1, 0] = 0.5
@@ -77,6 +80,7 @@ class DataUtils:
         if noise:
             X = X + rng.normal(0.0, noise, size=X.shape)
 
+        # Embaralhar evita que todas as amostras da mesma classe fiquem juntas.
         indices = rng.permutation(X.shape[0])
         return X[indices], y[indices]
 
@@ -402,6 +406,9 @@ class MetricUtils:
         y_pred_bin = (y_pred_array >= limiar).astype(int).ravel()
         y_true_bin = y_true_array.ravel().astype(int)
 
+        # A matriz final fica no formato:
+        # [[TN, FP],
+        #  [FN, TP]]
         tp = np.sum((y_true_bin == 1) & (y_pred_bin == 1))
         tn = np.sum((y_true_bin == 0) & (y_pred_bin == 0))
         fp = np.sum((y_true_bin == 0) & (y_pred_bin == 1))

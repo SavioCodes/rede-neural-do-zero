@@ -60,6 +60,10 @@ class TestRedeNeural(unittest.TestCase):
         self.assertEqual(classes.shape, (4, 1))
         self.assertTrue(np.all(np.isin(classes, [0, 1])))
 
+    def test_prever_classes_com_limiar_invalido(self) -> None:
+        with self.assertRaises(ValueError):
+            self.rede.prever_classes(self.X_test, limiar=1.5)
+
     def test_treinamento_basico(self) -> None:
         erro_inicial = self.rede._calcular_erro(self.y_test, self.rede.prever(self.X_test))
         self.rede.treinar(self.X_test, self.y_test, epochs=100, taxa_aprendizado=0.5, verbose=False)
@@ -130,8 +134,29 @@ class TestRedeNeural(unittest.TestCase):
         self.assertIn("erro_final", resumo)
         self.assertIn("acuracia_final", resumo)
         self.assertIn("erro_validacao_final", resumo)
+        self.assertIn("melhor_erro", resumo)
+        self.assertIn("melhor_acuracia", resumo)
+        self.assertIn("parametros_treinaveis", resumo)
         self.assertEqual(len(self.rede.historico_validacao_erro), 3)
         self.assertEqual(len(self.rede.historico_validacao_acuracia), 3)
+
+    def test_resumo_treinamento_reflete_estado_atual_da_rede(self) -> None:
+        resumo = self.rede.treinar(self.X_test, self.y_test, epochs=1, verbose=False)
+        resultado = self.rede.avaliar(self.X_test, self.y_test)
+
+        self.assertAlmostEqual(resumo["erro_final"], resultado["erro"], places=10)
+        self.assertAlmostEqual(resumo["acuracia_final"], resultado["acuracia"], places=10)
+
+    def test_resumir_modelo(self) -> None:
+        resumo_modelo = self.rede.resumir_modelo()
+
+        self.assertEqual(resumo_modelo["arquitetura"], self.arquitetura_simples)
+        self.assertEqual(resumo_modelo["ativacao_oculta"], "sigmoid")
+        self.assertEqual(resumo_modelo["ativacao_saida"], "sigmoid")
+        self.assertEqual(
+            resumo_modelo["parametros_treinaveis"],
+            self.rede.contar_parametros(),
+        )
 
     def test_salvar_carregar_parametros(self) -> None:
         self.rede.treinar(self.X_test, self.y_test, epochs=50, verbose=False)
