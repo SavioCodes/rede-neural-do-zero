@@ -1,4 +1,4 @@
-name: Bug report
+﻿name: Bug report
 description: Reporte um problema reproduzivel no projeto.
 title: "[Bug]: "
 labels:
@@ -31,7 +31,7 @@ body:
       label: Como reproduzir
       description: Inclua comandos, configs, dataset e passos minimos.
       placeholder: |
-        1. Rode `python -m src train ...`
+        1. Rode `python -m rede_neural_do_zero train ...`
         2. Use o config `configs/...`
         3. Veja o erro
     validations:
@@ -47,4 +47,5 @@ body:
     id: validation
     attributes:
       label: Validacao adicional
-      description: Se ja rodou `python -m src verify`, logs ou prints uteis podem entrar aqui.
+      description: Se ja rodou `python -m rede_neural_do_zero verify`, logs ou prints uteis podem entrar aqui.
+

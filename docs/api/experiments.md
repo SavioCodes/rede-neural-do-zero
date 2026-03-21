@@ -2,26 +2,26 @@
 
 ## `DatasetBundle`
 
-::: src.experiments.DatasetBundle
+::: src.workflows.experiments.DatasetBundle
 
 ## Helpers de experimento
 
-::: src.experiments.carregar_dataset
+::: src.workflows.experiments.carregar_dataset
 
-::: src.experiments.dividir_treino_validacao_teste
+::: src.workflows.experiments.dividir_treino_validacao_teste
 
-::: src.experiments.criar_configs_padrao
+::: src.workflows.experiments.criar_configs_padrao
 
-::: src.experiments.avaliar_modelo
+::: src.workflows.experiments.avaliar_modelo
 
 ## Benchmark
 
-::: src.benchmarking.executar_benchmark
+::: src.workflows.benchmarking.executar_benchmark
 
-::: src.benchmarking.executar_suite_benchmark
+::: src.workflows.benchmarking.executar_suite_benchmark
 
-::: src.benchmarking.gerar_relatorio_markdown
+::: src.workflows.benchmarking.gerar_relatorio_markdown
 
 ## Avaliacao
 
-::: src.evaluation.run_evaluation
+::: src.workflows.evaluation.run_evaluation

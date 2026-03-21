@@ -1,3 +1,3 @@
 # API da Rede
 
-::: src.rede_neural.RedeNeural
+::: src.core.rede_neural.RedeNeural

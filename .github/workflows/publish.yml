@@ -1,4 +1,4 @@
-name: Publish
+﻿name: Publish
 
 on:
   release:
@@ -35,7 +35,8 @@ jobs:
         run: python scripts/validate_notebooks.py
 
       - name: Build distributions
-        run: python -m src build-package --check
+        run: python -m rede_neural_do_zero build-package --check
 
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
+

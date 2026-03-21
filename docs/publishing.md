@@ -1,11 +1,11 @@
-# Publicacao no PyPI
+﻿# Publicacao no PyPI
 
 O projeto foi organizado para funcionar como pacote instalavel de verdade, com build, verificacao e workflow de publicacao.
 
 ## Build local
 
 ```bash
-python -m src build-package --check
+python -m rede_neural_do_zero build-package --check
 ```
 
 Arquivos esperados:
@@ -27,9 +27,9 @@ Fluxo sugerido:
 
 1. criar ou atualizar a versao em `pyproject.toml`
 2. atualizar `src/__init__.py` e `CHANGELOG.md`
-3. validar com `python -m src verify --build-package`
+3. validar com `python -m rede_neural_do_zero verify --build-package`
 4. commitar a mudanca
-5. criar uma tag, por exemplo `v2.1.1`
+5. criar uma tag, por exemplo `v2.2.0`
 6. publicar a release no GitHub
 7. deixar o workflow publicar o pacote no PyPI
 
@@ -60,3 +60,4 @@ Ou em modo desenvolvimento:
 ```bash
 python -m pip install -e ".[dev]"
 ```
+

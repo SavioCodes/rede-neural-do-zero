@@ -2,20 +2,20 @@
 
 ## `Callback`
 
-::: src.callbacks.Callback
+::: src.training.callbacks.Callback
 
 ## `History`
 
-::: src.callbacks.History
+::: src.training.callbacks.History
 
 ## `EarlyStopping`
 
-::: src.callbacks.EarlyStopping
+::: src.training.callbacks.EarlyStopping
 
 ## `ModelCheckpoint`
 
-::: src.callbacks.ModelCheckpoint
+::: src.training.callbacks.ModelCheckpoint
 
 ## `CSVLogger`
 
-::: src.callbacks.CSVLogger
+::: src.training.callbacks.CSVLogger

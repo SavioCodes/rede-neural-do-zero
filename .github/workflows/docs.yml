@@ -1,4 +1,4 @@
-name: Docs
+﻿name: Docs
 
 on:
   push:
@@ -42,7 +42,7 @@ jobs:
           enablement: true
 
       - name: Build docs
-        run: python -m src build-docs --strict
+        run: python -m rede_neural_do_zero build-docs --strict
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
@@ -60,3 +60,4 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+

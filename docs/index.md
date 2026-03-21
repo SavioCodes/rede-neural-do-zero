@@ -1,4 +1,4 @@
-# Rede Neural do Zero
+﻿# Rede Neural do Zero
 
 <div class="hero">
   <div class="hero-copy">
@@ -61,10 +61,10 @@
 ## Fluxo recomendado
 
 1. Instale o projeto com `pip install -e .[dev]`.
-2. Rode um exemplo com `python -m src example --config configs/example/wine.json`.
-3. Treine com `python -m src train --config configs/train/iris.yaml`.
-4. Compare configuracoes com `python -m src benchmark --config configs/benchmark/suite.yaml`.
-5. Valide tudo com `python -m src verify --build-package`.
+2. Rode um exemplo com `python -m rede_neural_do_zero example --config configs/example/wine.json`.
+3. Treine com `python -m rede_neural_do_zero train --config configs/train/iris.yaml`.
+4. Compare configuracoes com `python -m rede_neural_do_zero benchmark --config configs/benchmark/suite.yaml`.
+5. Valide tudo com `python -m rede_neural_do_zero verify --build-package`.
 
 ## Destaques da versao atual
 
@@ -76,3 +76,4 @@
 - notebooks exportados para paginas da documentacao
 - manifests versionados para experimentos reproduziveis
 - CI, type-check, cobertura e workflow de publicacao
+

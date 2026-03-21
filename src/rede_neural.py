@@ -1,5 +1,3 @@
-"""Compat layer exporting the main educational neural network class."""
+"""Backward-compatible exports for the main neural network class."""
 
-from .rede_neural_core import RedeNeural
-
-__all__ = ["RedeNeural"]
+from .core.rede_neural import *  # noqa: F401,F403

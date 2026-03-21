@@ -2,16 +2,16 @@
 
 ## `DataUtils`
 
-::: src.utils.DataUtils
+::: src.data.utils.DataUtils
 
 ## `MetricUtils`
 
-::: src.utils.MetricUtils
+::: src.data.utils.MetricUtils
 
 ## `VisualizationUtils`
 
-::: src.utils.VisualizationUtils
+::: src.data.utils.VisualizationUtils
 
 ## `FileUtils`
 
-::: src.utils.FileUtils
+::: src.data.utils.FileUtils

@@ -14,6 +14,19 @@ Esta pagina centraliza os artefatos oficiais e o funcionamento do repositorio co
 - [`CONTRIBUTING.md`](https://github.com/SavioCodes/rede-neural-do-zero/blob/main/CONTRIBUTING.md)
 - [`ROADMAP.md`](https://github.com/SavioCodes/rede-neural-do-zero/blob/main/ROADMAP.md)
 - [`CHANGELOG.md`](https://github.com/SavioCodes/rede-neural-do-zero/blob/main/CHANGELOG.md)
+- [`docs/project-structure.md`](https://github.com/SavioCodes/rede-neural-do-zero/blob/main/docs/project-structure.md)
+
+## Estrutura oficial
+
+O repositorio agora esta organizado por dominios claros:
+
+- `src/core`: logica numerica principal da rede neural
+- `src/training`: callbacks e configuracoes
+- `src/data`: datasets sinteticos, metricas, plots e IO simples
+- `src/workflows`: treino, avaliacao e benchmark
+- `src/interfaces`: CLI oficial e suporte a arquivos de config
+
+Os caminhos antigos de `src.*` permanecem disponiveis como wrappers de compatibilidade.
 
 ## Gestao de issues
 
@@ -34,5 +47,6 @@ O repositorio esta preparado para:
 - deploy de docs via GitHub Pages
 - publicacao no PyPI via Trusted Publishing
 - releases versionadas com tags no GitHub
+- CLI oficial com `python -m rede_neural_do_zero` e os aliases instalados `rede-neural-do-zero` e `rnz`
 
 Enquanto Pages e PyPI nao estiverem ativados externamente, os workflows permanecem preparados e seguros para nao falhar por configuracao ausente.

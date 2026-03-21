@@ -1,12 +1,12 @@
-# CLI Oficial
+﻿# CLI Oficial
 
 O projeto agora tem uma CLI publica que centraliza treino, resume, avaliacao, benchmark, exemplos e automacao de qualidade.
 
 ## Usando sem instalar script global
 
 ```bash
-python -m src --help
-python -m src train --help
+python -m rede_neural_do_zero --help
+python -m rede_neural_do_zero train --help
 ```
 
 ## Usando via pacote instalado
@@ -23,8 +23,8 @@ rnz --help
 Treina um modelo, salva parametros, checkpoint completo, resumo JSON e a configuracao efetiva da execucao.
 
 ```bash
-python -m src train --dataset iris --epochs 160 --save-dir results/iris
-python -m src train --config configs/train/iris.yaml
+python -m rede_neural_do_zero train --dataset iris --epochs 160 --save-dir results/iris
+python -m rede_neural_do_zero train --config configs/train/iris.yaml
 ```
 
 ### `resume`
@@ -32,7 +32,7 @@ python -m src train --config configs/train/iris.yaml
 Retoma um treino completo a partir de um checkpoint salvo.
 
 ```bash
-python -m src resume --checkpoint results/iris/model-checkpoint.npz --dataset iris --epochs 40
+python -m rede_neural_do_zero resume --checkpoint results/iris/model-checkpoint.npz --dataset iris --epochs 40
 ```
 
 ### `evaluate`
@@ -40,8 +40,8 @@ python -m src resume --checkpoint results/iris/model-checkpoint.npz --dataset ir
 Roda uma avaliacao deterministica com gate minimo.
 
 ```bash
-python -m src evaluate --dataset diabetes --min-score 0.20
-python -m src evaluate --config configs/evaluate/diabetes.toml
+python -m rede_neural_do_zero evaluate --dataset diabetes --min-score 0.20
+python -m rede_neural_do_zero evaluate --config configs/evaluate/diabetes.toml
 ```
 
 ### `benchmark`
@@ -49,9 +49,9 @@ python -m src evaluate --config configs/evaluate/diabetes.toml
 Executa benchmark com multiplas `seeds`, media, desvio, ranking e relatorio Markdown.
 
 ```bash
-python -m src benchmark --mode multiclasse --dataset wine --seeds 42,52,62
-python -m src benchmark --datasets iris,wine,diabetes --seeds 42,52,62
-python -m src benchmark --config configs/benchmark/suite.yaml
+python -m rede_neural_do_zero benchmark --mode multiclasse --dataset wine --seeds 42,52,62
+python -m rede_neural_do_zero benchmark --datasets iris,wine,diabetes --seeds 42,52,62
+python -m rede_neural_do_zero benchmark --config configs/benchmark/suite.yaml
 ```
 
 ### `example`
@@ -59,8 +59,8 @@ python -m src benchmark --config configs/benchmark/suite.yaml
 Executa um fluxo pronto com datasets sinteticos ou reais.
 
 ```bash
-python -m src example --dataset xor
-python -m src example --config configs/example/wine.json
+python -m rede_neural_do_zero example --dataset xor
+python -m rede_neural_do_zero example --config configs/example/wine.json
 ```
 
 ### `build-docs`
@@ -68,7 +68,7 @@ python -m src example --config configs/example/wine.json
 Exporta notebooks e monta o site da documentacao.
 
 ```bash
-python -m src build-docs --strict
+python -m rede_neural_do_zero build-docs --strict
 ```
 
 ### `build-package`
@@ -76,7 +76,7 @@ python -m src build-docs --strict
 Gera wheel e sdist, com opcao de validar metadados.
 
 ```bash
-python -m src build-package --check
+python -m rede_neural_do_zero build-package --check
 ```
 
 ### `verify`
@@ -84,8 +84,8 @@ python -m src build-package --check
 Executa lint, tipos, testes, notebooks, docs e, opcionalmente, build do pacote.
 
 ```bash
-python -m src verify
-python -m src verify --build-package
+python -m rede_neural_do_zero verify
+python -m rede_neural_do_zero verify --build-package
 ```
 
 ## Arquivos de configuracao
@@ -121,3 +121,4 @@ from rede_neural_do_zero import RedeNeural
 rede = RedeNeural([4, 1], ativacao_saida="linear", funcao_custo="mse")
 rede.carregar_checkpoint("results/diabetes/model-checkpoint.npz")
 ```
+

@@ -2,6 +2,21 @@
 
 Todas as mudancas relevantes deste projeto passam a ser registradas aqui seguindo versionamento semantico.
 
+## [2.2.0] - 2026-03-21
+
+### Added
+
+- pagina oficial de estrutura do repositorio em `docs/project-structure.md`
+- `README.md` internos para `src/`, `examples/`, `scripts/` e `tests/`
+- testes cobrindo a entrada publica `python -m rede_neural_do_zero`
+
+### Changed
+
+- codigo-fonte reorganizado em subpacotes: `src/core`, `src/training`, `src/data`, `src/workflows` e `src/interfaces`
+- modulos antigos de `src.*` passaram a funcionar como camadas de compatibilidade
+- CLI, workflows, templates e documentacao passaram a destacar `python -m rede_neural_do_zero` como interface oficial
+- referencia de API e documentacao agora refletem a nova organizacao interna do projeto
+
 ## [2.1.1] - 2026-03-21
 
 ### Added

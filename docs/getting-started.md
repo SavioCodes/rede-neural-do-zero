@@ -1,4 +1,4 @@
-# Instalar e Rodar
+﻿# Instalar e Rodar
 
 ## Instalacao rapida
 
@@ -35,18 +35,18 @@ python -m pip install -e ".[dev]"
 ## Verificacao rapida
 
 ```bash
-python -m src verify
-python -m src evaluate --dataset binario --seed 42 --epochs 150 --samples 240
-python -m src benchmark --mode multiclasse --epochs 80 --seeds 42,52,62
+python -m rede_neural_do_zero verify
+python -m rede_neural_do_zero evaluate --dataset binario --seed 42 --epochs 150 --samples 240
+python -m rede_neural_do_zero benchmark --mode multiclasse --epochs 80 --seeds 42,52,62
 ```
 
 ## Primeiros comandos uteis
 
 ```bash
-python -m src train --config configs/train/iris.yaml
-python -m src evaluate --config configs/evaluate/diabetes.toml
-python -m src benchmark --config configs/benchmark/suite.yaml
-python -m src example --config configs/example/wine.json
+python -m rede_neural_do_zero train --config configs/train/iris.yaml
+python -m rede_neural_do_zero evaluate --config configs/evaluate/diabetes.toml
+python -m rede_neural_do_zero benchmark --config configs/benchmark/suite.yaml
+python -m rede_neural_do_zero example --config configs/example/wine.json
 ```
 
 ## Importacao via Python
@@ -70,3 +70,4 @@ rede = RedeNeural(
 - `experiments/manifests/`: manifestos versionados
 - `experiments/runs/`: destino sugerido para artefatos locais
 - `docs/`: documentacao oficial
+

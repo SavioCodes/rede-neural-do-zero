@@ -1,20 +1,24 @@
 """Public package exports for rede-neural-do-zero."""
 
-from .benchmarking import (
+from .core import FuncoesAtivacao, RedeNeural
+from .data import DataUtils, FileUtils, MetricUtils, VisualizationUtils
+from .training import Callback, CSVLogger, EarlyStopping, History, ModelCheckpoint
+from .training.config import ModelConfig, TrainingConfig
+from .workflows import (
     executar_benchmark,
     executar_suite_benchmark,
     gerar_relatorio_markdown,
     parse_datasets,
+    run_evaluation,
 )
-from .callbacks import Callback, CSVLogger, EarlyStopping, History, ModelCheckpoint
-from .config import ModelConfig, TrainingConfig
-from .evaluation import run_evaluation
-from .experiments import DatasetBundle, avaliar_modelo, carregar_dataset, criar_configs_padrao
-from .funcoes_ativacao import FuncoesAtivacao
-from .rede_neural import RedeNeural
-from .utils import DataUtils, FileUtils, MetricUtils, VisualizationUtils
+from .workflows.experiments import (
+    DatasetBundle,
+    avaliar_modelo,
+    carregar_dataset,
+    criar_configs_padrao,
+)
 
-__version__ = "2.1.1"
+__version__ = "2.2.0"
 __author__ = "Savio"
 
 __all__ = [

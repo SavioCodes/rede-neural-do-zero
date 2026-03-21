@@ -207,10 +207,10 @@ O metodo `salvar_parametros()` grava:
 
 ## Avaliacao e benchmark
 
-### `src.evaluation.run_evaluation`
+### `src.workflows.evaluation.run_evaluation`
 
 Executa um fluxo deterministico com dataset, split treino/validacao/teste e gate minimo de score para validacao local ou CI.
 
-### `src.benchmarking`
+### `src.workflows.benchmarking`
 
 Executa comparacoes entre configuracoes, agrega medias e desvios por `seed`, suporta suites multi-dataset e gera relatorios em JSON, CSV e Markdown.

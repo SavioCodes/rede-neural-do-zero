@@ -1,4 +1,4 @@
-name: CI
+﻿name: CI
 
 on:
   push:
@@ -46,18 +46,19 @@ jobs:
 
       - name: CLI smoke
         run: |
-          python -m src --help
-          python -m src train --config configs/train/iris.yaml --save-dir results/ci-train
-          python -m src evaluate --config configs/evaluate/diabetes.toml
-          python -m src benchmark --datasets iris,diabetes --samples 180 --epochs 40 --seeds 42,52 --output-dir logs/ci-benchmark
+          python -m rede_neural_do_zero --help
+          python -m rede_neural_do_zero train --config configs/train/iris.yaml --save-dir results/ci-train
+          python -m rede_neural_do_zero evaluate --config configs/evaluate/diabetes.toml
+          python -m rede_neural_do_zero benchmark --datasets iris,diabetes --samples 180 --epochs 40 --seeds 42,52 --output-dir logs/ci-benchmark
 
       - name: Build docs
-        run: python -m src build-docs --strict
+        run: python -m rede_neural_do_zero build-docs --strict
 
       - name: Build package
-        run: python -m src build-package --check
+        run: python -m rede_neural_do_zero build-package --check
 
       - name: Install wheel smoke
         run: |
           python -m pip install --force-reinstall dist/*.whl
           rede-neural-do-zero --help
+

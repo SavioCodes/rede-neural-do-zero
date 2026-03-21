@@ -1,4 +1,4 @@
-# rede-neural-do-zero
+﻿# rede-neural-do-zero
 
 [![CI](https://github.com/SavioCodes/rede-neural-do-zero/actions/workflows/ci.yml/badge.svg)](https://github.com/SavioCodes/rede-neural-do-zero/actions/workflows/ci.yml)
 [![Docs](https://img.shields.io/badge/docs-MkDocs%20Material-00897B)](https://saviocodes.github.io/rede-neural-do-zero/)
@@ -69,12 +69,12 @@ python -m pip install rede-neural-do-zero
 ### Pela CLI oficial
 
 ```bash
-python -m src train --config configs/train/iris.yaml
-python -m src resume --checkpoint experiments/runs/iris-baseline/model-checkpoint.npz --dataset iris --epochs 40
-python -m src evaluate --config configs/evaluate/diabetes.toml
-python -m src benchmark --config configs/benchmark/suite.yaml
-python -m src example --config configs/example/wine.json
-python -m src verify --build-package
+python -m rede_neural_do_zero train --config configs/train/iris.yaml
+python -m rede_neural_do_zero resume --checkpoint experiments/runs/iris-baseline/model-checkpoint.npz --dataset iris --epochs 40
+python -m rede_neural_do_zero evaluate --config configs/evaluate/diabetes.toml
+python -m rede_neural_do_zero benchmark --config configs/benchmark/suite.yaml
+python -m rede_neural_do_zero example --config configs/example/wine.json
+python -m rede_neural_do_zero verify --build-package
 ```
 
 ### Importando como biblioteca
@@ -110,20 +110,25 @@ print(resumo["acuracia_final"])
 Sem instalar script global:
 
 ```bash
-python -m src --help
+python -m rede_neural_do_zero --help
 ```
+
+Compatibilidade:
+
+- `python -m src` continua funcionando para nao quebrar material antigo.
+- `python -m rede_neural_do_zero` e o caminho oficial recomendado daqui para frente.
 
 Comandos principais:
 
 ```bash
-python -m src train --config configs/train/iris.yaml
-python -m src resume --checkpoint experiments/runs/iris-baseline/model-checkpoint.npz --dataset iris --epochs 40
-python -m src evaluate --config configs/evaluate/diabetes.toml
-python -m src benchmark --datasets iris,wine,diabetes --seeds 42,52,62
-python -m src example --config configs/example/wine.json
-python -m src build-docs --strict
-python -m src build-package --check
-python -m src verify --build-package
+python -m rede_neural_do_zero train --config configs/train/iris.yaml
+python -m rede_neural_do_zero resume --checkpoint experiments/runs/iris-baseline/model-checkpoint.npz --dataset iris --epochs 40
+python -m rede_neural_do_zero evaluate --config configs/evaluate/diabetes.toml
+python -m rede_neural_do_zero benchmark --datasets iris,wine,diabetes --seeds 42,52,62
+python -m rede_neural_do_zero example --config configs/example/wine.json
+python -m rede_neural_do_zero build-docs --strict
+python -m rede_neural_do_zero build-package --check
+python -m rede_neural_do_zero verify --build-package
 ```
 
 Depois de instalar o pacote, tambem funciona:
@@ -156,6 +161,21 @@ Os notebooks ficam em `notebooks/`:
 - `02_softmax_dropout_adam.ipynb`
 - `03_datasets_reais_e_matriz_confusao.ipynb`
 
+## Estrutura do repositorio
+
+- `src/`: implementacao principal organizada por `core`, `training`, `data`, `workflows` e `interfaces`
+- `rede_neural_do_zero/`: wrapper publico do pacote instalado
+- `configs/`: configuracoes versionadas para a CLI
+- `examples/`: exemplos pequenos e guiados
+- `scripts/`: automacoes auxiliares de benchmark, avaliacao e docs
+- `docs/`: fonte da documentacao web
+- `tests/`: suite automatizada
+- `experiments/manifests/`: manifests reproduziveis
+
+Mapa completo:
+
+- [Estrutura do repositorio](./docs/project-structure.md)
+
 ## Documentacao
 
 - [Landing page e docs web](https://saviocodes.github.io/rede-neural-do-zero/)
@@ -166,13 +186,14 @@ Os notebooks ficam em `notebooks/`:
 - [CLI](./docs/cli.md)
 - [Publicacao PyPI](./docs/publishing.md)
 - [Projeto Oficial](./docs/project.md)
+- [Estrutura do Repositorio](./docs/project-structure.md)
 
 ## Build e publicacao
 
 Build local:
 
 ```bash
-python -m src build-package --check
+python -m rede_neural_do_zero build-package --check
 ```
 
 O repositorio inclui:
@@ -185,13 +206,14 @@ O repositorio inclui:
 ## Qualidade
 
 ```bash
-python -m src verify --build-package
+python -m rede_neural_do_zero verify --build-package
 ```
 
 ## Projeto oficial
 
 - Releases: <https://github.com/SavioCodes/rede-neural-do-zero/releases>
 - Tags: <https://github.com/SavioCodes/rede-neural-do-zero/tags>
+- Issues: <https://github.com/SavioCodes/rede-neural-do-zero/issues>
 - Contribuicao: [CONTRIBUTING.md](./CONTRIBUTING.md)
 - Roadmap: [ROADMAP.md](./ROADMAP.md)
 - Changelog: [CHANGELOG.md](./CHANGELOG.md)
@@ -199,3 +221,4 @@ python -m src verify --build-package
 ## Licenca
 
 MIT. Veja [LICENSE](./LICENSE).
+

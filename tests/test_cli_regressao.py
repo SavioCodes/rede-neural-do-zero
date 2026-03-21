@@ -221,7 +221,7 @@ class TestBenchmarkECli(unittest.TestCase):
                 [
                     sys.executable,
                     "-m",
-                    "src",
+                    "rede_neural_do_zero",
                     "train",
                     "--dataset",
                     "xor",
@@ -244,6 +244,23 @@ class TestBenchmarkECli(unittest.TestCase):
             payload = json.loads(summary_path.read_text(encoding="utf-8"))
             self.assertEqual(payload["dataset"], "xor")
             self.assertIn("training", payload)
+
+    def test_cli_publica_e_camada_compatibilidade_coexistem(self) -> None:
+        repo_root = Path(__file__).resolve().parents[1]
+        subprocess.run(
+            [sys.executable, "-m", "rede_neural_do_zero", "--help"],
+            check=True,
+            cwd=repo_root,
+            capture_output=True,
+            text=True,
+        )
+        subprocess.run(
+            [sys.executable, "-m", "src", "--help"],
+            check=True,
+            cwd=repo_root,
+            capture_output=True,
+            text=True,
+        )
 
     def test_cli_train_com_config_gera_config_efetiva(self) -> None:
         with tempfile.TemporaryDirectory() as diretorio:

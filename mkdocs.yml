@@ -76,3 +76,4 @@ nav:
       - Utilitarios: api/utils.md
   - Projeto:
       - Visao Oficial: project.md
+      - Estrutura do Repositorio: project-structure.md

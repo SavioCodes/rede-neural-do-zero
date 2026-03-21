@@ -1,4 +1,4 @@
-# Tutorial Guiado
+﻿# Tutorial Guiado
 
 Este tutorial mostra um caminho curto para estudar o projeto sem se perder.
 
@@ -20,9 +20,9 @@ Esse e o melhor ponto de entrada porque:
 
 Arquivos mais importantes:
 
-- `src/rede_neural_core.py`
-- `src/funcoes_ativacao.py`
-- `src/utils.py`
+- `src/core/rede_neural_core.py`
+- `src/core/funcoes_ativacao.py`
+- `src/data/utils.py`
 
 Ordem recomendada:
 
@@ -113,8 +113,8 @@ Esse exemplo mostra:
 Rode:
 
 ```bash
-python -m src benchmark --mode binario
-python -m src benchmark --config configs/benchmark/suite.yaml
+python -m rede_neural_do_zero benchmark --mode binario
+python -m rede_neural_do_zero benchmark --config configs/benchmark/suite.yaml
 ```
 
 Isso ajuda a responder perguntas como:
@@ -128,8 +128,8 @@ Isso ajuda a responder perguntas como:
 Comandos uteis:
 
 ```bash
-python -m src verify
-python -m src evaluate --config configs/evaluate/diabetes.toml
+python -m rede_neural_do_zero verify
+python -m rede_neural_do_zero evaluate --config configs/evaluate/diabetes.toml
 ```
 
 ## 9. Melhor jeito de continuar estudando
@@ -144,3 +144,4 @@ Se voce quiser aprofundar sem se perder, siga esta ordem:
 6. testes
 
 Essa progressao vai do menor caso possivel ate uma base de projeto mais parecida com bibliotecas reais.
+

@@ -2,8 +2,8 @@
 
 ## `ModelConfig`
 
-::: src.config.ModelConfig
+::: src.training.config.ModelConfig
 
 ## `TrainingConfig`
 
-::: src.config.TrainingConfig
+::: src.training.config.TrainingConfig
