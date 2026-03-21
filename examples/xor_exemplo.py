@@ -47,7 +47,16 @@ def comparar_arquiteturas(epochs: int, taxa_aprendizado: float, seed: int) -> No
             seed=seed + indice,
             funcao_custo="binary_crossentropy",
         )
-        rede.treinar(X, y, epochs=epochs, taxa_aprendizado=taxa_aprendizado, verbose=False)
+        rede.treinar(
+            X,
+            y,
+            epochs=epochs,
+            taxa_aprendizado=taxa_aprendizado,
+            batch_size=2,
+            otimizador="adam",
+            embaralhar=False,
+            verbose=False,
+        )
         resultado = rede.avaliar(X, y)
 
         print(
@@ -75,7 +84,16 @@ def treinamento_detalhado(epochs: int, taxa_aprendizado: float, seed: int) -> No
         funcao_custo="binary_crossentropy",
     )
 
-    resumo = rede.treinar(X, y, epochs=epochs, taxa_aprendizado=taxa_aprendizado, verbose=False)
+    resumo = rede.treinar(
+        X,
+        y,
+        epochs=epochs,
+        taxa_aprendizado=taxa_aprendizado,
+        batch_size=2,
+        otimizador="adam",
+        embaralhar=False,
+        verbose=False,
+    )
     probabilidades = rede.prever(X)
     classes = rede.prever_classes(X)
 
@@ -89,8 +107,11 @@ def treinamento_detalhado(epochs: int, taxa_aprendizado: float, seed: int) -> No
 
     print("\nResumo do treino")
     print("----------------")
-    print(f"Epocas: {resumo['epochs']}")
+    print(f"Epocas planejadas: {resumo['epochs_planejadas']}")
+    print(f"Epocas executadas: {resumo['epocas_executadas']}")
     print(f"Taxa de aprendizado: {resumo['taxa_aprendizado']}")
+    print(f"Otimizador: {resumo['otimizador']}")
+    print(f"Batch size: {resumo['batch_size']}")
     print(f"Erro final: {resumo['erro_final']:.6f}")
     print(f"Acuracia final: {resumo['acuracia_final']:.2f}%")
 
@@ -107,6 +128,7 @@ def main() -> None:
     print(f"Seed: {args.seed}")
     print(f"Epocas: {args.epochs}")
     print(f"Learning rate: {args.learning_rate}")
+    print("Treino recomendado: otimizador=adam, batch_size=2")
 
     imprimir_tabela_verdade()
     treinamento_detalhado(args.epochs, args.learning_rate, args.seed)

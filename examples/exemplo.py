@@ -24,7 +24,16 @@ def treinar_xor(seed: int) -> tuple[RedeNeural, dict]:
         seed=seed,
         funcao_custo="binary_crossentropy",
     )
-    rede.treinar(X_xor, y_xor, epochs=1500, taxa_aprendizado=0.5, verbose=False)
+    rede.treinar(
+        X_xor,
+        y_xor,
+        epochs=1200,
+        taxa_aprendizado=0.05,
+        batch_size=2,
+        otimizador="adam",
+        embaralhar=False,
+        verbose=False,
+    )
     resultado = rede.avaliar(X_xor, y_xor)
     return rede, resultado
 
@@ -47,11 +56,13 @@ def treinar_classificacao(samples: int, seed: int) -> tuple[RedeNeural, dict, tu
         X_train,
         y_train,
         epochs=800,
-        taxa_aprendizado=0.02,
+        taxa_aprendizado=0.01,
         validacao_X=X_test,
         validacao_y=y_test,
         paciencia=40,
         min_delta=1e-4,
+        batch_size=32,
+        otimizador="adam",
         verbose=False,
     )
 
@@ -112,6 +123,7 @@ def main() -> None:
     print(f"Seed: {args.seed}")
     print(f"Samples: {args.samples}")
     print(f"Diretorio de saida: {args.save_dir}")
+    print("Treino recomendado: otimizador=adam, batch_size=32")
 
     rede_xor, resultado_xor = treinar_xor(args.seed)
     rede_classificacao, resultado_classificacao, (_, X_test, _, y_test) = treinar_classificacao(

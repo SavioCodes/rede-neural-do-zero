@@ -26,6 +26,8 @@ def avaliar_modelo(
     epochs: int,
     taxa_aprendizado: float,
     seed: int,
+    batch_size: int,
+    otimizador: str,
 ) -> dict:
     rede = RedeNeural(
         arquitetura=arquitetura,
@@ -34,7 +36,7 @@ def avaliar_modelo(
         seed=seed,
         funcao_custo="binary_crossentropy",
     )
-    rede.treinar(
+    treino = rede.treinar(
         X_train,
         y_train,
         epochs=epochs,
@@ -43,6 +45,8 @@ def avaliar_modelo(
         validacao_y=y_test,
         paciencia=25,
         min_delta=1e-4,
+        batch_size=batch_size,
+        otimizador=otimizador,
         verbose=False,
     )
     resultado = rede.avaliar(X_test, y_test)
@@ -56,6 +60,9 @@ def avaliar_modelo(
         "precisao": metricas["precisao"],
         "recall": metricas["recall"],
         "especificidade": metricas["especificidade"],
+        "epocas_executadas": treino["epocas_executadas"],
+        "batch_size": treino["batch_size"],
+        "otimizador": treino["otimizador"],
     }
 
 
@@ -68,7 +75,8 @@ def experimento_funcoes_ativacao(samples: int, epochs: int, seed: int) -> None:
 
     print("\nComparando funcoes de ativacao")
     print("------------------------------")
-    print(f"{'funcao':<14}{'acuracia':<12}{'f1':<10}{'loss':<12}")
+    print("Treino: otimizador=adam, batch_size=32")
+    print(f"{'funcao':<14}{'acuracia':<12}{'f1':<10}{'loss':<12}{'epocas':<10}")
 
     for indice, funcao in enumerate(["sigmoid", "relu", "tanh", "leaky_relu"]):
         inicializacao = "he" if "relu" in funcao else "xavier"
@@ -83,10 +91,13 @@ def experimento_funcoes_ativacao(samples: int, epochs: int, seed: int) -> None:
             epochs=epochs,
             taxa_aprendizado=0.01,
             seed=seed + indice,
+            batch_size=32,
+            otimizador="adam",
         )
         print(
             f"{funcao:<14}{resultado['acuracia']:<12.2f}"
             f"{resultado['f1']:<10.4f}{resultado['loss']:<12.6f}"
+            f"{resultado['epocas_executadas']:<10}"
         )
 
 
@@ -97,7 +108,8 @@ def experimento_normalizacao(samples: int, epochs: int, seed: int) -> None:
 
     print("\nComparando metodos de normalizacao")
     print("----------------------------------")
-    print(f"{'metodo':<14}{'acuracia':<12}{'f1':<10}{'loss':<12}")
+    print("Treino: otimizador=adam, batch_size=32")
+    print(f"{'metodo':<14}{'acuracia':<12}{'f1':<10}{'loss':<12}{'epocas':<10}")
 
     for indice, metodo in enumerate(["padrao", "minmax", "robusto"]):
         X_norm, _ = DataUtils.normalizar_dados(X, metodo=metodo)
@@ -115,10 +127,13 @@ def experimento_normalizacao(samples: int, epochs: int, seed: int) -> None:
             epochs=epochs,
             taxa_aprendizado=0.01,
             seed=seed + indice,
+            batch_size=32,
+            otimizador="adam",
         )
         print(
             f"{metodo:<14}{resultado['acuracia']:<12.2f}"
             f"{resultado['f1']:<10.4f}{resultado['loss']:<12.6f}"
+            f"{resultado['epocas_executadas']:<10}"
         )
 
 
@@ -139,7 +154,8 @@ def experimento_hiperparametros(samples: int, epochs: int, seed: int) -> None:
     melhor = None
     print("\nComparando configuracoes")
     print("-----------------------")
-    print(f"{'lr':<10}{'arquitetura':<18}{'acuracia':<12}{'f1':<10}")
+    print("Treino: otimizador=adam, batch_size=32")
+    print(f"{'lr':<10}{'arquitetura':<18}{'acuracia':<12}{'f1':<10}{'epocas':<10}")
 
     for indice, (taxa, arquitetura) in enumerate(configuracoes):
         resultado = avaliar_modelo(
@@ -153,9 +169,15 @@ def experimento_hiperparametros(samples: int, epochs: int, seed: int) -> None:
             epochs=epochs,
             taxa_aprendizado=taxa,
             seed=seed + indice,
+            batch_size=32,
+            otimizador="adam",
         )
 
-        print(f"{taxa:<10.3f}{str(arquitetura):<18}{resultado['acuracia']:<12.2f}{resultado['f1']:<10.4f}")
+        print(
+            f"{taxa:<10.3f}{str(arquitetura):<18}"
+            f"{resultado['acuracia']:<12.2f}{resultado['f1']:<10.4f}"
+            f"{resultado['epocas_executadas']:<10}"
+        )
 
         if melhor is None or resultado["f1"] > melhor[2]:
             melhor = (taxa, arquitetura, resultado["f1"], resultado["acuracia"])
@@ -179,6 +201,7 @@ def main() -> None:
     print(f"Samples: {args.samples}")
     print(f"Epocas: {args.epochs}")
     print(f"Seed: {args.seed}")
+    print("Treino recomendado: otimizador=adam, batch_size=32")
 
     experimento_funcoes_ativacao(args.samples, args.epochs, args.seed)
     experimento_normalizacao(args.samples, args.epochs, args.seed)

@@ -152,6 +152,9 @@ class TestRedeNeural(unittest.TestCase):
         self.assertIn("melhor_mse", resumo)
         self.assertIn("melhor_acuracia", resumo)
         self.assertIn("parametros_treinaveis", resumo)
+        self.assertIn("batch_size", resumo)
+        self.assertIn("otimizador", resumo)
+        self.assertIn("total_atualizacoes", resumo)
         self.assertEqual(len(self.rede.historico_validacao_erro), 3)
         self.assertEqual(len(self.rede.historico_validacao_mse), 3)
         self.assertEqual(len(self.rede.historico_validacao_acuracia), 3)
@@ -188,6 +191,54 @@ class TestRedeNeural(unittest.TestCase):
         self.assertTrue(resumo["early_stopping_ativado"])
         self.assertEqual(resumo["motivo_parada"], "early_stopping")
         self.assertLess(resumo["epocas_executadas"], resumo["epochs_planejadas"])
+
+    def test_treinamento_mini_batch_com_adam(self) -> None:
+        resumo = self.rede.treinar(
+            self.X_test,
+            self.y_test,
+            epochs=400,
+            taxa_aprendizado=0.05,
+            batch_size=2,
+            otimizador="adam",
+            embaralhar=False,
+            verbose=False,
+        )
+        resultado = self.rede.avaliar(self.X_test, self.y_test)
+
+        self.assertEqual(resumo["batch_size"], 2)
+        self.assertEqual(resumo["otimizador"], "adam")
+        self.assertEqual(resumo["total_atualizacoes"], 800)
+        self.assertEqual(resumo["beta1"], 0.9)
+        self.assertEqual(resumo["beta2"], 0.999)
+        self.assertAlmostEqual(resumo["epsilon"], 1e-8)
+        self.assertGreater(resultado["acuracia"], 75.0)
+
+    def test_treinamento_mini_batch_e_reproduzivel_com_seed(self) -> None:
+        rede_a = RedeNeural([2, 4, 1], ativacao="sigmoid", seed=77)
+        rede_b = RedeNeural([2, 4, 1], ativacao="sigmoid", seed=77)
+
+        resumo_a = rede_a.treinar(
+            self.X_test,
+            self.y_test,
+            epochs=100,
+            taxa_aprendizado=0.05,
+            batch_size=2,
+            otimizador="adam",
+            verbose=False,
+        )
+        resumo_b = rede_b.treinar(
+            self.X_test,
+            self.y_test,
+            epochs=100,
+            taxa_aprendizado=0.05,
+            batch_size=2,
+            otimizador="adam",
+            verbose=False,
+        )
+
+        np.testing.assert_array_almost_equal(rede_a.prever(self.X_test), rede_b.prever(self.X_test))
+        self.assertEqual(resumo_a["total_atualizacoes"], resumo_b["total_atualizacoes"])
+        self.assertAlmostEqual(resumo_a["loss_final"], resumo_b["loss_final"], places=10)
 
     def test_salvar_carregar_parametros(self) -> None:
         self.rede.treinar(self.X_test, self.y_test, epochs=50, verbose=False)
@@ -285,6 +336,28 @@ class TestRedeNeural(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.rede.treinar(self.X_test, self.y_test, epochs=5, taxa_aprendizado=0, verbose=False)
 
+        with self.assertRaises(ValueError):
+            self.rede.treinar(self.X_test, self.y_test, epochs=5, batch_size=0, verbose=False)
+
+        with self.assertRaises(ValueError):
+            self.rede.treinar(
+                self.X_test,
+                self.y_test,
+                epochs=5,
+                otimizador="desconhecido",
+                verbose=False,
+            )
+
+        with self.assertRaises(ValueError):
+            self.rede.treinar(
+                self.X_test,
+                self.y_test,
+                epochs=5,
+                otimizador="adam",
+                beta1=1.2,
+                verbose=False,
+            )
+
     def test_edge_cases(self) -> None:
         X_single = np.array([[0.5, 0.5]], dtype=float)
         y_single = np.array([[1]], dtype=float)
@@ -317,7 +390,15 @@ class TestIntegracao(unittest.TestCase):
         X_train, X_test, y_train, y_test = DataUtils.dividir_treino_teste(X_norm, y)
 
         rede = RedeNeural([2, 8, 1], ativacao="relu", seed=21)
-        rede.treinar(X_train, y_train, epochs=500, taxa_aprendizado=0.01, verbose=False)
+        rede.treinar(
+            X_train,
+            y_train,
+            epochs=500,
+            taxa_aprendizado=0.01,
+            batch_size=16,
+            otimizador="adam",
+            verbose=False,
+        )
 
         resultado = rede.avaliar(X_test, y_test)
         self.assertGreater(resultado["acuracia"], 60.0)

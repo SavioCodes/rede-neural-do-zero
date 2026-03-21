@@ -49,11 +49,13 @@ def run_evaluation(seed: int, epochs: int, samples: int, min_accuracy: float) ->
         X_train,
         y_train,
         epochs=epochs,
-        taxa_aprendizado=0.02,
+        taxa_aprendizado=0.01,
         validacao_X=X_val,
         validacao_y=y_val,
         paciencia=40,
         min_delta=1e-4,
+        batch_size=32,
+        otimizador="adam",
         verbose=False,
     )
 

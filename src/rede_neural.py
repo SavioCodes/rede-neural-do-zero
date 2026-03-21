@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import List, Optional
+from typing import Iterator, List, Optional
 
 import numpy as np
 
@@ -15,6 +15,7 @@ class RedeNeural:
 
     _INICIALIZACOES_VALIDAS = {"xavier", "he", "aleatorio"}
     _FUNCOES_CUSTO_VALIDAS = {"binary_crossentropy", "mse"}
+    _OTIMIZADORES_VALIDOS = {"sgd", "adam"}
 
     def __init__(
         self,
@@ -94,6 +95,43 @@ class RedeNeural:
                 f"Opcoes: {sorted(self._FUNCOES_CUSTO_VALIDAS)}"
             )
         return funcao_custo_normalizada
+
+    def _validar_otimizador(self, otimizador: str) -> str:
+        """Normaliza e valida o algoritmo de atualizacao dos parametros."""
+        otimizador_normalizado = otimizador.lower()
+        if otimizador_normalizado not in self._OTIMIZADORES_VALIDOS:
+            raise ValueError(
+                f"Otimizador '{otimizador}' nao reconhecido. "
+                f"Opcoes: {sorted(self._OTIMIZADORES_VALIDOS)}"
+            )
+        return otimizador_normalizado
+
+    def _normalizar_batch_size(self, batch_size: Optional[int], n_amostras: int) -> int:
+        """Converte `batch_size=None` em batch completo e valida o valor informado."""
+        if batch_size is None:
+            return n_amostras
+
+        if not isinstance(batch_size, (int, np.integer)):
+            raise ValueError("batch_size precisa ser um inteiro positivo.")
+
+        if int(batch_size) <= 0:
+            raise ValueError("batch_size precisa ser maior que zero.")
+
+        return min(int(batch_size), n_amostras)
+
+    def _validar_hiperparametros_adam(
+        self,
+        beta1: float,
+        beta2: float,
+        epsilon: float,
+    ) -> None:
+        """Confere se os hiperparametros do Adam estao em faixas validas."""
+        if not 0 < beta1 < 1:
+            raise ValueError("beta1 precisa estar entre 0 e 1.")
+        if not 0 < beta2 < 1:
+            raise ValueError("beta2 precisa estar entre 0 e 1.")
+        if epsilon <= 0:
+            raise ValueError("epsilon precisa ser maior que zero.")
 
     def _validar_limiar(self, limiar: float) -> None:
         """Confere se o limiar esta no intervalo usado por probabilidades."""
@@ -239,16 +277,136 @@ class RedeNeural:
 
         return gradientes_pesos, gradientes_biases
 
-    def _atualizar_parametros(
+    def _gerar_batches(
+        self,
+        X: np.ndarray,
+        y: np.ndarray,
+        batch_size: int,
+        embaralhar: bool,
+    ) -> Iterator[tuple[np.ndarray, np.ndarray]]:
+        """Divide os dados em lotes menores para cada passo do otimizador.
+
+        Embaralhar antes de montar os lotes evita que a rede veja sempre os
+        mesmos exemplos na mesma ordem, o que ajuda o treino estocastico.
+        """
+        n_amostras = X.shape[0]
+        indices = np.arange(n_amostras)
+        if embaralhar and n_amostras > 1:
+            indices = self._rng.permutation(n_amostras)
+
+        for inicio in range(0, n_amostras, batch_size):
+            fim = inicio + batch_size
+            indices_batch = indices[inicio:fim]
+            yield X[indices_batch], y[indices_batch]
+
+    def _inicializar_estado_otimizador(
+        self,
+        otimizador: str,
+        beta1: float,
+        beta2: float,
+        epsilon: float,
+    ) -> dict[str, object]:
+        """Prepara o estado interno usado por otimizadores adaptativos."""
+        if otimizador == "sgd":
+            return {"otimizador": otimizador, "passo": 0}
+
+        return {
+            "otimizador": otimizador,
+            "passo": 0,
+            "beta1": float(beta1),
+            "beta2": float(beta2),
+            "epsilon": float(epsilon),
+            "m_pesos": [np.zeros_like(peso) for peso in self.pesos],
+            "v_pesos": [np.zeros_like(peso) for peso in self.pesos],
+            "m_biases": [np.zeros_like(bias) for bias in self.biases],
+            "v_biases": [np.zeros_like(bias) for bias in self.biases],
+        }
+
+    def _atualizar_parametros_sgd(
         self,
         gradientes_pesos: List[np.ndarray],
         gradientes_biases: List[np.ndarray],
         taxa_aprendizado: float,
     ) -> None:
-        """Aplica um passo de gradiente descendente em todas as camadas."""
+        """Aplica gradiente descendente tradicional em todas as camadas."""
         for indice in range(len(self.pesos)):
             self.pesos[indice] -= taxa_aprendizado * gradientes_pesos[indice]
             self.biases[indice] -= taxa_aprendizado * gradientes_biases[indice]
+
+    def _atualizar_parametros_adam(
+        self,
+        gradientes_pesos: List[np.ndarray],
+        gradientes_biases: List[np.ndarray],
+        taxa_aprendizado: float,
+        estado_otimizador: dict[str, object],
+    ) -> None:
+        """Atualiza os parametros usando medias moveis dos gradientes.
+
+        O Adam combina:
+        - momento de primeira ordem: media dos gradientes
+        - momento de segunda ordem: media dos gradientes ao quadrado
+
+        As correcoes por passo evitam que esses momentos fiquem enviesados no
+        inicio do treinamento, quando ainda existem poucas observacoes.
+        """
+        estado_otimizador["passo"] = int(estado_otimizador["passo"]) + 1
+        passo = int(estado_otimizador["passo"])
+        beta1 = float(estado_otimizador["beta1"])
+        beta2 = float(estado_otimizador["beta2"])
+        epsilon = float(estado_otimizador["epsilon"])
+
+        momentos_pesos = estado_otimizador["m_pesos"]
+        velocidades_pesos = estado_otimizador["v_pesos"]
+        momentos_biases = estado_otimizador["m_biases"]
+        velocidades_biases = estado_otimizador["v_biases"]
+
+        for indice in range(len(self.pesos)):
+            momentos_pesos[indice] = (
+                beta1 * momentos_pesos[indice] + (1 - beta1) * gradientes_pesos[indice]
+            )
+            velocidades_pesos[indice] = (
+                beta2 * velocidades_pesos[indice]
+                + (1 - beta2) * (gradientes_pesos[indice] ** 2)
+            )
+            momentos_biases[indice] = (
+                beta1 * momentos_biases[indice] + (1 - beta1) * gradientes_biases[indice]
+            )
+            velocidades_biases[indice] = (
+                beta2 * velocidades_biases[indice]
+                + (1 - beta2) * (gradientes_biases[indice] ** 2)
+            )
+
+            m_peso_corrigido = momentos_pesos[indice] / (1 - beta1**passo)
+            v_peso_corrigido = velocidades_pesos[indice] / (1 - beta2**passo)
+            m_bias_corrigido = momentos_biases[indice] / (1 - beta1**passo)
+            v_bias_corrigido = velocidades_biases[indice] / (1 - beta2**passo)
+
+            self.pesos[indice] -= taxa_aprendizado * m_peso_corrigido / (
+                np.sqrt(v_peso_corrigido) + epsilon
+            )
+            self.biases[indice] -= taxa_aprendizado * m_bias_corrigido / (
+                np.sqrt(v_bias_corrigido) + epsilon
+            )
+
+    def _atualizar_parametros(
+        self,
+        gradientes_pesos: List[np.ndarray],
+        gradientes_biases: List[np.ndarray],
+        taxa_aprendizado: float,
+        otimizador: str,
+        estado_otimizador: dict[str, object],
+    ) -> None:
+        """Encaminha a atualizacao para o otimizador escolhido."""
+        if otimizador == "adam":
+            self._atualizar_parametros_adam(
+                gradientes_pesos,
+                gradientes_biases,
+                taxa_aprendizado,
+                estado_otimizador,
+            )
+            return
+
+        self._atualizar_parametros_sgd(gradientes_pesos, gradientes_biases, taxa_aprendizado)
 
     def _calcular_mse(self, y_true: np.ndarray, y_pred: np.ndarray) -> float:
         """Calcula o erro quadratico medio, util como metrica complementar."""
@@ -286,6 +444,16 @@ class RedeNeural:
             "mse": self._calcular_mse(y_true, y_pred),
             "acuracia": self._calcular_acuracia(y_true, y_pred),
         }
+
+    def _avaliar_dataset_validado(
+        self,
+        X: np.ndarray,
+        y: np.ndarray,
+    ) -> tuple[dict[str, float], np.ndarray]:
+        """Executa forward em dados ja validados e devolve metricas + predicoes."""
+        ativacoes, _ = self._forward_propagation(X)
+        predicoes = ativacoes[-1]
+        return self._calcular_metricas_epoca(y, predicoes), predicoes
 
     def _copiar_parametros(self) -> tuple[List[np.ndarray], List[np.ndarray]]:
         """Cria um snapshot dos parametros atuais para restauracao futura."""
@@ -329,11 +497,20 @@ class RedeNeural:
         paciencia: Optional[int] = None,
         min_delta: float = 0.0,
         restaurar_melhores_pesos: bool = True,
+        batch_size: Optional[int] = None,
+        otimizador: str = "sgd",
+        embaralhar: bool = True,
+        beta1: float = 0.9,
+        beta2: float = 0.999,
+        epsilon: float = 1e-8,
     ) -> dict:
-        """Treina a rede com gradiente descendente em batch completo.
+        """Treina a rede usando batch completo ou mini-batches.
 
-        `early stopping` pode acompanhar a perda de validacao, se existir, ou
-        a perda de treino, caso contrario.
+        `batch_size=None` significa batch completo. Valores menores ativam
+        mini-batch training. O `otimizador` pode ser `sgd` ou `adam`.
+
+        `early stopping` acompanha a perda de validacao, se existir, ou a
+        perda de treino, caso contrario.
         """
         if epochs <= 0:
             raise ValueError("epochs precisa ser maior que zero.")
@@ -346,25 +523,48 @@ class RedeNeural:
 
         X_array = self._validar_entrada(X)
         y_array = self._validar_rotulos(y, X_array.shape[0])
+        batch_size_efetivo = self._normalizar_batch_size(batch_size, X_array.shape[0])
+        otimizador_normalizado = self._validar_otimizador(otimizador)
+        self._validar_hiperparametros_adam(beta1, beta2, epsilon)
         validacao_X_array, validacao_y_array = self._validar_dados_validacao(
             validacao_X, validacao_y
         )
 
         self._resetar_historicos()
+        estado_otimizador = self._inicializar_estado_otimizador(
+            otimizador_normalizado,
+            beta1,
+            beta2,
+            epsilon,
+        )
 
         intervalo_log = max(1, epochs // 10)
         melhor_monitor = float("inf")
         epocas_sem_melhoria = 0
         melhor_snapshot: Optional[tuple[List[np.ndarray], List[np.ndarray]]] = None
         motivo_parada = "epochs_concluidas"
+        fonte_monitoramento = "validacao" if validacao_X_array is not None else "treino"
+        total_atualizacoes = 0
 
         for epoch in range(epochs):
-            ativacoes, z_values = self._forward_propagation(X_array)
-            grad_pesos, grad_biases = self._backward_propagation(y_array, ativacoes, z_values)
-            self._atualizar_parametros(grad_pesos, grad_biases, taxa_aprendizado)
+            for X_batch, y_batch in self._gerar_batches(
+                X_array,
+                y_array,
+                batch_size=batch_size_efetivo,
+                embaralhar=embaralhar,
+            ):
+                ativacoes, z_values = self._forward_propagation(X_batch)
+                grad_pesos, grad_biases = self._backward_propagation(y_batch, ativacoes, z_values)
+                self._atualizar_parametros(
+                    grad_pesos,
+                    grad_biases,
+                    taxa_aprendizado,
+                    otimizador_normalizado,
+                    estado_otimizador,
+                )
+                total_atualizacoes += 1
 
-            ativacoes_treino, _ = self._forward_propagation(X_array)
-            metricas_treino = self._calcular_metricas_epoca(y_array, ativacoes_treino[-1])
+            metricas_treino, _ = self._avaliar_dataset_validado(X_array, y_array)
 
             self.historico_erro.append(metricas_treino["loss"])
             self.historico_mse.append(metricas_treino["mse"])
@@ -372,10 +572,9 @@ class RedeNeural:
 
             metricas_validacao = None
             if validacao_X_array is not None and validacao_y_array is not None:
-                ativacoes_validacao, _ = self._forward_propagation(validacao_X_array)
-                metricas_validacao = self._calcular_metricas_epoca(
+                metricas_validacao, _ = self._avaliar_dataset_validado(
+                    validacao_X_array,
                     validacao_y_array,
-                    ativacoes_validacao[-1],
                 )
                 self.historico_validacao_erro.append(metricas_validacao["loss"])
                 self.historico_validacao_mse.append(metricas_validacao["mse"])
@@ -427,16 +626,27 @@ class RedeNeural:
             "epochs_planejadas": epochs,
             "epocas_executadas": len(self.historico_erro),
             "taxa_aprendizado": float(taxa_aprendizado),
+            "batch_size": batch_size_efetivo,
+            "otimizador": otimizador_normalizado,
+            "embaralhar": bool(embaralhar),
+            "total_atualizacoes": total_atualizacoes,
             "funcao_custo": self.funcao_custo,
             "parametros_treinaveis": self.contar_parametros(),
             "motivo_parada": motivo_parada,
+            "fonte_monitoramento": fonte_monitoramento,
+            "melhor_loss_monitorado": float(melhor_monitor),
             "early_stopping_ativado": paciencia is not None,
         }
 
+        if otimizador_normalizado == "adam":
+            resumo["beta1"] = float(beta1)
+            resumo["beta2"] = float(beta2)
+            resumo["epsilon"] = float(epsilon)
+
         if validacao_X_array is not None and validacao_y_array is not None:
-            resumo_validacao_final = self._calcular_metricas_epoca(
+            resumo_validacao_final, _ = self._avaliar_dataset_validado(
+                validacao_X_array,
                 validacao_y_array,
-                self.prever(validacao_X_array),
             )
             resumo["erro_validacao_final"] = resumo_validacao_final["loss"]
             resumo["loss_validacao_final"] = resumo_validacao_final["loss"]
@@ -452,6 +662,9 @@ class RedeNeural:
             print(f"Acuracia final: {resumo['acuracia_final']:.2f}%")
             print(f"Melhor acuracia: {resumo['melhor_acuracia']:.2f}%")
             print(f"Epocas executadas: {resumo['epocas_executadas']}")
+            print(f"Otimizador: {resumo['otimizador']}")
+            print(f"Batch size: {resumo['batch_size']}")
+            print(f"Atualizacoes: {resumo['total_atualizacoes']}")
             print(f"Parametros treinaveis: {resumo['parametros_treinaveis']}")
 
         return resumo
@@ -471,8 +684,7 @@ class RedeNeural:
         """Roda previsao e devolve metricas basicas de classificacao binaria."""
         X_array = self._validar_entrada(X)
         y_array = self._validar_rotulos(y, X_array.shape[0])
-        predicoes = self.prever(X_array)
-        metricas = self._calcular_metricas_epoca(y_array, predicoes)
+        metricas, predicoes = self._avaliar_dataset_validado(X_array, y_array)
 
         return {
             "erro": metricas["loss"],

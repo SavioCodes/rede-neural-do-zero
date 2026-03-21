@@ -23,12 +23,14 @@ Ele cobre:
 
 - `RedeNeural(..., seed=...)` para experimentos reproduziveis
 - `funcao_custo="binary_crossentropy"` ou `"mse"` para comparar perdas
+- `treinar(..., batch_size=..., otimizador="sgd"|"adam")` para batch completo ou mini-batch
 - validacoes de entrada no treino, previsao, metricas e split de dados
 - `prever_classes()` para converter probabilidades em classes binarias
 - historico de treino e validacao salvo no modelo
 - `early stopping` opcional com restauracao dos melhores pesos
 - `scripts/evaluate.py` gerando artefatos JSON e JSONL em `logs/`
 - configuracao centralizada em `pyproject.toml`
+- suporte a `mini-batch training` e ao otimizador `Adam`
 
 ## Estrutura
 
@@ -88,9 +90,12 @@ resumo = rede.treinar(
     X,
     y,
     epochs=2000,
-    taxa_aprendizado=0.5,
+    taxa_aprendizado=0.05,
     paciencia=50,
     min_delta=1e-4,
+    batch_size=2,
+    otimizador="adam",
+    embaralhar=False,
     verbose=False,
 )
 
@@ -155,6 +160,8 @@ make verify
 - O foco e clareza didatica, nao performance de producao.
 - A camada de saida usa sigmoid para classificacao binaria.
 - O custo padrao e `binary_crossentropy`, mais apropriado para saida sigmoide.
+- `batch_size=None` mantem o treino em batch completo para estudo passo a passo.
+- `otimizador="adam"` e a opcao recomendada para exemplos maiores com mini-batches.
 - O script de avaliacao e deterministico para reduzir flakiness na CI.
 - O projeto evita depender do estado global do NumPy quando usa seeds.
 
@@ -162,7 +169,7 @@ make verify
 
 - exportar artefatos visuais automaticamente em pipelines
 - incluir mais exemplos com datasets externos pequenos
-- experimentar mini-batches e otimizadores mais avancados
+- experimentar regularizacao e classificacao multiclasse
 
 ## Licenca
 
