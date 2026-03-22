@@ -36,14 +36,14 @@ Nomes aceitos:
 - `docs/update-wiki-links`
 - `chore/reorganize-ci-cache`
 - `hotfix/fix-release-link`
-- `release/v2.2.3`
+- `release/v2.2.4`
 
 ## Exemplos invalidos
 
 - `feature/nova-coisa`
 - `docs/wiki links`
 - `Feat/maiuscula`
-- `release/2.2.3`
+- `release/2.2.4`
 - `minha-branch`
 
 ## Fluxo sugerido

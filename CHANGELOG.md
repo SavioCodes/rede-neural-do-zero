@@ -2,6 +2,13 @@
 
 Todas as mudancas relevantes deste projeto passam a ser registradas aqui seguindo versionamento semantico.
 
+## [2.2.4] - 2026-03-22
+
+### Fixed
+
+- prioridade da deteccao de branch agora respeita `BRANCH_NAME` antes do ambiente do GitHub Actions
+- cobertura de testes do `branch_policy` foi ajustada para validar o cenario real da CI
+
 ## [2.2.3] - 2026-03-22
 
 ### Added

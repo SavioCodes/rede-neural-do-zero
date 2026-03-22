@@ -32,7 +32,7 @@ class TestBranchPolicy(unittest.TestCase):
             "docs/update-branching-guide",
             "chore/reorganize-ci",
             "hotfix/fix-release-link",
-            "release/v2.2.3",
+            "release/v2.2.4",
         ]:
             with self.subTest(nome=nome):
                 resultado = validar_nome_branch(nome)
@@ -42,7 +42,7 @@ class TestBranchPolicy(unittest.TestCase):
         for nome in [
             "feature/minha-branch",
             "docs/wiki links",
-            "release/2.2.3",
+            "release/2.2.4",
             "Feat/upper",
             "",
         ]:
@@ -56,15 +56,22 @@ class TestBranchPolicy(unittest.TestCase):
         self.assertIn("feature/nova-coisa", exemplos["invalidas"])
 
     def test_detectar_branch_atual_por_ambiente(self) -> None:
-        valor_original = os.environ.get("BRANCH_NAME")
+        valor_branch = os.environ.get("BRANCH_NAME")
+        valor_github_ref = os.environ.get("GITHUB_REF_NAME")
         os.environ["BRANCH_NAME"] = "docs/update-wiki"
+        os.environ["GITHUB_REF_NAME"] = "main"
         try:
             self.assertEqual(detectar_branch_atual(), "docs/update-wiki")
         finally:
-            if valor_original is None:
+            if valor_branch is None:
                 os.environ.pop("BRANCH_NAME", None)
             else:
-                os.environ["BRANCH_NAME"] = valor_original
+                os.environ["BRANCH_NAME"] = valor_branch
+
+            if valor_github_ref is None:
+                os.environ.pop("GITHUB_REF_NAME", None)
+            else:
+                os.environ["GITHUB_REF_NAME"] = valor_github_ref
 
     def test_cli_check_branch(self) -> None:
         repo_root = Path(__file__).resolve().parents[1]

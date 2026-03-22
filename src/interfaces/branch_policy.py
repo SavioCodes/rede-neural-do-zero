@@ -49,14 +49,14 @@ def exemplos_branch() -> dict[str, list[str]]:
             "docs/update-wiki-links",
             "chore/reorganize-ci-cache",
             "hotfix/fix-release-tag-link",
-            "release/v2.2.3",
+            "release/v2.2.4",
         ],
         "invalidas": [
             "feature/nova-coisa",
             "bugfix/erro-x",
             "Feat/maiuscula",
             "docs/wiki links",
-            "release/2.2.3",
+            "release/2.2.4",
             "minha-branch",
         ],
     }
@@ -112,7 +112,9 @@ def validar_nome_branch(nome: str) -> BranchPolicyResult:
 
 def detectar_branch_atual() -> str | None:
     """Tenta descobrir a branch atual pelo ambiente ou pelo Git local."""
-    for chave in ("GITHUB_HEAD_REF", "GITHUB_REF_NAME", "BRANCH_NAME"):
+    # `BRANCH_NAME` vem primeiro para permitir override explicito em testes
+    # locais, scripts e chamadas controladas pela nossa CLI.
+    for chave in ("BRANCH_NAME", "GITHUB_HEAD_REF", "GITHUB_REF_NAME"):
         valor = str(os.environ.get(chave, "")).strip()
         if valor:
             return valor
