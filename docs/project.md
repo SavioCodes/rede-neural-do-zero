@@ -7,6 +7,7 @@ Esta pagina centraliza os artefatos oficiais e o funcionamento do repositorio co
 - [Issues](https://github.com/SavioCodes/rede-neural-do-zero/issues)
 - [Releases](https://github.com/SavioCodes/rede-neural-do-zero/releases)
 - [Tags](https://github.com/SavioCodes/rede-neural-do-zero/tags)
+- [Wiki](https://github.com/SavioCodes/rede-neural-do-zero/wiki)
 - [Repositorio](https://github.com/SavioCodes/rede-neural-do-zero)
 
 ## Arquivos de governanca

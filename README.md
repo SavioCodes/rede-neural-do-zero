@@ -179,6 +179,7 @@ Mapa completo:
 ## Documentacao
 
 - [Landing page e docs web](https://saviocodes.github.io/rede-neural-do-zero/)
+- [Wiki no GitHub](https://github.com/SavioCodes/rede-neural-do-zero/wiki)
 - [Referencia de API](./docs/api/index.md)
 - [Teoria](./docs/teoria.md)
 - [Algoritmos](./docs/algoritmos.md)
@@ -214,6 +215,7 @@ python -m rede_neural_do_zero verify --build-package
 - Releases: <https://github.com/SavioCodes/rede-neural-do-zero/releases>
 - Tags: <https://github.com/SavioCodes/rede-neural-do-zero/tags>
 - Issues: <https://github.com/SavioCodes/rede-neural-do-zero/issues>
+- Wiki: <https://github.com/SavioCodes/rede-neural-do-zero/wiki>
 - Contribuicao: [CONTRIBUTING.md](./CONTRIBUTING.md)
 - Roadmap: [ROADMAP.md](./ROADMAP.md)
 - Changelog: [CHANGELOG.md](./CHANGELOG.md)

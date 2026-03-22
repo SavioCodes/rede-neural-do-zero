@@ -12,6 +12,7 @@
       <a class="md-button md-button--primary" href="./getting-started/">Comecar agora</a>
       <a class="md-button" href="./cli/">Ver CLI</a>
       <a class="md-button" href="./notebooks/">Abrir notebooks</a>
+      <a class="md-button" href="https://github.com/SavioCodes/rede-neural-do-zero/wiki">Abrir Wiki</a>
       <a class="md-button" href="./project/">Ver projeto oficial</a>
     </div>
   </div>

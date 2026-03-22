@@ -2,6 +2,16 @@
 
 Todas as mudancas relevantes deste projeto passam a ser registradas aqui seguindo versionamento semantico.
 
+## [2.2.1] - 2026-03-21
+
+### Added
+
+- wiki oficial do projeto no GitHub com paginas de onboarding, CLI, datasets, estrutura e publicacao
+
+### Changed
+
+- README e documentacao oficial agora apontam para a wiki publica do projeto
+
 ## [2.2.0] - 2026-03-21
 
 ### Added
