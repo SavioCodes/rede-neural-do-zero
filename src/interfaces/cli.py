@@ -29,6 +29,7 @@ from ..workflows.experiments import (
     criar_configs_padrao,
     dividir_treino_validacao_teste,
 )
+from .branch_policy import detectar_branch_atual, exemplos_branch, validar_nome_branch
 from .cli_config import (
     aplicar_config_cli,
     argv_comando_atual,
@@ -322,6 +323,22 @@ def cmd_verify(args: argparse.Namespace) -> None:
         _executar_comando([sys.executable, "-m", "twine", "check", *_artefatos_dist()])
 
 
+def cmd_check_branch(args: argparse.Namespace) -> None:
+    """Valida uma branch pelo padrao oficial do projeto."""
+    branch_name = args.name or detectar_branch_atual()
+    if not branch_name:
+        raise SystemExit("Nao foi possivel detectar a branch atual. Use --name.")
+
+    resultado = validar_nome_branch(branch_name)
+    payload = {
+        **resultado.to_dict(),
+        "exemplos": exemplos_branch(),
+    }
+    print(json.dumps(payload, indent=2, ensure_ascii=True))
+    if not resultado.valid:
+        raise SystemExit(1)
+
+
 def build_parser() -> tuple[argparse.ArgumentParser, dict[str, argparse.ArgumentParser]]:
     """Monta o parser principal da CLI."""
     parser = argparse.ArgumentParser(
@@ -440,6 +457,19 @@ def build_parser() -> tuple[argparse.ArgumentParser, dict[str, argparse.Argument
     parser_verify.add_argument("--build-package", action="store_true")
     parser_verify.set_defaults(func=cmd_verify)
     parsers_por_comando["verify"] = parser_verify
+
+    parser_check_branch = subparsers.add_parser(
+        "check-branch",
+        help="Valida o nome de uma branch pelo padrao oficial do projeto",
+    )
+    parser_check_branch.add_argument(
+        "--name",
+        type=str,
+        default=None,
+        help="Nome da branch. Se omitido, tenta detectar a branch atual.",
+    )
+    parser_check_branch.set_defaults(func=cmd_check_branch)
+    parsers_por_comando["check-branch"] = parser_check_branch
 
     return parser, parsers_por_comando
 

@@ -45,7 +45,7 @@
 - :material-console:
   **CLI oficial**
 
-  `train`, `resume`, `evaluate`, `benchmark`, `example`, `build-docs`, `build-package` e `verify`.
+  `train`, `resume`, `evaluate`, `benchmark`, `example`, `check-branch`, `build-docs`, `build-package` e `verify`.
 
 - :material-file-cog:
   **Configs versionadas**
@@ -65,7 +65,8 @@
 2. Rode um exemplo com `python -m rede_neural_do_zero example --config configs/example/wine.json`.
 3. Treine com `python -m rede_neural_do_zero train --config configs/train/iris.yaml`.
 4. Compare configuracoes com `python -m rede_neural_do_zero benchmark --config configs/benchmark/suite.yaml`.
-5. Valide tudo com `python -m rede_neural_do_zero verify --build-package`.
+5. Valide o nome da branch com `python -m rede_neural_do_zero check-branch --name feat/minha-melhoria`.
+6. Valide tudo com `python -m rede_neural_do_zero verify --build-package`.
 
 ## Destaques da versao atual
 

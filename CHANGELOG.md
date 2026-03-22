@@ -2,6 +2,20 @@
 
 Todas as mudancas relevantes deste projeto passam a ser registradas aqui seguindo versionamento semantico.
 
+## [2.2.3] - 2026-03-22
+
+### Added
+
+- comando `check-branch` na CLI oficial para validar nomes de branch
+- workflow `Branch Policy` para validar nomes de branch em pushes e pull requests
+- testes automatizados para o padrao oficial de nomes de branch
+
+### Changed
+
+- CI principal agora roda em `main` e `develop`
+- documentacao oficial ganhou exemplos validos e invalidos de nomes de branch
+- template de pull request agora lembra o padrao oficial de branches
+
 ## [2.2.2] - 2026-03-22
 
 ### Added

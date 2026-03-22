@@ -45,16 +45,23 @@ O projeto adota um fluxo simples para continuar profissional sem virar burocrati
 - `fix/*`: correcoes de bugs
 - `docs/*`: mudancas de documentacao, wiki e textos oficiais
 - `chore/*`: manutencao, tooling e organizacao interna
+- `hotfix/*`: correcoes urgentes a partir de `main`
 - `release/*`: preparacao de release quando fizer sentido
 
 Fluxo sugerido:
 
 1. abra uma branch curta a partir de `develop`
-2. valide com a CLI oficial
+2. valide com a CLI oficial, inclusive o nome da branch
 3. integre em `develop`
 4. promova `develop` para `main` quando a rodada estiver pronta para release
 
 Se houver hotfix urgente em producao, a correcao pode sair de `main`, mas depois `develop` deve ser sincronizada.
+
+Comando util:
+
+```bash
+python -m rede_neural_do_zero check-branch --name feat/add-branch-policy
+```
 
 ## Padroes do repositorio
 

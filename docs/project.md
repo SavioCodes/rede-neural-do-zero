@@ -35,13 +35,14 @@ O projeto agora usa um modelo simples de branches:
 
 - `main`: estado oficial, estavel e publicavel
 - `develop`: integracao da proxima rodada de melhorias
-- branches curtas como `feat/*`, `fix/*`, `docs/*` e `chore/*`
+- branches curtas como `feat/*`, `fix/*`, `docs/*`, `chore/*`, `hotfix/*` e `release/*`
 
 Guia rapido:
 
 - novas melhorias devem preferir `develop`
 - releases, tags e estado publico seguem saindo de `main`
 - hotfixes em `main` devem ser sincronizados de volta para `develop`
+- nomes de branch agora sao validados automaticamente no workflow `Branch Policy`
 
 Detalhes:
 

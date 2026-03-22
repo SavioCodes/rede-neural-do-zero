@@ -79,6 +79,15 @@ Gera wheel e sdist, com opcao de validar metadados.
 python -m rede_neural_do_zero build-package --check
 ```
 
+### `check-branch`
+
+Valida nomes de branch pelo padrao oficial do projeto.
+
+```bash
+python -m rede_neural_do_zero check-branch --name feat/add-branch-policy
+python -m rede_neural_do_zero check-branch --name docs/update-wiki-links
+```
+
 ### `verify`
 
 Executa lint, tipos, testes, notebooks, docs e, opcionalmente, build do pacote.

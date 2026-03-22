@@ -13,7 +13,38 @@ Esta pagina documenta o fluxo oficial de branches do projeto.
 - `fix/*`: correcoes
 - `docs/*`: documentacao, wiki e textos oficiais
 - `chore/*`: manutencao, limpeza e tooling
+- `hotfix/*`: correcoes urgentes que nasceram de `main`
 - `release/*`: preparacao de release
+
+## Padrao exato
+
+Nomes aceitos:
+
+- `main`
+- `develop`
+- `feat/<slug-kebab-case>`
+- `fix/<slug-kebab-case>`
+- `docs/<slug-kebab-case>`
+- `chore/<slug-kebab-case>`
+- `hotfix/<slug-kebab-case>`
+- `release/vX.Y.Z`
+
+## Exemplos validos
+
+- `feat/add-branch-policy`
+- `fix/checkpoint-restore-bug`
+- `docs/update-wiki-links`
+- `chore/reorganize-ci-cache`
+- `hotfix/fix-release-link`
+- `release/v2.2.3`
+
+## Exemplos invalidos
+
+- `feature/nova-coisa`
+- `docs/wiki links`
+- `Feat/maiuscula`
+- `release/2.2.3`
+- `minha-branch`
 
 ## Fluxo sugerido
 
@@ -22,6 +53,14 @@ Esta pagina documenta o fluxo oficial de branches do projeto.
 3. validar com `python -m rede_neural_do_zero verify --build-package`
 4. integrar em `develop`
 5. promover `develop` para `main` quando a rodada estiver pronta para release
+
+## Verificacao automatica
+
+O repositorio agora valida esse padrao de tres formas:
+
+- comando local: `python -m rede_neural_do_zero check-branch --name feat/add-branch-policy`
+- script leve para automacao: `python src/interfaces/branch_policy.py --name feat/add-branch-policy --json`
+- workflow `Branch Policy` no GitHub Actions para pushes e pull requests
 
 ## Regras praticas
 

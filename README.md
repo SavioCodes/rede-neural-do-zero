@@ -20,7 +20,7 @@ Implementacao educacional de rede neural do zero com NumPy, organizada como paco
 - benchmark com multiplas `seeds`, media, desvio e ranking
 - suite multi-dataset com leaderboard e relatorio Markdown
 - datasets reais empacotados: Iris, Wine e Diabetes
-- CLI com `train`, `resume`, `evaluate`, `benchmark`, `example`, `build-docs`, `build-package` e `verify`
+- CLI com `train`, `resume`, `evaluate`, `benchmark`, `example`, `check-branch`, `build-docs`, `build-package` e `verify`
 - configs oficiais em JSON, TOML e YAML
 - docs web com MkDocs Material e referencia de API automatica
 - notebooks didaticos para estudo
@@ -74,6 +74,7 @@ python -m rede_neural_do_zero resume --checkpoint experiments/runs/iris-baseline
 python -m rede_neural_do_zero evaluate --config configs/evaluate/diabetes.toml
 python -m rede_neural_do_zero benchmark --config configs/benchmark/suite.yaml
 python -m rede_neural_do_zero example --config configs/example/wine.json
+python -m rede_neural_do_zero check-branch --name feat/add-branch-policy
 python -m rede_neural_do_zero verify --build-package
 ```
 
@@ -126,6 +127,7 @@ python -m rede_neural_do_zero resume --checkpoint experiments/runs/iris-baseline
 python -m rede_neural_do_zero evaluate --config configs/evaluate/diabetes.toml
 python -m rede_neural_do_zero benchmark --datasets iris,wine,diabetes --seeds 42,52,62
 python -m rede_neural_do_zero example --config configs/example/wine.json
+python -m rede_neural_do_zero check-branch --name docs/update-wiki-links
 python -m rede_neural_do_zero build-docs --strict
 python -m rede_neural_do_zero build-package --check
 python -m rede_neural_do_zero verify --build-package
@@ -215,6 +217,7 @@ python -m rede_neural_do_zero verify --build-package
 
 - Branch estavel: `main`
 - Branch de integracao: `develop`
+- Prefixos recomendados: `feat/*`, `fix/*`, `docs/*`, `chore/*`, `hotfix/*`, `release/*`
 - Releases: <https://github.com/SavioCodes/rede-neural-do-zero/releases>
 - Tags: <https://github.com/SavioCodes/rede-neural-do-zero/tags>
 - Issues: <https://github.com/SavioCodes/rede-neural-do-zero/issues>
