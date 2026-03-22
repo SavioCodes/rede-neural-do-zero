@@ -32,7 +32,7 @@ class TestBranchPolicy(unittest.TestCase):
             "docs/update-branching-guide",
             "chore/reorganize-ci",
             "hotfix/fix-release-link",
-            "release/v2.2.4",
+            "release/v2.2.5",
         ]:
             with self.subTest(nome=nome):
                 resultado = validar_nome_branch(nome)
@@ -42,7 +42,7 @@ class TestBranchPolicy(unittest.TestCase):
         for nome in [
             "feature/minha-branch",
             "docs/wiki links",
-            "release/2.2.4",
+            "release/2.2.5",
             "Feat/upper",
             "",
         ]:

@@ -9,7 +9,7 @@ Esta pasta organiza os experimentos oficiais do projeto.
 
 ## Fluxo recomendado
 
-1. Escolha um manifesto em `experiments/manifests/`
-2. Rode o comando correspondente com `python -m src`
-3. Confira os artefatos gerados em `experiments/runs/`
-4. Versione apenas manifests e configuracoes, nao os resultados pesados
+1. escolha um manifesto em `experiments/manifests/`
+2. rode o comando correspondente com `python -m rede_neural_do_zero`
+3. confira os artefatos gerados em `experiments/runs/`
+4. versione apenas manifests e configuracoes, nao os resultados pesados

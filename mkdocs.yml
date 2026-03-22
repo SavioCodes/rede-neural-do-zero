@@ -56,6 +56,7 @@ nav:
       - Instalar e Rodar: getting-started.md
       - CLI Oficial: cli.md
       - Datasets: datasets.md
+      - FAQ: faq.md
       - Publicacao PyPI: publishing.md
   - Fundamentos:
       - Teoria: teoria.md

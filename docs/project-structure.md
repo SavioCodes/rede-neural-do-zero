@@ -1,13 +1,13 @@
 # Estrutura do Repositorio
 
-Esta pagina documenta a organizacao oficial do projeto para facilitar manutencao, onboarding e contribuicao.
+Esta pagina documenta a organizacao oficial do projeto para facilitar onboarding, manutencao e contribuicao.
 
 ## Visao geral
 
 ```text
 .
 |-- configs/               # configs versionadas para a CLI
-|-- data/                  # notas sobre dados e fontes
+|-- data/                  # notas de apoio sobre dados e fontes
 |-- docs/                  # documentacao fonte do site MkDocs
 |-- examples/              # exemplos curtos e didaticos
 |-- experiments/           # manifests versionados e saidas locais ignoradas
@@ -16,24 +16,33 @@ Esta pagina documenta a organizacao oficial do projeto para facilitar manutencao
 |-- scripts/               # automacoes de avaliacao, benchmark e docs
 |-- src/                   # implementacao principal organizada por dominio
 |-- tests/                 # suite de testes automatizados
-|-- dist/                  # artefatos de build locais (ignorado no Git)
+|-- dist/                  # artefatos locais de build (ignorado no Git)
 |-- logs/                  # saidas locais de avaliacao/benchmark (ignorado no Git)
 |-- results/               # artefatos locais de treino e exemplos (ignorado no Git)
 `-- site/                  # build local do MkDocs (ignorado no Git)
 ```
 
-## Layout interno de `src`
+## O que editar em cada tipo de mudanca
 
-- `src/core/`: rede neural, forward/backward e funcoes de ativacao.
-- `src/training/`: callbacks e configs de treinamento.
-- `src/data/`: datasets sinteticos, metricas, plots e CSV helpers.
-- `src/workflows/`: treino completo, avaliacao e benchmark.
-- `src/interfaces/`: CLI oficial e suporte a `--config`.
-- `src/datasets/`: datasets reais empacotados em CSV.
+- quer mudar a logica numerica da rede: `src/core/`
+- quer mexer em callbacks ou configs: `src/training/`
+- quer mexer em datasets, metricas ou plots: `src/data/`
+- quer mexer em treino, avaliacao ou benchmark: `src/workflows/`
+- quer mexer na CLI ou em `--config`: `src/interfaces/`
+- quer atualizar datasets empacotados: `src/datasets/`
+- quer atualizar onboarding e explicacoes: `README.md` e `docs/`
+- quer proteger comportamento: `tests/`
+
+## O que e publico e o que e interno
+
+- `rede_neural_do_zero/` e a interface publica recomendada para quem instala o pacote
+- `src/` concentra a implementacao interna do repositorio
+- `python -m rede_neural_do_zero` e o comando oficial
+- `python -m src` foi mantido por compatibilidade com material antigo
 
 ## Compatibilidade
 
-Para manter estabilidade, os caminhos antigos continuam validos:
+Alguns caminhos antigos de `src.*` continuam validos como wrappers:
 
 - `src.rede_neural`
 - `src.utils`
@@ -41,12 +50,15 @@ Para manter estabilidade, os caminhos antigos continuam validos:
 - `src.benchmarking`
 - `src.experiments`
 
-Esses modulos agora sao wrappers finos para a nova estrutura interna. Isso permite reorganizar o projeto sem quebrar os imports ja usados em exemplos, testes e documentacao antiga.
+Eles existem para nao quebrar exemplos, testes e material antigo enquanto a estrutura interna fica mais organizada.
 
-## Convencoes praticas
+## O que pode ser ignorado ou apagado localmente
 
-- Codigo-fonte oficial fica em `src/` e no wrapper publico `rede_neural_do_zero/`.
-- Artefatos gerados nao entram no Git: `dist/`, `site/`, `logs/`, `results/` e `experiments/runs/`.
-- Configs reproduziveis vivem em `configs/`.
-- Manifests de experimentos vivem em `experiments/manifests/`.
-- O comando oficial do projeto e `python -m rede_neural_do_zero`.
+- `dist/`
+- `site/`
+- `logs/`
+- `results/`
+- `.coverage`
+- `*.egg-info/`
+
+Esses itens sao gerados localmente durante teste, build, docs ou exemplos. Eles nao fazem parte do codigo-fonte oficial.

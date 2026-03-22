@@ -49,14 +49,14 @@ def exemplos_branch() -> dict[str, list[str]]:
             "docs/update-wiki-links",
             "chore/reorganize-ci-cache",
             "hotfix/fix-release-tag-link",
-            "release/v2.2.4",
+            "release/v2.2.5",
         ],
         "invalidas": [
             "feature/nova-coisa",
             "bugfix/erro-x",
             "Feat/maiuscula",
             "docs/wiki links",
-            "release/2.2.4",
+            "release/2.2.5",
             "minha-branch",
         ],
     }

@@ -1,8 +1,10 @@
-﻿# Instalar e Rodar
+# Instalar e Rodar
 
-## Instalacao rapida
+Esta pagina serve para quem quer ver o projeto funcionando sem precisar entender toda a estrutura primeiro.
 
-### Desenvolvimento
+## Instalar o ambiente
+
+### Linux ou macOS
 
 ```bash
 python -m venv .venv
@@ -26,48 +28,53 @@ pre-commit install
 python -m pip install .
 ```
 
-### Instalacao editavel com extras
+### Instalacao editavel
 
 ```bash
 python -m pip install -e ".[dev]"
 ```
 
-## Verificacao rapida
+## Primeiros 10 minutos
+
+### 1. Validar o projeto
 
 ```bash
-python -m rede_neural_do_zero verify
-python -m rede_neural_do_zero evaluate --dataset binario --seed 42 --epochs 150 --samples 240
-python -m rede_neural_do_zero benchmark --mode multiclasse --epochs 80 --seeds 42,52,62
+python -m rede_neural_do_zero verify --build-package
 ```
 
-## Primeiros comandos uteis
+### 2. Rodar um exemplo pronto
 
 ```bash
-python -m rede_neural_do_zero train --config configs/train/iris.yaml
-python -m rede_neural_do_zero evaluate --config configs/evaluate/diabetes.toml
-python -m rede_neural_do_zero benchmark --config configs/benchmark/suite.yaml
 python -m rede_neural_do_zero example --config configs/example/wine.json
 ```
 
-## Importacao via Python
+### 3. Treinar um modelo
 
-```python
-from rede_neural_do_zero import DataUtils, RedeNeural
-
-X, y, meta = DataUtils.carregar_dataset_iris(normalizar="padrao")
-rede = RedeNeural(
-    [X.shape[1], 16, 12, 3],
-    ativacao="relu",
-    inicializacao="he",
-    seed=42,
-    funcao_custo="categorical_crossentropy",
-)
+```bash
+python -m rede_neural_do_zero train --config configs/train/iris.yaml
 ```
+
+### 4. Rodar uma avaliacao
+
+```bash
+python -m rede_neural_do_zero evaluate --config configs/evaluate/diabetes.toml
+```
+
+## Se voce quer ler o codigo
+
+Comece nesta ordem:
+
+1. `src/core/` para a logica numerica da rede
+2. `src/training/` para callbacks e configuracoes
+3. `src/data/` para datasets, metricas e visualizacao
+4. `src/interfaces/` para a CLI
+
+O pacote publico para quem usa a biblioteca e `rede_neural_do_zero`.
 
 ## Pastas importantes
 
-- `configs/`: configuracoes oficiais reutilizaveis
-- `experiments/manifests/`: manifestos versionados
-- `experiments/runs/`: destino sugerido para artefatos locais
+- `configs/`: comandos prontos para a CLI
+- `examples/`: exemplos simples e curtos
+- `experiments/manifests/`: execucoes reproduziveis
 - `docs/`: documentacao oficial
-
+- `tests/`: suite automatizada

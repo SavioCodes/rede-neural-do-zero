@@ -2,6 +2,20 @@
 
 Todas as mudancas relevantes deste projeto passam a ser registradas aqui seguindo versionamento semantico.
 
+## [2.2.5] - 2026-03-22
+
+### Changed
+
+- documentacao principal reorganizada para onboarding mais claro e leitura mais rapida
+- explicacoes de estrutura, CLI, datasets, testes e artefatos locais ficaram mais diretas
+- exemplos, scripts e pasta `data/` foram alinhados com o fluxo oficial atual
+- `Makefile` agora usa a CLI oficial em vez de `python -m src`
+- alvo `make clean` ficou mais completo para limpar artefatos locais comuns
+
+### Removed
+
+- arquivo `examples/xor_dataset.csv`, que estava parado e nao fazia parte do fluxo oficial
+
 ## [2.2.4] - 2026-03-22
 
 ### Fixed

@@ -1,6 +1,6 @@
 # Datasets
 
-O repositório agora cobre dois grupos de datasets:
+O repositorio cobre dois grupos de datasets: sinteticos e reais pequenos empacotados.
 
 ## Sinteticos
 
@@ -9,7 +9,7 @@ O repositório agora cobre dois grupos de datasets:
 - `multiclasse`
 - `regressao`
 
-Esses datasets sao bons para visualizar rapidamente o comportamento do algoritmo.
+Esses datasets sao bons para estudar o comportamento do algoritmo de forma controlada.
 
 ## Reais empacotados
 
@@ -38,3 +38,9 @@ print(meta["tipo_tarefa"])
 - `regressao`: estudar saida linear e `mse`
 - `iris` e `wine`: mostrar que o projeto funciona em datasets reais pequenos
 - `diabetes`: demonstrar regressao em um dataset real
+
+## Onde cada coisa fica
+
+- `src/datasets/`: CSVs reais distribuidos junto do pacote
+- `src/data/`: geracao de datasets sinteticos e utilitarios
+- `data/`: notas de apoio do repositorio sobre dados e exemplos

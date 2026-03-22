@@ -1,22 +1,15 @@
-﻿# Rede Neural do Zero
+# Rede Neural do Zero
 
-<div class="hero">
-  <div class="hero-copy">
-    <p class="eyebrow">NumPy + didatica + engenharia real</p>
-    <h1>Uma rede neural do zero que ensina, roda e publica.</h1>
-    <p class="hero-text">
-      Este projeto foi evoluido para servir ao mesmo tempo como material de estudo,
-      portfolio tecnico e pacote Python utilizavel via CLI.
-    </p>
-    <div class="hero-actions">
-      <a class="md-button md-button--primary" href="./getting-started/">Comecar agora</a>
-      <a class="md-button" href="./cli/">Ver CLI</a>
-      <a class="md-button" href="./notebooks/">Abrir notebooks</a>
-      <a class="md-button" href="https://github.com/SavioCodes/rede-neural-do-zero/wiki">Abrir Wiki</a>
-      <a class="md-button" href="./project/">Ver projeto oficial</a>
-    </div>
-  </div>
-</div>
+Projeto educacional de rede neural do zero com NumPy, pensado para estudo, portfolio tecnico e uso como pacote Python com CLI.
+
+## Comece sem se perder
+
+Se voce esta chegando agora, siga esta ordem:
+
+1. [Instalar e rodar](./getting-started.md)
+2. [Ver a CLI oficial](./cli.md)
+3. [Entender a estrutura do repositorio](./project-structure.md)
+4. [Ler a FAQ](./faq.md)
 
 ## O que o projeto entrega
 
@@ -28,54 +21,45 @@
   Forward, backward, inicializacao de pesos, regularizacao, mini-batch, `SGD` e `Adam`.
 
 - :material-shape:
-  **Multiclasse e regressao**
+  **Classificacao e regressao**
 
-  `softmax` com `categorical_crossentropy` para classificacao e saida linear com `mse` para regressao.
+  Binario, multiclasse com `softmax` e regressao com saida linear.
 
 - :material-database:
-  **Datasets reais pequenos**
+  **Datasets pequenos**
 
-  Iris, Wine e Diabetes empacotados junto do projeto para estudo sem depender de download externo.
-
-- :material-restore:
-  **Checkpoint completo**
-
-  Salva pesos, biases, historico, estado do otimizador, epoca e config para retomar o treino.
+  XOR, binario, multiclasse, regressao, Iris, Wine e Diabetes.
 
 - :material-console:
   **CLI oficial**
 
   `train`, `resume`, `evaluate`, `benchmark`, `example`, `check-branch`, `build-docs`, `build-package` e `verify`.
 
-- :material-file-cog:
-  **Configs versionadas**
-
-  Arquivos em JSON, TOML e YAML para repetir treinos, benchmarks e avaliacoes sem depender de flags manuais.
-
 - :material-notebook:
   **Material didatico**
 
-  Notebooks guiados, teoria, tutorial, referencia de API e docs web navegavel com MkDocs Material.
+  Notebooks, tutorial, teoria, wiki e referencia de API.
+
+- :material-file-check:
+  **Projeto organizado**
+
+  Configs versionadas, manifests, testes, changelog, roadmap e releases.
 
 </div>
 
 ## Fluxo recomendado
 
-1. Instale o projeto com `pip install -e .[dev]`.
-2. Rode um exemplo com `python -m rede_neural_do_zero example --config configs/example/wine.json`.
-3. Treine com `python -m rede_neural_do_zero train --config configs/train/iris.yaml`.
-4. Compare configuracoes com `python -m rede_neural_do_zero benchmark --config configs/benchmark/suite.yaml`.
-5. Valide o nome da branch com `python -m rede_neural_do_zero check-branch --name feat/minha-melhoria`.
-6. Valide tudo com `python -m rede_neural_do_zero verify --build-package`.
+```bash
+python -m pip install -e ".[dev]"
+python -m rede_neural_do_zero verify --build-package
+python -m rede_neural_do_zero example --config configs/example/wine.json
+python -m rede_neural_do_zero train --config configs/train/iris.yaml
+```
 
-## Destaques da versao atual
+## Navegacao rapida
 
-- pacote instalavel com entrypoint `rede-neural-do-zero`
-- suporte a classificacao binaria, multiclasse e regressao
-- benchmark com multiplas `seeds`, media, desvio e ranking
-- suite multi-dataset com leaderboard e relatorio Markdown
-- referencia de API gerada a partir do codigo com `mkdocstrings`
-- notebooks exportados para paginas da documentacao
-- manifests versionados para experimentos reproduziveis
-- CI, type-check, cobertura e workflow de publicacao
-
+- Quer usar o projeto: [CLI oficial](./cli.md)
+- Quer entender dados e tarefas: [Datasets](./datasets.md)
+- Quer aprender a teoria: [Teoria](./teoria.md)
+- Quer ver exemplos guiados: [Notebooks](./notebooks.md)
+- Quer contribuir: [Projeto oficial](./project.md)

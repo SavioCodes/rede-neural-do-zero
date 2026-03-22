@@ -1,6 +1,6 @@
-﻿# CLI Oficial
+# CLI Oficial
 
-O projeto agora tem uma CLI publica que centraliza treino, resume, avaliacao, benchmark, exemplos e automacao de qualidade.
+O projeto tem uma CLI publica que centraliza treino, resume, avaliacao, benchmark, exemplos e automacao de qualidade.
 
 ## Usando sem instalar script global
 
@@ -14,6 +14,15 @@ python -m rede_neural_do_zero train --help
 ```bash
 rede-neural-do-zero --help
 rnz --help
+```
+
+## Quatro comandos para comecar
+
+```bash
+python -m rede_neural_do_zero example --config configs/example/wine.json
+python -m rede_neural_do_zero train --config configs/train/iris.yaml
+python -m rede_neural_do_zero evaluate --config configs/evaluate/diabetes.toml
+python -m rede_neural_do_zero verify --build-package
 ```
 
 ## Comandos principais
@@ -122,12 +131,11 @@ train:
 
 Se o mesmo campo aparecer no arquivo e na linha de comando, a flag explicita vence.
 
-## Resume programatico
+## Qual comando usar em cada caso
 
-```python
-from rede_neural_do_zero import RedeNeural
-
-rede = RedeNeural([4, 1], ativacao_saida="linear", funcao_custo="mse")
-rede.carregar_checkpoint("results/diabetes/model-checkpoint.npz")
-```
-
+- quer ver o projeto rodando: `example`
+- quer treinar e salvar artefatos: `train`
+- quer continuar um treino salvo: `resume`
+- quer medir um setup com menos variacao: `evaluate`
+- quer comparar configuracoes: `benchmark`
+- quer validar o repositorio inteiro: `verify`
