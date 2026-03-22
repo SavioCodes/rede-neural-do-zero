@@ -29,6 +29,24 @@ O repositorio agora esta organizado por dominios claros:
 
 Os caminhos antigos de `src.*` permanecem disponiveis como wrappers de compatibilidade.
 
+## Branches oficiais
+
+O projeto agora usa um modelo simples de branches:
+
+- `main`: estado oficial, estavel e publicavel
+- `develop`: integracao da proxima rodada de melhorias
+- branches curtas como `feat/*`, `fix/*`, `docs/*` e `chore/*`
+
+Guia rapido:
+
+- novas melhorias devem preferir `develop`
+- releases, tags e estado publico seguem saindo de `main`
+- hotfixes em `main` devem ser sincronizados de volta para `develop`
+
+Detalhes:
+
+- [`docs/branching.md`](https://github.com/SavioCodes/rede-neural-do-zero/blob/main/docs/branching.md)
+
 ## Gestao de issues
 
 O projeto agora usa formularios mais guiados para:

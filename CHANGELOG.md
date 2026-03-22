@@ -2,6 +2,17 @@
 
 Todas as mudancas relevantes deste projeto passam a ser registradas aqui seguindo versionamento semantico.
 
+## [2.2.2] - 2026-03-22
+
+### Added
+
+- branch oficial `develop` para integracao da proxima rodada de melhorias
+- documentacao oficial do modelo de branches em `docs/branching.md`
+
+### Changed
+
+- `README.md`, `CONTRIBUTING.md` e docs oficiais agora descrevem o fluxo de branches do projeto
+
 ## [2.2.1] - 2026-03-21
 
 ### Added

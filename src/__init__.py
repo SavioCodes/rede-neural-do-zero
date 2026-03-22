@@ -18,7 +18,7 @@ from .workflows.experiments import (
     criar_configs_padrao,
 )
 
-__version__ = "2.2.1"
+__version__ = "2.2.2"
 __author__ = "Savio"
 
 __all__ = [

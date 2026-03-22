@@ -188,6 +188,7 @@ Mapa completo:
 - [Publicacao PyPI](./docs/publishing.md)
 - [Projeto Oficial](./docs/project.md)
 - [Estrutura do Repositorio](./docs/project-structure.md)
+- [Modelo de Branches](./docs/branching.md)
 
 ## Build e publicacao
 
@@ -212,6 +213,8 @@ python -m rede_neural_do_zero verify --build-package
 
 ## Projeto oficial
 
+- Branch estavel: `main`
+- Branch de integracao: `develop`
 - Releases: <https://github.com/SavioCodes/rede-neural-do-zero/releases>
 - Tags: <https://github.com/SavioCodes/rede-neural-do-zero/tags>
 - Issues: <https://github.com/SavioCodes/rede-neural-do-zero/issues>

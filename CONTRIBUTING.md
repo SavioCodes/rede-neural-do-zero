@@ -30,10 +30,31 @@ pre-commit install
 ## Fluxo recomendado
 
 1. Crie ou atualize uma branch para sua mudanca.
-2. Rode o fluxo de verificacao local com `python -m src verify --build-package`.
+2. Rode o fluxo de verificacao local com `python -m rede_neural_do_zero verify --build-package`.
 3. Atualize documentacao, configs e exemplos quando a API mudar.
 4. Se a mudanca impactar usuarios, registre no `CHANGELOG.md`.
 5. Abra um pull request descrevendo o problema, a solucao e como foi validado.
+
+## Modelo de branches
+
+O projeto adota um fluxo simples para continuar profissional sem virar burocratico:
+
+- `main`: branch estavel e oficial, usada para tags, releases e estado publico do projeto
+- `develop`: branch de integracao para a proxima rodada de melhorias
+- `feat/*`: novas funcionalidades
+- `fix/*`: correcoes de bugs
+- `docs/*`: mudancas de documentacao, wiki e textos oficiais
+- `chore/*`: manutencao, tooling e organizacao interna
+- `release/*`: preparacao de release quando fizer sentido
+
+Fluxo sugerido:
+
+1. abra uma branch curta a partir de `develop`
+2. valide com a CLI oficial
+3. integre em `develop`
+4. promova `develop` para `main` quando a rodada estiver pronta para release
+
+Se houver hotfix urgente em producao, a correcao pode sair de `main`, mas depois `develop` deve ser sincronizada.
 
 ## Padroes do repositorio
 
@@ -59,7 +80,7 @@ python -m twine check dist/*
 Ou, de forma centralizada:
 
 ```bash
-python -m src verify --build-package
+python -m rede_neural_do_zero verify --build-package
 ```
 
 ## Mudancas em documentacao
