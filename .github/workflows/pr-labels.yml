@@ -1,0 +1,94 @@
+name: PR Labels
+
+on:
+  pull_request_target:
+    types:
+      - opened
+      - reopened
+      - synchronize
+      - ready_for_review
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+
+      - name: Resolve labels for the pull request
+        run: |
+          python src/interfaces/branch_labels.py \
+            --head "${{ github.head_ref }}" \
+            --base "${{ github.base_ref }}" \
+            --json > branch-labels.json
+          cat branch-labels.json
+
+      - name: Create missing labels and apply them
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          import subprocess
+          import sys
+
+          with open("branch-labels.json", encoding="utf-8") as arquivo:
+              payload = json.load(arquivo)
+
+          repo = os.environ["GITHUB_REPOSITORY"]
+          numero_pr = os.environ["PR_NUMBER"]
+          labels = payload.get("labels", [])
+          definicoes = payload.get("definitions", [])
+
+          if not labels:
+              print("Nenhum label oficial para aplicar neste PR.")
+              sys.exit(0)
+
+          for definicao in definicoes:
+              subprocess.run(
+                  [
+                      "gh",
+                      "label",
+                      "create",
+                      definicao["name"],
+                      "--repo",
+                      repo,
+                      "--color",
+                      definicao["color"],
+                      "--description",
+                      definicao["description"],
+                      "--force",
+                  ],
+                  check=True,
+              )
+
+          for label in labels:
+              subprocess.run(
+                  [
+                      "gh",
+                      "pr",
+                      "edit",
+                      numero_pr,
+                      "--repo",
+                      repo,
+                      "--add-label",
+                      label,
+                  ],
+                  check=True,
+              )
+          PY

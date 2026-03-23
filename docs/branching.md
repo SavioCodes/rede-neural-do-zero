@@ -36,14 +36,14 @@ Nomes aceitos:
 - `docs/update-wiki-links`
 - `chore/reorganize-ci-cache`
 - `hotfix/fix-release-link`
-- `release/v2.2.6`
+- `release/v2.3.0`
 
 ## Exemplos invalidos
 
 - `feature/nova-coisa`
 - `docs/wiki links`
 - `Feat/maiuscula`
-- `release/2.2.6`
+- `release/2.3.0`
 - `minha-branch`
 
 ## Fluxo sugerido
@@ -86,6 +86,16 @@ O repositorio agora valida esse padrao de tres formas:
 - tags e releases saem de `main`
 - `develop` pode receber trabalho em andamento da proxima versao
 - mudancas urgentes em `main` devem ser sincronizadas de volta para `develop`
+
+## Governanca adicional
+
+Para deixar esse fluxo menos manual, o projeto tambem usa:
+
+- protecao oficial em `main` e `develop`
+- `CODEOWNERS` para areas sensiveis do repositorio
+- labels automaticas de PR por prefixo da branch
+- workflow `Hotfix Sync` para abrir PR de `main` para `develop` depois de um hotfix
+- template de release PR em `.github/PULL_REQUEST_TEMPLATE/release.md`
 
 ## Objetivo desse modelo
 

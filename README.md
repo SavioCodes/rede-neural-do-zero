@@ -145,6 +145,11 @@ Se voce quer um mapa mais detalhado:
 - Branch de integracao: `develop`
 - Prefixos recomendados: `feat/*`, `fix/*`, `docs/*`, `chore/*`, `hotfix/*`, `release/*`
 - Fluxo de PR recomendado: `feat/fix/docs/chore -> develop`, `hotfix/release -> main`, `develop -> main`, `main -> develop`
+- Protecao oficial ativa em `main` e `develop` com checks obrigatorios
+- `CODEOWNERS` oficial cobrindo docs, nucleo, CLI e workflows
+- Labels de PR aplicadas automaticamente pelo prefixo da branch
+- Hotfix em `main` agora gera PR automatico de sincronizacao para `develop`
+- Release PR tem template oficial separado
 - Issues: <https://github.com/SavioCodes/rede-neural-do-zero/issues>
 - Releases: <https://github.com/SavioCodes/rede-neural-do-zero/releases>
 - Tags: <https://github.com/SavioCodes/rede-neural-do-zero/tags>
@@ -152,6 +157,7 @@ Se voce quer um mapa mais detalhado:
 - Contribuicao: [CONTRIBUTING.md](./CONTRIBUTING.md)
 - Roadmap: [ROADMAP.md](./ROADMAP.md)
 - Changelog: [CHANGELOG.md](./CHANGELOG.md)
+- Governanca: [docs/governance.md](./docs/governance.md)
 
 ## Licenca
 

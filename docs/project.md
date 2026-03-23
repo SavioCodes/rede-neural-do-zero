@@ -41,6 +41,19 @@ Guia rapido:
 - releases, tags e estado publico seguem saindo de `main`
 - hotfixes em `main` devem ser sincronizados de volta para `develop`
 - nomes de branch e branch-base de PR sao validados automaticamente no workflow `Branch Policy`
+- `main` e `develop` contam com protecao oficial no GitHub
+- PRs recebem labels automaticas e existe um `CODEOWNERS` versionado no repositorio
+
+## Governanca do GitHub
+
+Para manter o repositorio mais profissional, o projeto agora tambem tem:
+
+- `CODEOWNERS` cobrindo docs, nucleo, CLI e workflows
+- labels automaticas a partir da branch do PR
+- template de release PR
+- sincronizacao automatica depois de hotfix
+
+Veja tambem: [`docs/governance.md`](https://github.com/SavioCodes/rede-neural-do-zero/blob/main/docs/governance.md)
 
 ## Publicacao
 

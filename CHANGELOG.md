@@ -2,6 +2,21 @@
 
 Todas as mudancas relevantes deste projeto passam a ser registradas aqui seguindo versionamento semantico.
 
+## [2.3.0] - 2026-03-23
+
+### Added
+
+- `CODEOWNERS` oficial cobrindo documentacao, nucleo, CLI e workflows
+- labels automaticas de PR a partir do prefixo da branch e do fluxo entre `main` e `develop`
+- workflow `Hotfix Sync` para abrir PR de sincronizacao de `main` para `develop` depois de hotfix
+- template oficial de release PR e documentacao dedicada de governanca
+
+### Changed
+
+- governanca do repositorio agora documenta branch protection, labels, hotfix sync e release PR
+- `main` e `develop` passaram a ter configuracao oficial de protecao no GitHub
+- README, contribuicao e docs oficiais ficaram mais claros sobre ownership e fluxo de release
+
 ## [2.2.6] - 2026-03-23
 
 ### Added

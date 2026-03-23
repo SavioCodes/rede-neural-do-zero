@@ -9,6 +9,6 @@ Descreva em poucas linhas o que mudou.
 - [ ] Atualizei `CHANGELOG.md` quando a mudanca afeta usuarios
 - [ ] Minha branch segue o padrao oficial (`feat/*`, `fix/*`, `docs/*`, `chore/*`, `hotfix/*`, `release/*`)
 - [ ] Meu PR aponta para a base correta (`develop` para trabalho normal, `main` para `hotfix/*`, `release/*` ou promocao de `develop`)
+- [ ] Se este PR for de release, usei o template dedicado em `.github/PULL_REQUEST_TEMPLATE/release.md`
 - [ ] Rodei `python -m rede_neural_do_zero verify --build-package`
 - [ ] Considerei impacto em `tags` e `releases`
-

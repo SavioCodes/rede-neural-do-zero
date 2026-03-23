@@ -1,0 +1,74 @@
+name: Hotfix Sync
+
+on:
+  pull_request:
+    types: [closed]
+    branches: [main]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  sync_main_back_to_develop:
+    if: ${{ github.event.pull_request.merged == true && startsWith(github.event.pull_request.head.ref, 'hotfix/') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Check if develop is behind main
+        id: compare
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          ahead_by="$(gh api repos/${GITHUB_REPOSITORY}/compare/develop...main --jq '.ahead_by')"
+          echo "ahead_by=${ahead_by}" >> "$GITHUB_OUTPUT"
+
+      - name: Check for existing sync PR
+        if: steps.compare.outputs.ahead_by != '0'
+        id: existing
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          number="$(gh pr list \
+            --repo "${GITHUB_REPOSITORY}" \
+            --base develop \
+            --head main \
+            --state open \
+            --json number \
+            --jq '.[0].number // ""')"
+          echo "number=${number}" >> "$GITHUB_OUTPUT"
+
+      - name: Create sync PR from main to develop
+        if: steps.compare.outputs.ahead_by != '0' && steps.existing.outputs.number == ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          titulo="chore(sync): merge hotfix changes from main back into develop"
+          corpo="$(cat <<EOF
+          ## Resumo
+
+          Sincronizacao automatica criada apos o merge do hotfix #${{ github.event.pull_request.number }}.
+
+          Hotfix original: `${{ github.event.pull_request.title }}`
+
+          ## Checklist
+
+          - [ ] Confirmar que o hotfix foi reintroduzido em \`develop\`
+          - [ ] Validar a CI em \`develop\`
+          - [ ] Resolver conflitos se aparecerem
+          EOF
+          )"
+
+          pr_url="$(gh pr create \
+            --repo "${GITHUB_REPOSITORY}" \
+            --base develop \
+            --head main \
+            --title "${titulo}" \
+            --body "${corpo}")"
+
+          pr_number="$(gh pr view "${pr_url}" --repo "${GITHUB_REPOSITORY}" --json number --jq '.number')"
+          gh pr edit "${pr_number}" --repo "${GITHUB_REPOSITORY}" --add-label governance --add-label release

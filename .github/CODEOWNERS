@@ -1,0 +1,31 @@
+# Dono padrao do repositorio
+* @SavioCodes
+
+# Documentacao oficial e site
+/README.md @SavioCodes
+/CHANGELOG.md @SavioCodes
+/CONTRIBUTING.md @SavioCodes
+/ROADMAP.md @SavioCodes
+/docs/ @SavioCodes
+/mkdocs.yml @SavioCodes
+/notebooks/ @SavioCodes
+
+# Nucleo da rede neural
+/src/core/ @SavioCodes
+/src/rede_neural.py @SavioCodes
+/src/rede_neural_core.py @SavioCodes
+/src/funcoes_ativacao.py @SavioCodes
+
+# CLI publica e interfaces
+/rede_neural_do_zero/ @SavioCodes
+/src/interfaces/ @SavioCodes
+/src/cli.py @SavioCodes
+/src/cli_config.py @SavioCodes
+/src/__main__.py @SavioCodes
+
+# Automacao e workflows do GitHub
+/.github/CODEOWNERS @SavioCodes
+/.github/ISSUE_TEMPLATE/ @SavioCodes
+/.github/PULL_REQUEST_TEMPLATE.md @SavioCodes
+/.github/PULL_REQUEST_TEMPLATE/ @SavioCodes
+/.github/workflows/ @SavioCodes

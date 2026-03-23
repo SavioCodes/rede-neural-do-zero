@@ -69,6 +69,7 @@ Destino esperado de PR:
 - `hotfix/*` e `release/*` -> `main`
 - promocao de versao -> `develop` abrindo PR para `main`
 - sincronizacao depois de hotfix -> `main` abrindo PR para `develop`
+- PR de release devem usar o template `.github/PULL_REQUEST_TEMPLATE/release.md`
 
 ## Padroes do repositorio
 
@@ -108,3 +109,12 @@ Se voce alterar:
 - release process
 
 entao atualize tambem README, docs e, quando aplicavel, os links de `tags` e `releases`.
+
+## Governanca automatica
+
+O repositorio tambem possui algumas automacoes oficiais:
+
+- `CODEOWNERS` para docs, nucleo, CLI e workflows
+- labels automaticas para o tipo de branch do PR
+- sincronizacao automatica de `main` para `develop` depois de hotfix
+- protecao oficial em `main` e `develop` com checks obrigatorios
