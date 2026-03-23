@@ -1,4 +1,4 @@
-﻿name: Publish
+name: Publish
 
 on:
   release:
@@ -7,12 +7,14 @@ on:
 
 permissions:
   contents: read
-  id-token: write
 
 jobs:
   build-and-publish:
-    if: ${{ vars.PYPI_PUBLISH_ENABLED == 'true' }}
+    environment: pypi
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -40,3 +42,56 @@ jobs:
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
 
+      - name: Validate clean install from PyPI
+        run: |
+          python - <<'PY'
+          import shutil
+          import subprocess
+          import sys
+          import time
+          import tomllib
+          import venv
+          from pathlib import Path
+
+          pyproject = tomllib.loads(Path("pyproject.toml").read_text(encoding="utf-8"))
+          package_name = str(pyproject["project"]["name"])
+          version = str(pyproject["project"]["version"])
+          cli_name = "rede-neural-do-zero"
+          venv_dir = Path(".venv-install")
+          if venv_dir.exists():
+              shutil.rmtree(venv_dir)
+          venv.EnvBuilder(with_pip=True).create(venv_dir)
+          if sys.platform == "win32":
+              python_bin = venv_dir / "Scripts" / "python.exe"
+              cli_bin = venv_dir / "Scripts" / f"{cli_name}.exe"
+          else:
+              python_bin = venv_dir / "bin" / "python"
+              cli_bin = venv_dir / "bin" / cli_name
+
+          subprocess.run([str(python_bin), "-m", "pip", "install", "--upgrade", "pip"], check=True)
+
+          install_cmd = [
+              str(python_bin),
+              "-m",
+              "pip",
+              "install",
+              f"{package_name}=={version}",
+          ]
+          for attempt in range(1, 7):
+              result = subprocess.run(install_cmd, check=False)
+              if result.returncode == 0:
+                  break
+              if attempt == 6:
+                  raise SystemExit("Falha ao instalar o pacote publicado a partir do PyPI.")
+              time.sleep(10)
+
+          subprocess.run(
+              [
+                  str(python_bin),
+                  "-c",
+                  "import rede_neural_do_zero; print(rede_neural_do_zero.__version__)",
+              ],
+              check=True,
+          )
+          subprocess.run([str(cli_bin), "--help"], check=True)
+          PY

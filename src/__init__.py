@@ -2,6 +2,7 @@
 
 from .core import FuncoesAtivacao, RedeNeural
 from .data import DataUtils, FileUtils, MetricUtils, VisualizationUtils
+from .interfaces import PyPIStatusResult, TrustedPublisherConfig, obter_status_pypi
 from .training import Callback, CSVLogger, EarlyStopping, History, ModelCheckpoint
 from .training.config import ModelConfig, TrainingConfig
 from .workflows import (
@@ -18,7 +19,7 @@ from .workflows.experiments import (
     criar_configs_padrao,
 )
 
-__version__ = "2.4.0"
+__version__ = "2.4.1"
 __author__ = "Savio"
 
 __all__ = [
@@ -44,4 +45,7 @@ __all__ = [
     "gerar_relatorio_markdown",
     "parse_datasets",
     "run_evaluation",
+    "PyPIStatusResult",
+    "TrustedPublisherConfig",
+    "obter_status_pypi",
 ]

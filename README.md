@@ -67,6 +67,12 @@ rnz --help
 
 `python -m src` ainda existe por compatibilidade com material antigo, mas nao e mais o caminho recomendado para uso novo.
 
+Para acompanhar o fluxo oficial de publicacao no PyPI:
+
+```bash
+python -m rede_neural_do_zero pypi-status
+```
+
 ## Exemplo rapido em Python
 
 ```python
@@ -134,6 +140,7 @@ Se voce quer um mapa mais detalhado:
 - [Wiki](https://github.com/SavioCodes/rede-neural-do-zero/wiki)
 - [Comecando](./docs/getting-started.md)
 - [CLI](./docs/cli.md)
+- [Publicacao PyPI](./docs/publishing.md)
 - [Datasets](./docs/datasets.md)
 - [Tutorial](./docs/tutorial.md)
 - [Teoria](./docs/teoria.md)

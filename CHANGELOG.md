@@ -2,6 +2,23 @@
 
 Todas as mudancas relevantes deste projeto passam a ser registradas aqui seguindo versionamento semantico.
 
+## [2.4.1] - 2026-03-23
+
+### Added
+
+- comando `pypi-status` na CLI oficial para inspecionar o estado do pacote e do Trusted Publisher
+- utilitarios versionados para resolver nome do pacote e configuracao esperada do PyPI
+
+### Changed
+
+- workflow `Publish` agora usa o environment oficial `pypi` e nao depende mais de gate artificial por variavel
+- publicacao passou a validar instalacao limpa via `pip install rede-neural-do-zero==<versao>` apos o upload
+- documentacao de publicacao foi reescrita com o fluxo oficial fim a fim, incluindo `pending publisher`
+
+### Removed
+
+- dependencia do gate `PYPI_PUBLISH_ENABLED` para a publicacao oficial no PyPI
+
 ## [2.4.0] - 2026-03-23
 
 ### Added

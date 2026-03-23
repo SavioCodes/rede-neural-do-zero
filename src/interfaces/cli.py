@@ -41,6 +41,7 @@ from .cli_config import (
     argv_comando_atual,
     serializar_config_efetiva,
 )
+from .pypi_status import carregar_nome_projeto, obter_status_pypi
 from .release_notes import construir_release_notes
 
 
@@ -368,6 +369,19 @@ def cmd_release_notes(args: argparse.Namespace) -> None:
     print(payload.body)
 
 
+def cmd_pypi_status(args: argparse.Namespace) -> None:
+    """Inspeciona o estado do pacote no PyPI e a configuracao do Trusted Publisher."""
+    payload = obter_status_pypi(
+        project_name=args.project_name or carregar_nome_projeto(args.pyproject),
+        owner=args.owner,
+        repository=args.repository,
+        workflow_filename=args.workflow_filename,
+        environment=args.environment,
+        pyproject_path=args.pyproject,
+    )
+    print(json.dumps(payload.to_dict(), indent=2, ensure_ascii=True))
+
+
 def build_parser() -> tuple[argparse.ArgumentParser, dict[str, argparse.ArgumentParser]]:
     """Monta o parser principal da CLI."""
     parser = argparse.ArgumentParser(
@@ -517,6 +531,19 @@ def build_parser() -> tuple[argparse.ArgumentParser, dict[str, argparse.Argument
     parser_release_notes.add_argument("--json", action="store_true")
     parser_release_notes.set_defaults(func=cmd_release_notes)
     parsers_por_comando["release-notes"] = parser_release_notes
+
+    parser_pypi_status = subparsers.add_parser(
+        "pypi-status",
+        help="Mostra o estado do pacote no PyPI e a configuracao esperada do Trusted Publisher",
+    )
+    parser_pypi_status.add_argument("--project-name", type=str, default=None)
+    parser_pypi_status.add_argument("--owner", type=str, default="SavioCodes")
+    parser_pypi_status.add_argument("--repository", type=str, default="rede-neural-do-zero")
+    parser_pypi_status.add_argument("--workflow-filename", type=str, default="publish.yml")
+    parser_pypi_status.add_argument("--environment", type=str, default="pypi")
+    parser_pypi_status.add_argument("--pyproject", type=str, default="pyproject.toml")
+    parser_pypi_status.set_defaults(func=cmd_pypi_status)
+    parsers_por_comando["pypi-status"] = parser_pypi_status
 
     return parser, parsers_por_comando
 

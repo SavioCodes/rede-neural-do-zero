@@ -102,8 +102,16 @@ python -m rede_neural_do_zero check-branch --name hotfix/fix-release-link --targ
 Extrai a secao oficial do `CHANGELOG.md` para virar release notes ou draft release.
 
 ```bash
-python -m rede_neural_do_zero release-notes --version v2.4.0
+python -m rede_neural_do_zero release-notes --version v2.4.1
 python -m rede_neural_do_zero release-notes --json --output logs/release-notes.md
+```
+
+### `pypi-status`
+
+Mostra o estado atual do pacote no PyPI e os campos oficiais esperados pelo Trusted Publisher.
+
+```bash
+python -m rede_neural_do_zero pypi-status
 ```
 
 ### `verify`
@@ -148,4 +156,5 @@ Se o mesmo campo aparecer no arquivo e na linha de comando, a flag explicita ven
 - quer medir um setup com menos variacao: `evaluate`
 - quer comparar configuracoes: `benchmark`
 - quer preparar release notes oficiais: `release-notes`
+- quer checar se o PyPI esta pronto para publicar: `pypi-status`
 - quer validar o repositorio inteiro: `verify`

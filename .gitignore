@@ -8,6 +8,7 @@ __pycache__/
 .coverage.*
 htmlcov/
 .venv/
+.venv-*/
 venv/
 env/
 
@@ -24,6 +25,7 @@ coverage.xml
 .ipynb_checkpoints/
 .vscode/
 .idea/
+.playwright-cli/
 
 # OS files
 .DS_Store

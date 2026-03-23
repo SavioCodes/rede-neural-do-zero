@@ -19,6 +19,11 @@ from .cli_config import (
     serializar_config_efetiva,
 )
 from .codeowners_reviewers import CodeownersEntry, ReviewerResolution, resolve_reviewers
+from .pypi_status import (
+    PyPIStatusResult,
+    TrustedPublisherConfig,
+    obter_status_pypi,
+)
 from .release_notes import ReleaseNotesResult, construir_release_notes, extrair_secao_changelog
 
 __all__ = [
@@ -30,6 +35,8 @@ __all__ = [
     "CodeownersEntry",
     "ReviewerResolution",
     "ReleaseNotesResult",
+    "PyPIStatusResult",
+    "TrustedPublisherConfig",
     "validar_nome_branch",
     "validar_destino_pr",
     "detectar_branch_atual",
@@ -38,6 +45,7 @@ __all__ = [
     "labels_para_pull_request",
     "definicoes_para_labels",
     "resolve_reviewers",
+    "obter_status_pypi",
     "construir_release_notes",
     "extrair_secao_changelog",
     "aplicar_config_cli",
