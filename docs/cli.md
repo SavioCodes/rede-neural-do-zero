@@ -1,6 +1,6 @@
 # CLI Oficial
 
-O projeto tem uma CLI publica que centraliza treino, resume, avaliacao, benchmark, exemplos e automacao de qualidade.
+O projeto tem uma CLI publica que centraliza treino, resume, avaliacao, benchmark, exemplos, governanca e automacao de qualidade.
 
 ## Usando sem instalar script global
 
@@ -77,7 +77,7 @@ python -m rede_neural_do_zero example --config configs/example/wine.json
 Exporta notebooks e monta o site da documentacao.
 
 ```bash
-python -m rede_neural_do_zero build-docs --strict
+python -m rede_neural_do_zero build-docs --strict --check-links
 ```
 
 ### `build-package`
@@ -102,7 +102,7 @@ python -m rede_neural_do_zero check-branch --name hotfix/fix-release-link --targ
 Extrai a secao oficial do `CHANGELOG.md` para virar release notes ou draft release.
 
 ```bash
-python -m rede_neural_do_zero release-notes --version v2.4.1
+python -m rede_neural_do_zero release-notes --version v2.5.0
 python -m rede_neural_do_zero release-notes --json --output logs/release-notes.md
 ```
 
@@ -112,6 +112,39 @@ Mostra o estado atual do pacote no PyPI e os campos oficiais esperados pelo Trus
 
 ```bash
 python -m rede_neural_do_zero pypi-status
+```
+
+### `governance-report`
+
+Carrega um retrato oficial do repositorio, incluindo Pages, workflows, branch protection e CODEOWNERS.
+
+```bash
+python -m rede_neural_do_zero governance-report
+```
+
+### `release-status`
+
+Confere se versao local, draft release, Pages e PyPI estao alinhados.
+
+```bash
+python -m rede_neural_do_zero release-status
+```
+
+### `rules-check`
+
+Executa as checagens oficiais de governanca e falha se algo importante estiver fora do padrao esperado.
+
+```bash
+python -m rede_neural_do_zero rules-check
+```
+
+### `pr-summary`
+
+Resume um PR local com labels sugeridas, areas tocadas, branch-base recomendada e reviewers do `CODEOWNERS`.
+
+```bash
+python -m rede_neural_do_zero pr-summary
+python -m rede_neural_do_zero pr-summary --head feat/improve-pages --base develop
 ```
 
 ### `verify`
@@ -157,4 +190,8 @@ Se o mesmo campo aparecer no arquivo e na linha de comando, a flag explicita ven
 - quer comparar configuracoes: `benchmark`
 - quer preparar release notes oficiais: `release-notes`
 - quer checar se o PyPI esta pronto para publicar: `pypi-status`
+- quer enxergar o estado oficial do repositorio: `governance-report`
+- quer validar regras de governanca antes de mexer no GitHub: `rules-check`
+- quer entender se a release esta pronta: `release-status`
+- quer resumir um PR local: `pr-summary`
 - quer validar o repositorio inteiro: `verify`

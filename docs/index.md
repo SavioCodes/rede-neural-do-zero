@@ -63,3 +63,37 @@ python -m rede_neural_do_zero train --config configs/train/iris.yaml
 - Quer aprender a teoria: [Teoria](./teoria.md)
 - Quer ver exemplos guiados: [Notebooks](./notebooks.md)
 - Quer contribuir: [Projeto oficial](./project.md)
+
+## Atalhos oficiais
+
+<div class="grid cards quick-links" markdown>
+
+- :material-web:
+  **Docs publicadas**
+
+  Navegue pela versao online oficial do projeto.
+
+  [Abrir site](https://saviocodes.github.io/rede-neural-do-zero/)
+
+- :material-book-open-page-variant:
+  **Wiki**
+
+  Veja paginas rapidas de onboarding, uso e organizacao.
+
+  [Abrir wiki](https://github.com/SavioCodes/rede-neural-do-zero/wiki)
+
+- :material-tag-outline:
+  **Releases**
+
+  Acompanhe versoes, tags e notas oficiais de publicacao.
+
+  [Abrir releases](https://github.com/SavioCodes/rede-neural-do-zero/releases)
+
+- :material-api:
+  **API**
+
+  Entre direto na referencia tecnica da CLI, modelos e utilitarios.
+
+  [Abrir API](./api/index.md)
+
+</div>

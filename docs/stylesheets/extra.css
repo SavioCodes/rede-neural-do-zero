@@ -37,3 +37,12 @@
   gap: 0.75rem;
   margin-top: 1.25rem;
 }
+
+.quick-links .md-typeset__table,
+.quick-links table {
+  display: none;
+}
+
+.md-typeset .quick-links .md-button {
+  margin-top: 0.75rem;
+}

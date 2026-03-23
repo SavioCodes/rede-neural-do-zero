@@ -1,8 +1,10 @@
-﻿name: Docs
+name: Docs
 
 on:
   push:
     branches: [main]
+  pull_request:
+    branches: [main, develop]
   workflow_dispatch:
 
 permissions:
@@ -15,9 +17,10 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build:
-    if: ${{ vars.GITHUB_PAGES_ENABLED == 'true' }}
+  validate:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
+
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -36,28 +39,32 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install -r requirements-dev.txt
 
+      - name: Validate notebooks
+        run: python scripts/validate_notebooks.py
+
+      - name: Build docs with link checks
+        run: python -m rede_neural_do_zero build-docs --strict --check-links
+
       - name: Configure Pages
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
         uses: actions/configure-pages@v5
         with:
           enablement: true
 
-      - name: Build docs
-        run: python -m rede_neural_do_zero build-docs --strict
-
       - name: Upload artifact
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
         uses: actions/upload-pages-artifact@v3
         with:
           path: ./site
 
   deploy:
-    if: ${{ vars.GITHUB_PAGES_ENABLED == 'true' }}
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
-    needs: build
+    needs: validate
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
-

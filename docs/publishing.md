@@ -92,7 +92,7 @@ rede-neural-do-zero --help
 ## Release notes locais
 
 ```bash
-python -m rede_neural_do_zero release-notes --version v2.4.1
+python -m rede_neural_do_zero release-notes --version v2.5.0
 python -m rede_neural_do_zero release-notes --json --output logs/release-notes.md
 ```
 

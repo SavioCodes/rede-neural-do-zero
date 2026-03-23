@@ -13,6 +13,7 @@ Projeto educacional de rede neural do zero com NumPy, organizado como pacote Pyt
 - classificacao binaria, multiclasse e regressao
 - `SGD`, `Adam`, `dropout`, `L2` e `gradient clipping`
 - CLI oficial para treinar, avaliar, retomar treino e rodar benchmark
+- CLI oficial tambem para governanca, releases e checks do repositorio
 - configs versionadas em JSON, TOML e YAML
 - datasets reais pequenos: Iris, Wine e Diabetes
 - notebooks, wiki, docs web e referencia de API
@@ -71,6 +72,8 @@ Para acompanhar o fluxo oficial de publicacao no PyPI:
 
 ```bash
 python -m rede_neural_do_zero pypi-status
+python -m rede_neural_do_zero governance-report
+python -m rede_neural_do_zero pr-summary
 ```
 
 ## Exemplo rapido em Python
@@ -140,6 +143,7 @@ Se voce quer um mapa mais detalhado:
 - [Wiki](https://github.com/SavioCodes/rede-neural-do-zero/wiki)
 - [Comecando](./docs/getting-started.md)
 - [CLI](./docs/cli.md)
+- [Governanca](./docs/governance.md)
 - [Publicacao PyPI](./docs/publishing.md)
 - [Datasets](./docs/datasets.md)
 - [Tutorial](./docs/tutorial.md)

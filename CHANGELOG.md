@@ -2,6 +2,22 @@
 
 Todas as mudancas relevantes deste projeto passam a ser registradas aqui seguindo versionamento semantico.
 
+## [2.5.0] - 2026-03-23
+
+### Added
+
+- comandos `governance-report`, `release-status`, `rules-check` e `pr-summary` na CLI oficial
+- verificador oficial de links internos da documentacao em Markdown
+- relatorio de governanca consolidando Pages, workflows, branch protection, rulesets e CODEOWNERS
+
+### Changed
+
+- GitHub Pages saiu do gate temporario e passou a fazer parte do fluxo oficial continuo de docs
+- workflow `Docs` agora valida em pull requests e publica automaticamente em `main`
+- `CODEOWNERS` foi reorganizado por dominio: docs, datasets, core, data, training, workflows e interfaces
+- navegacao das docs ficou mais rica com atalhos para wiki, releases, tags, docs publicadas e API
+- `verify` e `build-docs` agora incluem checagem oficial de links da documentacao
+
 ## [2.4.1] - 2026-03-23
 
 ### Added

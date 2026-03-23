@@ -2,7 +2,20 @@
 
 from .core import FuncoesAtivacao, RedeNeural
 from .data import DataUtils, FileUtils, MetricUtils, VisualizationUtils
-from .interfaces import PyPIStatusResult, TrustedPublisherConfig, obter_status_pypi
+from .interfaces import (
+    DocsLinkCheckResult,
+    GovernanceCheck,
+    PullRequestSummary,
+    PyPIStatusResult,
+    ReleaseStatusResult,
+    TrustedPublisherConfig,
+    obter_governance_report,
+    obter_pr_summary,
+    obter_release_status,
+    obter_rules_check,
+    obter_status_pypi,
+    verificar_links_markdown,
+)
 from .training import Callback, CSVLogger, EarlyStopping, History, ModelCheckpoint
 from .training.config import ModelConfig, TrainingConfig
 from .workflows import (
@@ -19,7 +32,7 @@ from .workflows.experiments import (
     criar_configs_padrao,
 )
 
-__version__ = "2.4.1"
+__version__ = "2.5.0"
 __author__ = "Savio"
 
 __all__ = [
@@ -45,7 +58,16 @@ __all__ = [
     "gerar_relatorio_markdown",
     "parse_datasets",
     "run_evaluation",
+    "DocsLinkCheckResult",
+    "GovernanceCheck",
+    "PullRequestSummary",
     "PyPIStatusResult",
+    "ReleaseStatusResult",
     "TrustedPublisherConfig",
+    "verificar_links_markdown",
+    "obter_governance_report",
+    "obter_rules_check",
+    "obter_release_status",
+    "obter_pr_summary",
     "obter_status_pypi",
 ]

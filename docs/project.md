@@ -4,6 +4,7 @@ Esta pagina centraliza os links, regras e convencoes do repositorio como projeto
 
 ## Links oficiais
 
+- [Docs publicadas](https://saviocodes.github.io/rede-neural-do-zero/)
 - [Issues](https://github.com/SavioCodes/rede-neural-do-zero/issues)
 - [Releases](https://github.com/SavioCodes/rede-neural-do-zero/releases)
 - [Tags](https://github.com/SavioCodes/rede-neural-do-zero/tags)
@@ -48,12 +49,13 @@ Guia rapido:
 
 Para manter o repositorio mais profissional, o projeto agora tambem tem:
 
-- `CODEOWNERS` cobrindo docs, nucleo, CLI e workflows
+- `CODEOWNERS` granular cobrindo docs, datasets, core, data, training, workflows e interfaces
 - reviewers padrao automaticos baseados no `CODEOWNERS`
 - labels automaticas a partir da branch do PR
 - template de release PR
 - sincronizacao automatica depois de hotfix
 - draft de release notes e politica de squash merge no GitHub
+- CLI de governanca com `governance-report`, `rules-check`, `release-status` e `pr-summary`
 
 Veja tambem: [`docs/governance.md`](https://github.com/SavioCodes/rede-neural-do-zero/blob/main/docs/governance.md)
 

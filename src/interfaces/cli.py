@@ -41,6 +41,12 @@ from .cli_config import (
     argv_comando_atual,
     serializar_config_efetiva,
 )
+from .governance import (
+    obter_governance_report,
+    obter_pr_summary,
+    obter_release_status,
+    obter_rules_check,
+)
 from .pypi_status import carregar_nome_projeto, obter_status_pypi
 from .release_notes import construir_release_notes
 
@@ -309,6 +315,8 @@ def cmd_build_docs(args: argparse.Namespace) -> None:
     if args.strict:
         comando.append("--strict")
     _executar_comando(comando)
+    if args.check_links:
+        _executar_comando([sys.executable, "scripts/check_docs_links.py"])
 
 
 def cmd_build_package(args: argparse.Namespace) -> None:
@@ -325,6 +333,7 @@ def cmd_verify(args: argparse.Namespace) -> None:
     _executar_comando([sys.executable, "scripts/validate_notebooks.py"])
     _executar_comando([sys.executable, "scripts/export_notebooks_to_docs.py"])
     _executar_comando([sys.executable, "-m", "mkdocs", "build", "--strict"])
+    _executar_comando([sys.executable, "scripts/check_docs_links.py"])
     if args.build_package:
         _limpar_artefatos_build()
         _executar_comando([sys.executable, "-m", "build"])
@@ -379,6 +388,37 @@ def cmd_pypi_status(args: argparse.Namespace) -> None:
         environment=args.environment,
         pyproject_path=args.pyproject,
     )
+    print(json.dumps(payload.to_dict(), indent=2, ensure_ascii=True))
+
+
+def cmd_governance_report(args: argparse.Namespace) -> None:
+    """Mostra um relatorio oficial da governanca do repositorio."""
+    payload = obter_governance_report(owner=args.owner, repository=args.repository)
+    print(json.dumps(payload, indent=2, ensure_ascii=True))
+
+
+def cmd_release_status(args: argparse.Namespace) -> None:
+    """Consolida versao, draft release, Pages e PyPI em um unico payload."""
+    payload = obter_release_status(
+        owner=args.owner,
+        repository=args.repository,
+        pyproject_path=args.pyproject,
+        src_init_path=args.src_init,
+    )
+    print(json.dumps(payload.to_dict(), indent=2, ensure_ascii=True))
+
+
+def cmd_rules_check(args: argparse.Namespace) -> None:
+    """Executa o conjunto oficial de checagens da governanca do repositorio."""
+    payload = obter_rules_check(owner=args.owner, repository=args.repository)
+    print(json.dumps(payload, indent=2, ensure_ascii=True))
+    if not payload["ok"]:
+        raise SystemExit(1)
+
+
+def cmd_pr_summary(args: argparse.Namespace) -> None:
+    """Resume o PR local usando branch policy, CODEOWNERS e arquivos alterados."""
+    payload = obter_pr_summary(head_branch=args.head, base_branch=args.base)
     print(json.dumps(payload.to_dict(), indent=2, ensure_ascii=True))
 
 
@@ -482,6 +522,7 @@ def build_parser() -> tuple[argparse.ArgumentParser, dict[str, argparse.Argument
         help="Gera as paginas de docs e exporta notebooks para o site",
     )
     parser_build_docs.add_argument("--strict", action="store_true")
+    parser_build_docs.add_argument("--check-links", action="store_true")
     parser_build_docs.set_defaults(func=cmd_build_docs)
     parsers_por_comando["build-docs"] = parser_build_docs
 
@@ -544,6 +585,44 @@ def build_parser() -> tuple[argparse.ArgumentParser, dict[str, argparse.Argument
     parser_pypi_status.add_argument("--pyproject", type=str, default="pyproject.toml")
     parser_pypi_status.set_defaults(func=cmd_pypi_status)
     parsers_por_comando["pypi-status"] = parser_pypi_status
+
+    parser_governance_report = subparsers.add_parser(
+        "governance-report",
+        help="Mostra o estado oficial da governanca do repositorio no GitHub",
+    )
+    parser_governance_report.add_argument("--owner", type=str, default=None)
+    parser_governance_report.add_argument("--repository", type=str, default=None)
+    parser_governance_report.set_defaults(func=cmd_governance_report)
+    parsers_por_comando["governance-report"] = parser_governance_report
+
+    parser_release_status = subparsers.add_parser(
+        "release-status",
+        help="Mostra se versao, draft release, Pages e PyPI estao alinhados",
+    )
+    parser_release_status.add_argument("--owner", type=str, default=None)
+    parser_release_status.add_argument("--repository", type=str, default=None)
+    parser_release_status.add_argument("--pyproject", type=str, default="pyproject.toml")
+    parser_release_status.add_argument("--src-init", type=str, default="src/__init__.py")
+    parser_release_status.set_defaults(func=cmd_release_status)
+    parsers_por_comando["release-status"] = parser_release_status
+
+    parser_rules_check = subparsers.add_parser(
+        "rules-check",
+        help="Valida regras oficiais de branch, workflow, Pages e CODEOWNERS",
+    )
+    parser_rules_check.add_argument("--owner", type=str, default=None)
+    parser_rules_check.add_argument("--repository", type=str, default=None)
+    parser_rules_check.set_defaults(func=cmd_rules_check)
+    parsers_por_comando["rules-check"] = parser_rules_check
+
+    parser_pr_summary = subparsers.add_parser(
+        "pr-summary",
+        help="Resume um PR local com labels, reviewers sugeridos e areas tocadas",
+    )
+    parser_pr_summary.add_argument("--head", type=str, default=None)
+    parser_pr_summary.add_argument("--base", type=str, default=None)
+    parser_pr_summary.set_defaults(func=cmd_pr_summary)
+    parsers_por_comando["pr-summary"] = parser_pr_summary
 
     return parser, parsers_por_comando
 

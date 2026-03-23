@@ -1,31 +1,68 @@
 # Dono padrao do repositorio
 * @SavioCodes
 
-# Documentacao oficial e site
+# Documentacao publica e navegação oficial
 /README.md @SavioCodes
 /CHANGELOG.md @SavioCodes
 /CONTRIBUTING.md @SavioCodes
 /ROADMAP.md @SavioCodes
-/docs/ @SavioCodes
 /mkdocs.yml @SavioCodes
+/docs/ @SavioCodes
 /notebooks/ @SavioCodes
 
-# Nucleo da rede neural
-/src/core/ @SavioCodes
-/src/rede_neural.py @SavioCodes
-/src/rede_neural_core.py @SavioCodes
-/src/funcoes_ativacao.py @SavioCodes
+# Datasets, configuracoes e manifests
+/data/ @SavioCodes
+/configs/ @SavioCodes
+/experiments/ @SavioCodes
+/src/datasets/ @SavioCodes
 
-# CLI publica e interfaces
+# Packaging e metadados do projeto
+/pyproject.toml @SavioCodes
+/requirements.txt @SavioCodes
+/requirements-dev.txt @SavioCodes
+/MANIFEST.in @SavioCodes
+/LICENSE @SavioCodes
+/Makefile @SavioCodes
+
+# Wrapper publico e entrypoints do pacote
 /rede_neural_do_zero/ @SavioCodes
-/src/interfaces/ @SavioCodes
+/src/__init__.py @SavioCodes
+/src/__main__.py @SavioCodes
 /src/cli.py @SavioCodes
 /src/cli_config.py @SavioCodes
-/src/__main__.py @SavioCodes
 
-# Automacao e workflows do GitHub
+# Interfaces, governanca e automacoes de repositorio
+/src/interfaces/ @SavioCodes
+/src/governance.py @SavioCodes
+/src/pypi_status.py @SavioCodes
+/src/docs_links.py @SavioCodes
 /.github/CODEOWNERS @SavioCodes
 /.github/ISSUE_TEMPLATE/ @SavioCodes
 /.github/PULL_REQUEST_TEMPLATE.md @SavioCodes
 /.github/PULL_REQUEST_TEMPLATE/ @SavioCodes
 /.github/workflows/ @SavioCodes
+
+# Nucleo do modelo
+/src/core/ @SavioCodes
+/src/rede_neural.py @SavioCodes
+/src/rede_neural_core.py @SavioCodes
+/src/funcoes_ativacao.py @SavioCodes
+
+# Dados, metricas e utilitarios
+/src/data/ @SavioCodes
+/src/utils.py @SavioCodes
+/src/evaluation.py @SavioCodes
+/src/experiments.py @SavioCodes
+
+# Treinamento, callbacks e configuracoes
+/src/training/ @SavioCodes
+/src/callbacks.py @SavioCodes
+/src/config.py @SavioCodes
+
+# Workflows experimentais e benchmarking
+/src/workflows/ @SavioCodes
+/src/benchmarking.py @SavioCodes
+/scripts/ @SavioCodes
+
+# Testes
+/tests/ @SavioCodes

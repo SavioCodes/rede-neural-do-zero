@@ -29,7 +29,11 @@ O repositorio agora tem um arquivo oficial em `.github/CODEOWNERS`.
 Areas cobertas explicitamente:
 
 - documentacao e site
+- datasets, configs e manifests
 - nucleo da rede neural
+- camada de dados e metricas
+- treinamento, callbacks e configuracoes
+- workflows experimentais
 - CLI publica e interfaces
 - workflows e arquivos de governanca do GitHub
 
@@ -91,8 +95,27 @@ Fluxo esperado:
 - deixar o workflow montar o draft das release notes
 - revisar o draft antes de publicar a release final
 
+## GitHub Pages oficial
+
+O deploy da documentacao agora faz parte do fluxo oficial do repositorio:
+
+- PRs validam build das docs e checagem de links
+- `main` publica automaticamente no GitHub Pages
+- a URL final esperada e `https://saviocodes.github.io/rede-neural-do-zero/`
+- a homepage do repositorio deve apontar para essa mesma URL
+
+## CLI de governanca
+
+A CLI tambem virou interface oficial para inspecionar a governanca:
+
+- `python -m rede_neural_do_zero governance-report`
+- `python -m rede_neural_do_zero rules-check`
+- `python -m rede_neural_do_zero release-status`
+- `python -m rede_neural_do_zero pr-summary`
+
 ## Links importantes
 
+- [Docs publicadas](https://saviocodes.github.io/rede-neural-do-zero/)
 - [Modelo de branches](./branching.md)
 - [Projeto oficial](./project.md)
 - [Contribuindo](https://github.com/SavioCodes/rede-neural-do-zero/blob/main/CONTRIBUTING.md)

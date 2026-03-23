@@ -57,6 +57,16 @@ class TestCodeownersReviewers(unittest.TestCase):
         )
         self.assertEqual(resultado.user_reviewers, [])
 
+    def test_codeowners_cobre_areas_granulares_do_projeto(self) -> None:
+        entradas = carregar_codeowners(Path(".github") / "CODEOWNERS")
+        padroes = {entrada.pattern for entrada in entradas}
+        self.assertIn("/docs/", padroes)
+        self.assertIn("/src/core/", padroes)
+        self.assertIn("/src/data/", padroes)
+        self.assertIn("/src/training/", padroes)
+        self.assertIn("/src/workflows/", padroes)
+        self.assertIn("/src/interfaces/", padroes)
+
     def test_script_standalone_emite_json(self) -> None:
         repo_root = Path(__file__).resolve().parents[1]
         with tempfile.NamedTemporaryFile("w", delete=False, encoding="utf-8") as arquivo:

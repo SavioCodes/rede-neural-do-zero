@@ -10,9 +10,14 @@ theme:
   favicon: null
   logo: null
   features:
+    - navigation.instant
+    - navigation.instant.prefetch
+    - navigation.indexes
     - navigation.tabs
     - navigation.sections
     - navigation.top
+    - navigation.footer
+    - toc.follow
     - content.code.copy
     - content.action.edit
     - search.highlight
@@ -50,6 +55,24 @@ markdown_extensions:
 extra_css:
   - stylesheets/extra.css
 
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/SavioCodes/rede-neural-do-zero
+      name: Repositorio
+    - icon: material/book-open-page-variant
+      link: https://github.com/SavioCodes/rede-neural-do-zero/wiki
+      name: Wiki
+    - icon: material/tag-outline
+      link: https://github.com/SavioCodes/rede-neural-do-zero/releases
+      name: Releases
+    - icon: material/api
+      link: https://saviocodes.github.io/rede-neural-do-zero/api/
+      name: API
+    - icon: material/source-branch
+      link: https://github.com/SavioCodes/rede-neural-do-zero/tags
+      name: Tags
+
 nav:
   - Inicio: index.md
   - Comecando:
@@ -80,3 +103,9 @@ nav:
       - Estrutura do Repositorio: project-structure.md
       - Modelo de Branches: branching.md
       - Governanca: governance.md
+  - Recursos:
+      - Docs Publicadas: https://saviocodes.github.io/rede-neural-do-zero/
+      - Wiki: https://github.com/SavioCodes/rede-neural-do-zero/wiki
+      - Releases: https://github.com/SavioCodes/rede-neural-do-zero/releases
+      - Tags: https://github.com/SavioCodes/rede-neural-do-zero/tags
+      - API Oficial: api/index.md

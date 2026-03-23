@@ -52,7 +52,7 @@ jobs:
           python -m rede_neural_do_zero benchmark --datasets iris,diabetes --samples 180 --epochs 40 --seeds 42,52 --output-dir logs/ci-benchmark
 
       - name: Build docs
-        run: python -m rede_neural_do_zero build-docs --strict
+        run: python -m rede_neural_do_zero build-docs --strict --check-links
 
       - name: Build package
         run: python -m rede_neural_do_zero build-package --check
@@ -61,4 +61,3 @@ jobs:
         run: |
           python -m pip install --force-reinstall dist/*.whl
           rede-neural-do-zero --help
-
