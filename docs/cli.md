@@ -106,6 +106,15 @@ python -m rede_neural_do_zero release-notes --version v2.5.0
 python -m rede_neural_do_zero release-notes --json --output logs/release-notes.md
 ```
 
+### `release-check`
+
+Valida changelog, versoes e release notes antes de criar tag ou publicar uma release.
+
+```bash
+python -m rede_neural_do_zero release-check
+python -m rede_neural_do_zero release-check --json
+```
+
 ### `pypi-status`
 
 Mostra o estado atual do pacote no PyPI e os campos oficiais esperados pelo Trusted Publisher.
@@ -189,6 +198,7 @@ Se o mesmo campo aparecer no arquivo e na linha de comando, a flag explicita ven
 - quer medir um setup com menos variacao: `evaluate`
 - quer comparar configuracoes: `benchmark`
 - quer preparar release notes oficiais: `release-notes`
+- quer validar o pacote oficial de release: `release-check`
 - quer checar se o PyPI esta pronto para publicar: `pypi-status`
 - quer enxergar o estado oficial do repositorio: `governance-report`
 - quer validar regras de governanca antes de mexer no GitHub: `rules-check`

@@ -61,6 +61,7 @@ class TestCodeownersReviewers(unittest.TestCase):
         entradas = carregar_codeowners(Path(".github") / "CODEOWNERS")
         padroes = {entrada.pattern for entrada in entradas}
         self.assertIn("/docs/", padroes)
+        self.assertIn("/roadmaps/", padroes)
         self.assertIn("/src/core/", padroes)
         self.assertIn("/src/data/", padroes)
         self.assertIn("/src/training/", padroes)

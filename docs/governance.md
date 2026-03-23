@@ -91,9 +91,21 @@ O workflow `Release Draft` extrai a secao certa do `CHANGELOG.md` e cria ou atua
 Fluxo esperado:
 
 - atualizar `pyproject.toml`, `src/__init__.py` e `CHANGELOG.md`
+- rodar `python -m rede_neural_do_zero release-check`
 - validar com `python -m rede_neural_do_zero verify --build-package`
 - deixar o workflow montar o draft das release notes
 - revisar o draft antes de publicar a release final
+
+## Release readiness
+
+O workflow `Release Readiness` roda sempre que os arquivos principais de release mudam.
+
+Objetivo:
+
+- validar versao em `pyproject.toml`
+- validar versao em `src/__init__.py`
+- garantir que o topo do `CHANGELOG.md` bate com a versao atual
+- garantir que as release notes geradas automaticamente batem com essa mesma versao
 
 ## GitHub Pages oficial
 
@@ -111,7 +123,17 @@ A CLI tambem virou interface oficial para inspecionar a governanca:
 - `python -m rede_neural_do_zero governance-report`
 - `python -m rede_neural_do_zero rules-check`
 - `python -m rede_neural_do_zero release-status`
+- `python -m rede_neural_do_zero release-check`
 - `python -m rede_neural_do_zero pr-summary`
+
+## Contributor docs
+
+O fluxo oficial agora tambem considera estes arquivos como parte da governanca:
+
+- `SECURITY.md`
+- `SUPPORT.md`
+- `docs/onboarding.md`
+- `roadmaps/README.md`
 
 ## Links importantes
 

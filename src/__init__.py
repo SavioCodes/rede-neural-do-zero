@@ -8,12 +8,16 @@ from .interfaces import (
     PullRequestSummary,
     PyPIStatusResult,
     ReleaseStatusResult,
+    ReleaseValidationCheck,
+    ReleaseValidationResult,
     TrustedPublisherConfig,
+    extrair_versao_topo_changelog,
     obter_governance_report,
     obter_pr_summary,
     obter_release_status,
     obter_rules_check,
     obter_status_pypi,
+    validar_release_local,
     verificar_links_markdown,
 )
 from .training import Callback, CSVLogger, EarlyStopping, History, ModelCheckpoint
@@ -63,6 +67,8 @@ __all__ = [
     "PullRequestSummary",
     "PyPIStatusResult",
     "ReleaseStatusResult",
+    "ReleaseValidationCheck",
+    "ReleaseValidationResult",
     "TrustedPublisherConfig",
     "verificar_links_markdown",
     "obter_governance_report",
@@ -70,4 +76,6 @@ __all__ = [
     "obter_release_status",
     "obter_pr_summary",
     "obter_status_pypi",
+    "extrair_versao_topo_changelog",
+    "validar_release_local",
 ]

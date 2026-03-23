@@ -17,7 +17,7 @@ Projeto educacional de rede neural do zero com NumPy, organizado como pacote Pyt
 - configs versionadas em JSON, TOML e YAML
 - datasets reais pequenos: Iris, Wine e Diabetes
 - notebooks, wiki, docs web e referencia de API
-- testes, changelog, roadmap, templates e fluxo de release
+- testes, changelog, roadmaps por versao, templates e fluxo de release
 
 ## Comece por aqui
 
@@ -74,6 +74,7 @@ Para acompanhar o fluxo oficial de publicacao no PyPI:
 python -m rede_neural_do_zero pypi-status
 python -m rede_neural_do_zero governance-report
 python -m rede_neural_do_zero pr-summary
+python -m rede_neural_do_zero release-check
 ```
 
 ## Exemplo rapido em Python
@@ -114,6 +115,7 @@ Pastas que importam para entender o projeto:
 - `configs/`: arquivos prontos para a CLI
 - `examples/`: exemplos pequenos e guiados
 - `docs/`: fonte da documentacao do site
+- `roadmaps/`: planejam e organizam o que entra em cada versao
 - `tests/`: suite automatizada
 - `experiments/manifests/`: experimentos reproduziveis
 
@@ -142,8 +144,10 @@ Se voce quer um mapa mais detalhado:
 - [Docs web](https://saviocodes.github.io/rede-neural-do-zero/)
 - [Wiki](https://github.com/SavioCodes/rede-neural-do-zero/wiki)
 - [Comecando](./docs/getting-started.md)
+- [Onboarding](./docs/onboarding.md)
 - [CLI](./docs/cli.md)
 - [Governanca](./docs/governance.md)
+- [Roadmap por versao](./docs/roadmap.md)
 - [Publicacao PyPI](./docs/publishing.md)
 - [Datasets](./docs/datasets.md)
 - [Tutorial](./docs/tutorial.md)
@@ -163,13 +167,17 @@ Se voce quer um mapa mais detalhado:
 - Hotfix em `main` agora gera PR automatico de sincronizacao para `develop`
 - Historico linear e squash merge fazem parte do fluxo oficial do repositorio
 - Workflow oficial gera draft de release notes a partir do `CHANGELOG.md`
+- workflow `Release Readiness` valida changelog, versao e release notes antes do ciclo final
 - Release PR tem template oficial separado
+- onboarding oficial em [docs/onboarding.md](./docs/onboarding.md)
+- suporte e seguranca em [SUPPORT.md](./SUPPORT.md) e [SECURITY.md](./SECURITY.md)
 - Issues: <https://github.com/SavioCodes/rede-neural-do-zero/issues>
 - Releases: <https://github.com/SavioCodes/rede-neural-do-zero/releases>
 - Tags: <https://github.com/SavioCodes/rede-neural-do-zero/tags>
 - Wiki: <https://github.com/SavioCodes/rede-neural-do-zero/wiki>
 - Contribuicao: [CONTRIBUTING.md](./CONTRIBUTING.md)
 - Roadmap: [ROADMAP.md](./ROADMAP.md)
+- Roadmaps por versao: [roadmaps/README.md](./roadmaps/README.md)
 - Changelog: [CHANGELOG.md](./CHANGELOG.md)
 - Governanca: [docs/governance.md](./docs/governance.md)
 

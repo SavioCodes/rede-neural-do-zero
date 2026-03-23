@@ -38,6 +38,9 @@ jobs:
       - name: Type check
         run: python -m mypy src rede_neural_do_zero
 
+      - name: Release readiness
+        run: python -m rede_neural_do_zero release-check --json
+
       - name: Run tests
         run: python -m pytest -q --cov=src --cov-report=term-missing
 

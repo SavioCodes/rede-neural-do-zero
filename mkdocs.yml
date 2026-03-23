@@ -77,6 +77,7 @@ nav:
   - Inicio: index.md
   - Comecando:
       - Instalar e Rodar: getting-started.md
+      - Onboarding: onboarding.md
       - CLI Oficial: cli.md
       - Datasets: datasets.md
       - FAQ: faq.md
@@ -101,6 +102,7 @@ nav:
   - Projeto:
       - Visao Oficial: project.md
       - Estrutura do Repositorio: project-structure.md
+      - Roadmap por Versao: roadmap.md
       - Modelo de Branches: branching.md
       - Governanca: governance.md
   - Recursos:

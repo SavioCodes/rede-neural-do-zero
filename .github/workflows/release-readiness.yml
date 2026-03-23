@@ -1,0 +1,57 @@
+name: Release Readiness
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - CHANGELOG.md
+      - pyproject.toml
+      - src/__init__.py
+      - src/interfaces/release_notes.py
+      - src/interfaces/release_validation.py
+      - src/interfaces/cli.py
+      - docs/publishing.md
+      - roadmaps/**
+      - .github/PULL_REQUEST_TEMPLATE/release.md
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - CHANGELOG.md
+      - pyproject.toml
+      - src/__init__.py
+      - src/interfaces/release_notes.py
+      - src/interfaces/release_validation.py
+      - src/interfaces/cli.py
+      - docs/publishing.md
+      - roadmaps/**
+      - .github/PULL_REQUEST_TEMPLATE/release.md
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  release_check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+          cache: "pip"
+          cache-dependency-path: |
+            requirements.txt
+            requirements-dev.txt
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements-dev.txt
+
+      - name: Validate release package
+        run: python -m rede_neural_do_zero release-check --json

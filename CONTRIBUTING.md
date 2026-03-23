@@ -33,7 +33,8 @@ pre-commit install
 2. Rode o fluxo de verificacao local com `python -m rede_neural_do_zero verify --build-package`.
 3. Atualize documentacao, configs e exemplos quando a API mudar.
 4. Se a mudanca impactar usuarios, registre no `CHANGELOG.md`.
-5. Abra um pull request descrevendo o problema, a solucao e como foi validado.
+5. Rode `python -m rede_neural_do_zero release-check` se a mudanca tocar versao, changelog, release notes ou governanca de release.
+6. Abra um pull request descrevendo o problema, a solucao e como foi validado.
 
 ## Modelo de branches
 
@@ -115,8 +116,17 @@ entao atualize tambem README, docs e, quando aplicavel, os links de `tags` e `re
 O repositorio tambem possui algumas automacoes oficiais:
 
 - `CODEOWNERS` para docs, nucleo, CLI e workflows
+- `SECURITY.md`, `SUPPORT.md` e onboarding oficial para quem esta chegando agora
 - reviewers padrao resolvidos a partir do `CODEOWNERS`
 - labels automaticas para o tipo de branch do PR
 - sincronizacao automatica de `main` para `develop` depois de hotfix
 - draft de release notes a partir do `CHANGELOG.md`
+- workflow `Release Readiness` para validar versao, changelog e release notes antes da release
 - protecao oficial em `main` e `develop` com checks obrigatorios
+
+## Onboarding e suporte
+
+- comece por [docs/onboarding.md](./docs/onboarding.md)
+- use [SUPPORT.md](./SUPPORT.md) para saber onde pedir ajuda
+- use [SECURITY.md](./SECURITY.md) para relatos sensiveis
+- acompanhe o ciclo atual em [roadmaps/README.md](./roadmaps/README.md)

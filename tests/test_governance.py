@@ -73,6 +73,15 @@ class TestGovernanceHelpers(unittest.TestCase):
             ],
             "environments": ["pypi"],
             "codeowners": {"patterns": sorted(EXPECTED_CODEOWNERS_PATTERNS)},
+            "community_files": {
+                "security": True,
+                "support": True,
+                "funding": True,
+                "roadmap_index": True,
+                "roadmap_directory": True,
+                "roadmap_template": True,
+                "onboarding": True,
+            },
             "expected_site_url": "https://saviocodes.github.io/rede-neural-do-zero/",
         }
 
@@ -108,6 +117,15 @@ class TestGovernanceHelpers(unittest.TestCase):
             "rulesets": [],
             "environments": [],
             "codeowners": {"patterns": []},
+            "community_files": {
+                "security": False,
+                "support": False,
+                "funding": False,
+                "roadmap_index": False,
+                "roadmap_directory": False,
+                "roadmap_template": False,
+                "onboarding": False,
+            },
             "expected_site_url": "https://saviocodes.github.io/rede-neural-do-zero/",
         }
 
@@ -134,8 +152,10 @@ class TestGovernanceHelpers(unittest.TestCase):
     @patch("src.interfaces.governance._ler_versao_src_init")
     @patch("src.interfaces.governance.carregar_versao_pyproject")
     @patch("src.interfaces.governance.detectar_repositorio")
+    @patch("src.interfaces.governance.validar_release_local")
     def test_obter_release_status_detecta_pending_publisher(
         self,
+        mock_validar_release_local,
         mock_detectar_repositorio,
         mock_carregar_versao,
         mock_ler_versao_src,
@@ -146,6 +166,7 @@ class TestGovernanceHelpers(unittest.TestCase):
         mock_detectar_repositorio.return_value = RepoContext("SavioCodes", "rede-neural-do-zero")
         mock_carregar_versao.return_value = "2.5.0"
         mock_ler_versao_src.return_value = "2.5.0"
+        mock_validar_release_local.return_value.ok = True
         mock_gh_api.return_value = [
             {"tag_name": "v2.5.0", "draft": True},
             {"tag_name": "v2.4.1", "draft": False},

@@ -14,7 +14,10 @@ Esta pagina centraliza os links, regras e convencoes do repositorio como projeto
 ## Arquivos de governanca
 
 - [`CONTRIBUTING.md`](https://github.com/SavioCodes/rede-neural-do-zero/blob/main/CONTRIBUTING.md)
+- [`SECURITY.md`](https://github.com/SavioCodes/rede-neural-do-zero/blob/main/SECURITY.md)
+- [`SUPPORT.md`](https://github.com/SavioCodes/rede-neural-do-zero/blob/main/SUPPORT.md)
 - [`ROADMAP.md`](https://github.com/SavioCodes/rede-neural-do-zero/blob/main/ROADMAP.md)
+- [`roadmaps/README.md`](https://github.com/SavioCodes/rede-neural-do-zero/blob/main/roadmaps/README.md)
 - [`CHANGELOG.md`](https://github.com/SavioCodes/rede-neural-do-zero/blob/main/CHANGELOG.md)
 - [`docs/project-structure.md`](https://github.com/SavioCodes/rede-neural-do-zero/blob/main/docs/project-structure.md)
 - [`docs/faq.md`](https://github.com/SavioCodes/rede-neural-do-zero/blob/main/docs/faq.md)
@@ -55,7 +58,8 @@ Para manter o repositorio mais profissional, o projeto agora tambem tem:
 - template de release PR
 - sincronizacao automatica depois de hotfix
 - draft de release notes e politica de squash merge no GitHub
-- CLI de governanca com `governance-report`, `rules-check`, `release-status` e `pr-summary`
+- workflow `Release Readiness`
+- CLI de governanca com `governance-report`, `rules-check`, `release-status`, `release-check` e `pr-summary`
 
 Veja tambem: [`docs/governance.md`](https://github.com/SavioCodes/rede-neural-do-zero/blob/main/docs/governance.md)
 

@@ -8,6 +8,7 @@ Descreva o objetivo desta release e o escopo principal do que esta entrando em `
 - [ ] `pyproject.toml` atualizado
 - [ ] `src/__init__.py` atualizado
 - [ ] `CHANGELOG.md` atualizado
+- [ ] `python -m rede_neural_do_zero release-check` passou
 
 ## Checklist oficial de release
 

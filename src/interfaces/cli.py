@@ -49,6 +49,7 @@ from .governance import (
 )
 from .pypi_status import carregar_nome_projeto, obter_status_pypi
 from .release_notes import construir_release_notes
+from .release_validation import validar_release_local
 
 
 def _write_json(path: Path, payload: Any) -> None:
@@ -330,6 +331,7 @@ def cmd_verify(args: argparse.Namespace) -> None:
     _executar_comando([sys.executable, "-m", "ruff", "check", "."])
     _executar_comando([sys.executable, "-m", "mypy", "src", "rede_neural_do_zero"])
     _executar_comando([sys.executable, "-m", "pytest", "-q"])
+    _executar_comando([sys.executable, "-m", "rede_neural_do_zero", "release-check"])
     _executar_comando([sys.executable, "scripts/validate_notebooks.py"])
     _executar_comando([sys.executable, "scripts/export_notebooks_to_docs.py"])
     _executar_comando([sys.executable, "-m", "mkdocs", "build", "--strict"])
@@ -376,6 +378,24 @@ def cmd_release_notes(args: argparse.Namespace) -> None:
         return
 
     print(payload.body)
+
+
+def cmd_release_check(args: argparse.Namespace) -> None:
+    """Valida o pacote oficial de release antes de tags e publicacoes."""
+    payload = validar_release_local(
+        pyproject_path=args.pyproject,
+        src_init_path=args.src_init,
+        changelog_path=args.changelog,
+    )
+    if args.json:
+        print(json.dumps(payload.to_dict(), indent=2, ensure_ascii=True))
+    else:
+        for check in payload.checks:
+            status = "OK" if check["ok"] else "FAIL"
+            print(f"[{status}] {check['name']}: {check['message']}")
+        print(payload.next_step)
+    if not payload.ok:
+        raise SystemExit(1)
 
 
 def cmd_pypi_status(args: argparse.Namespace) -> None:
@@ -572,6 +592,17 @@ def build_parser() -> tuple[argparse.ArgumentParser, dict[str, argparse.Argument
     parser_release_notes.add_argument("--json", action="store_true")
     parser_release_notes.set_defaults(func=cmd_release_notes)
     parsers_por_comando["release-notes"] = parser_release_notes
+
+    parser_release_check = subparsers.add_parser(
+        "release-check",
+        help="Valida changelog, versao e release notes antes de tag ou publicacao",
+    )
+    parser_release_check.add_argument("--pyproject", type=str, default="pyproject.toml")
+    parser_release_check.add_argument("--src-init", type=str, default="src/__init__.py")
+    parser_release_check.add_argument("--changelog", type=str, default="CHANGELOG.md")
+    parser_release_check.add_argument("--json", action="store_true")
+    parser_release_check.set_defaults(func=cmd_release_check)
+    parsers_por_comando["release-check"] = parser_release_check
 
     parser_pypi_status = subparsers.add_parser(
         "pypi-status",

@@ -6,6 +6,9 @@ contact_links:
   - name: Roadmap do projeto
     url: https://github.com/SavioCodes/rede-neural-do-zero/blob/main/ROADMAP.md
     about: Veja prioridades e proximos passos ja planejados.
+  - name: Onboarding
+    url: https://saviocodes.github.io/rede-neural-do-zero/onboarding/
+    about: Guia oficial para primeira contribuicao e labels de entrada.
   - name: Releases
     url: https://github.com/SavioCodes/rede-neural-do-zero/releases
     about: Consulte as releases oficiais antes de abrir uma issue.
@@ -15,67 +18,9 @@ contact_links:
   - name: Changelog
     url: https://github.com/SavioCodes/rede-neural-do-zero/blob/main/CHANGELOG.md
     about: Confira o historico oficial de mudancas antes de reportar regressao.
-*** Add File: .github/ISSUE_TEMPLATE/documentation_request.yml
-name: Documentation request
-description: Sugira melhorias na documentacao oficial, exemplos ou guias.
-title: "[Docs]: "
-labels:
-  - documentation
-body:
-  - type: dropdown
-    id: area
-    attributes:
-      label: Area da documentacao
-      options:
-        - README
-        - Docs web
-        - CLI
-        - API reference
-        - Notebooks
-        - Exemplos
-    validations:
-      required: true
-  - type: textarea
-    id: issue
-    attributes:
-      label: O que esta confuso ou faltando
-      description: Explique qual parte da documentacao precisa melhorar.
-    validations:
-      required: true
-  - type: textarea
-    id: suggestion
-    attributes:
-      label: Sugestao
-      description: Se tiver uma forma de melhorar, descreva aqui.
-*** Add File: .github/ISSUE_TEMPLATE/question.yml
-name: Question
-description: Tire uma duvida sobre uso, CLI, datasets ou funcionamento do projeto.
-title: "[Question]: "
-labels:
-  - question
-body:
-  - type: dropdown
-    id: topic
-    attributes:
-      label: Tema
-      options:
-        - Instalacao
-        - CLI
-        - Benchmark
-        - Datasets
-        - API Python
-        - Publicacao e releases
-    validations:
-      required: true
-  - type: textarea
-    id: question
-    attributes:
-      label: Pergunta
-      description: Descreva sua duvida com o maximo de contexto util.
-    validations:
-      required: true
-  - type: textarea
-    id: attempted
-    attributes:
-      label: O que voce ja tentou
-      description: Comandos, paginas lidas ou comportamento observado.
+  - name: Support
+    url: https://github.com/SavioCodes/rede-neural-do-zero/blob/main/SUPPORT.md
+    about: Veja onde pedir ajuda e como abrir uma issue melhor.
+  - name: Security
+    url: https://github.com/SavioCodes/rede-neural-do-zero/blob/main/SECURITY.md
+    about: Para relatos sensiveis, siga a politica oficial de seguranca.

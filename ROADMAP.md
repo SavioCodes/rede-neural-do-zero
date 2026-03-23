@@ -1,28 +1,22 @@
 # Roadmap
 
+Este arquivo agora funciona como indice oficial do planejamento. O detalhamento por versao mora em `roadmaps/`.
+
+## Fluxo oficial por versao
+
+1. use [roadmaps/template.md](./roadmaps/template.md) para abrir a proxima versao
+2. mantenha objetivo, checklist, entregaveis e links atualizados
+3. associe a versao a issues, PRs e draft release
+4. rode `python -m rede_neural_do_zero release-check` antes de tag ou publicacao
+
+## Versoes acompanhadas
+
+- [v2.5.0](./roadmaps/v2.5.0.md): ciclo atual com docs, governanca e release automation
+- [v2.6.0](./roadmaps/v2.6.0.md): contributor experience, onboarding e trilha de release mais forte
+- [Template oficial](./roadmaps/template.md)
+
 ## Em foco agora
 
-- ativar GitHub Pages em publicacao real no repositorio
-- concluir Trusted Publishing no PyPI
-- expandir a documentacao da API com mais exemplos de uso
-- adicionar suites oficiais de benchmark para mais cenarios
-
-## Proximas versoes
-
-### v2.2
-
-- arquivos de config mais ricos com sobreposicao de ambientes
-- mais exemplos de CLI com resume e checkpoints nomeados
-- mais paginas de API e diagramas de arquitetura do treino
-
-### v2.3
-
-- comparacoes automatizadas com graficos de benchmark
-- smoke tests da instalacao via wheel em ambiente limpo
-- relatorios mais bonitos para suites de experimentos
-
-### v3.0
-
-- site publico totalmente automatizado
-- publicacao oficial no PyPI sem gates temporarios
-- fluxo de release ainda mais padronizado
+- concluir o pending publisher do PyPI para liberar a primeira publicacao real
+- seguir usando o roadmap versionado como fonte oficial do planejamento
+- fechar contributor docs, onboarding e labels de entrada para novos colaboradores

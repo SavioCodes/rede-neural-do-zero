@@ -55,12 +55,14 @@ Se algum desses campos nao bater com o workflow real, o upload vai falhar com er
 ## Fluxo oficial fim a fim
 
 1. Atualize `pyproject.toml`, `src/__init__.py` e `CHANGELOG.md`.
-2. Rode `python -m rede_neural_do_zero verify --build-package`.
-3. Revise o draft de release notes gerado a partir do `CHANGELOG.md`.
-4. Confirme no PyPI que o `pending publisher` ja foi cadastrado com os campos corretos.
-5. Publique a release no GitHub.
-6. O workflow `Publish` vai:
+2. Rode `python -m rede_neural_do_zero release-check`.
+3. Rode `python -m rede_neural_do_zero verify --build-package`.
+4. Revise o draft de release notes gerado a partir do `CHANGELOG.md`.
+5. Confirme no PyPI que o `pending publisher` ja foi cadastrado com os campos corretos.
+6. Publique a release no GitHub.
+7. O workflow `Publish` vai:
    - validar notebooks
+   - validar changelog, versao e release notes
    - gerar wheel e sdist
    - publicar no PyPI via Trusted Publisher
    - criar uma venv limpa
@@ -93,6 +95,7 @@ rede-neural-do-zero --help
 
 ```bash
 python -m rede_neural_do_zero release-notes --version v2.5.0
+python -m rede_neural_do_zero release-check
 python -m rede_neural_do_zero release-notes --json --output logs/release-notes.md
 ```
 

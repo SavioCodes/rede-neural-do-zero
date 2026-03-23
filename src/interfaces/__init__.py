@@ -40,6 +40,12 @@ from .pypi_status import (
     obter_status_pypi,
 )
 from .release_notes import ReleaseNotesResult, construir_release_notes, extrair_secao_changelog
+from .release_validation import (
+    ReleaseValidationCheck,
+    ReleaseValidationResult,
+    extrair_versao_topo_changelog,
+    validar_release_local,
+)
 
 __all__ = [
     "build_parser",
@@ -50,6 +56,8 @@ __all__ = [
     "CodeownersEntry",
     "ReviewerResolution",
     "ReleaseNotesResult",
+    "ReleaseValidationCheck",
+    "ReleaseValidationResult",
     "DocsLinkCheckResult",
     "LinkIssue",
     "PyPIStatusResult",
@@ -78,6 +86,8 @@ __all__ = [
     "obter_pr_summary",
     "construir_release_notes",
     "extrair_secao_changelog",
+    "extrair_versao_topo_changelog",
+    "validar_release_local",
     "aplicar_config_cli",
     "argv_comando_atual",
     "carregar_arquivo_config",

@@ -19,6 +19,7 @@ from .branch_policy import (
 from .codeowners_reviewers import carregar_codeowners, resolve_reviewers
 from .pypi_status import carregar_nome_projeto, obter_status_pypi
 from .release_notes import carregar_versao_pyproject
+from .release_validation import validar_release_local
 
 VERSION_RE = re.compile(r'__version__\s*=\s*"(?P<version>[^"]+)"')
 SITE_URL_RE = re.compile(r"^site_url:\s*(?P<site_url>\S+)\s*$", re.MULTILINE)
@@ -32,9 +33,11 @@ EXPECTED_WORKFLOWS = {
     "PR Labels",
     "Publish",
     "Release Draft",
+    "Release Readiness",
 }
 EXPECTED_CODEOWNERS_PATTERNS = {
     "/docs/",
+    "/roadmaps/",
     "/src/core/",
     "/src/data/",
     "/src/training/",
@@ -283,6 +286,18 @@ def _resumir_rulesets(payload: list[dict[str, Any]]) -> list[dict[str, Any]]:
     ]
 
 
+def _resumir_arquivos_comunidade() -> dict[str, bool]:
+    return {
+        "security": Path("SECURITY.md").exists(),
+        "support": Path("SUPPORT.md").exists(),
+        "funding": Path(".github/FUNDING.yml").exists(),
+        "roadmap_index": Path("ROADMAP.md").exists(),
+        "roadmap_directory": Path("roadmaps/README.md").exists(),
+        "roadmap_template": Path("roadmaps/template.md").exists(),
+        "onboarding": Path("docs/onboarding.md").exists(),
+    }
+
+
 def obter_governance_report(
     owner: str | None = None,
     repository: str | None = None,
@@ -323,6 +338,7 @@ def obter_governance_report(
             "total_rules": len(codeowners_entries),
             "patterns": [entry.pattern for entry in codeowners_entries],
         },
+        "community_files": _resumir_arquivos_comunidade(),
         "expected_site_url": _ler_site_url_mkdocs(),
     }
 
@@ -334,6 +350,7 @@ def avaliar_regras_governanca(relatorio: dict[str, Any]) -> list[GovernanceCheck
     repo = relatorio["repository"]
     workflows = {item["name"]: item for item in relatorio["workflows"]}
     patterns = set(relatorio["codeowners"]["patterns"])
+    community_files = relatorio["community_files"]
 
     checks.append(
         GovernanceCheck(
@@ -464,6 +481,56 @@ def avaliar_regras_governanca(relatorio: dict[str, Any]) -> list[GovernanceCheck
     )
     checks.append(
         GovernanceCheck(
+            name="security_policy_present",
+            ok=bool(community_files["security"]),
+            message="O repositorio precisa ter um SECURITY.md oficial.",
+            expected=True,
+            actual=community_files["security"],
+        )
+    )
+    checks.append(
+        GovernanceCheck(
+            name="support_policy_present",
+            ok=bool(community_files["support"]),
+            message="O repositorio precisa ter um SUPPORT.md oficial.",
+            expected=True,
+            actual=community_files["support"],
+        )
+    )
+    checks.append(
+        GovernanceCheck(
+            name="versioned_roadmap_assets_present",
+            ok=all(
+                community_files[chave]
+                for chave in ("roadmap_index", "roadmap_directory", "roadmap_template")
+            ),
+            message=(
+                "O fluxo oficial de roadmap por versao precisa estar "
+                "versionado no repositorio."
+            ),
+            expected={
+                "roadmap_index": True,
+                "roadmap_directory": True,
+                "roadmap_template": True,
+            },
+            actual={
+                "roadmap_index": community_files["roadmap_index"],
+                "roadmap_directory": community_files["roadmap_directory"],
+                "roadmap_template": community_files["roadmap_template"],
+            },
+        )
+    )
+    checks.append(
+        GovernanceCheck(
+            name="onboarding_doc_present",
+            ok=bool(community_files["onboarding"]),
+            message="O repositorio precisa ter um guia de onboarding oficial.",
+            expected=True,
+            actual=community_files["onboarding"],
+        )
+    )
+    checks.append(
+        GovernanceCheck(
             name="pypi_environment_present",
             ok="pypi" in relatorio["environments"],
             message="O environment `pypi` precisa existir para Trusted Publishing.",
@@ -499,6 +566,10 @@ def obter_release_status(
     contexto = detectar_repositorio(owner, repository)
     local_version = carregar_versao_pyproject(pyproject_path)
     package_version = _ler_versao_src_init(src_init_path)
+    release_validation = validar_release_local(
+        pyproject_path=pyproject_path,
+        src_init_path=src_init_path,
+    )
     expected_tag = f"v{local_version}"
     releases = _gh_api(contexto, "releases?per_page=10")
     current_release = next((item for item in releases if item["tag_name"] == expected_tag), None)
@@ -512,11 +583,14 @@ def obter_release_status(
         and pages is not None
         and current_release is not None
         and current_release.get("draft", False)
+        and release_validation.ok
         and not pypi_status.requires_pending_publisher
     )
 
     if not versions_match:
         next_step = "Alinhe `pyproject.toml` e `src/__init__.py` antes de publicar."
+    elif not release_validation.ok:
+        next_step = "Corrija o checklist de release antes de publicar tag ou release."
     elif pages is None:
         next_step = "Ative o GitHub Pages oficial antes da proxima release publica."
     elif pypi_status.requires_pending_publisher:

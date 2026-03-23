@@ -5,7 +5,10 @@
 /README.md @SavioCodes
 /CHANGELOG.md @SavioCodes
 /CONTRIBUTING.md @SavioCodes
+/SECURITY.md @SavioCodes
+/SUPPORT.md @SavioCodes
 /ROADMAP.md @SavioCodes
+/roadmaps/ @SavioCodes
 /mkdocs.yml @SavioCodes
 /docs/ @SavioCodes
 /notebooks/ @SavioCodes
@@ -40,6 +43,7 @@
 /.github/ISSUE_TEMPLATE/ @SavioCodes
 /.github/PULL_REQUEST_TEMPLATE.md @SavioCodes
 /.github/PULL_REQUEST_TEMPLATE/ @SavioCodes
+/.github/FUNDING.yml @SavioCodes
 /.github/workflows/ @SavioCodes
 
 # Nucleo do modelo

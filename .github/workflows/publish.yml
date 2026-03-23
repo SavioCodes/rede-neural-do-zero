@@ -33,6 +33,9 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install -r requirements-dev.txt
 
+      - name: Validate release package
+        run: python -m rede_neural_do_zero release-check --json
+
       - name: Validate notebooks
         run: python scripts/validate_notebooks.py
 

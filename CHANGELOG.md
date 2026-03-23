@@ -9,6 +9,10 @@ Todas as mudancas relevantes deste projeto passam a ser registradas aqui seguind
 - comandos `governance-report`, `release-status`, `rules-check` e `pr-summary` na CLI oficial
 - verificador oficial de links internos da documentacao em Markdown
 - relatorio de governanca consolidando Pages, workflows, branch protection, rulesets e CODEOWNERS
+- comando `release-check` para validar versao, changelog e release notes antes de tag/release
+- roadmaps versionados com template oficial e paginas `v2.5.0` e `v2.6.0`
+- contributor docs oficiais com `SECURITY.md`, `SUPPORT.md`, onboarding e funding config
+- workflow `Release Readiness` para checar o pacote oficial de release
 
 ### Changed
 
@@ -17,6 +21,7 @@ Todas as mudancas relevantes deste projeto passam a ser registradas aqui seguind
 - `CODEOWNERS` foi reorganizado por dominio: docs, datasets, core, data, training, workflows e interfaces
 - navegacao das docs ficou mais rica com atalhos para wiki, releases, tags, docs publicadas e API
 - `verify` e `build-docs` agora incluem checagem oficial de links da documentacao
+- `CI`, `Release Draft` e `Publish` agora validam release readiness antes das etapas finais
 
 ## [2.4.1] - 2026-03-23
 
