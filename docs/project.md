@@ -40,7 +40,7 @@ Guia rapido:
 - novas melhorias devem preferir `develop`
 - releases, tags e estado publico seguem saindo de `main`
 - hotfixes em `main` devem ser sincronizados de volta para `develop`
-- nomes de branch sao validados automaticamente no workflow `Branch Policy`
+- nomes de branch e branch-base de PR sao validados automaticamente no workflow `Branch Policy`
 
 ## Publicacao
 

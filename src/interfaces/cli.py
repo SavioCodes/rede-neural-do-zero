@@ -29,7 +29,13 @@ from ..workflows.experiments import (
     criar_configs_padrao,
     dividir_treino_validacao_teste,
 )
-from .branch_policy import detectar_branch_atual, exemplos_branch, validar_nome_branch
+from .branch_policy import (
+    detectar_branch_atual,
+    exemplos_branch,
+    exemplos_destino_branch,
+    validar_destino_pr,
+    validar_nome_branch,
+)
 from .cli_config import (
     aplicar_config_cli,
     argv_comando_atual,
@@ -334,8 +340,13 @@ def cmd_check_branch(args: argparse.Namespace) -> None:
         **resultado.to_dict(),
         "exemplos": exemplos_branch(),
     }
+    destino_resultado = None
+    if args.target is not None:
+        destino_resultado = validar_destino_pr(branch_name, args.target)
+        payload["target_validation"] = destino_resultado.to_dict()
+        payload["target_examples"] = exemplos_destino_branch()
     print(json.dumps(payload, indent=2, ensure_ascii=True))
-    if not resultado.valid:
+    if not resultado.valid or (destino_resultado is not None and not destino_resultado.valid):
         raise SystemExit(1)
 
 
@@ -467,6 +478,12 @@ def build_parser() -> tuple[argparse.ArgumentParser, dict[str, argparse.Argument
         type=str,
         default=None,
         help="Nome da branch. Se omitido, tenta detectar a branch atual.",
+    )
+    parser_check_branch.add_argument(
+        "--target",
+        type=str,
+        default=None,
+        help="Branch-base do pull request para validar o fluxo do PR.",
     )
     parser_check_branch.set_defaults(func=cmd_check_branch)
     parsers_por_comando["check-branch"] = parser_check_branch

@@ -36,14 +36,14 @@ Nomes aceitos:
 - `docs/update-wiki-links`
 - `chore/reorganize-ci-cache`
 - `hotfix/fix-release-link`
-- `release/v2.2.5`
+- `release/v2.2.6`
 
 ## Exemplos invalidos
 
 - `feature/nova-coisa`
 - `docs/wiki links`
 - `Feat/maiuscula`
-- `release/2.2.5`
+- `release/2.2.6`
 - `minha-branch`
 
 ## Fluxo sugerido
@@ -51,16 +51,34 @@ Nomes aceitos:
 1. criar uma branch curta a partir de `develop`
 2. implementar a mudanca
 3. validar com `python -m rede_neural_do_zero verify --build-package`
-4. integrar em `develop`
-5. promover `develop` para `main` quando a rodada estiver pronta para release
+4. validar nome e destino do PR
+5. integrar em `develop`
+6. promover `develop` para `main` quando a rodada estiver pronta para release
+
+## Destino correto do pull request
+
+- `feat/*` -> `develop`
+- `fix/*` -> `develop`
+- `docs/*` -> `develop`
+- `chore/*` -> `develop`
+- `hotfix/*` -> `main`
+- `release/*` -> `main`
+- `develop` -> `main`
+- `main` -> `develop`
+
+Comando util:
+
+```bash
+python -m rede_neural_do_zero check-branch --name feat/add-branch-policy --target develop
+```
 
 ## Verificacao automatica
 
 O repositorio agora valida esse padrao de tres formas:
 
-- comando local: `python -m rede_neural_do_zero check-branch --name feat/add-branch-policy`
-- script leve para automacao: `python src/interfaces/branch_policy.py --name feat/add-branch-policy --json`
-- workflow `Branch Policy` no GitHub Actions para pushes e pull requests
+- comando local: `python -m rede_neural_do_zero check-branch --name feat/add-branch-policy --target develop`
+- script leve para automacao: `python src/interfaces/branch_policy.py --name feat/add-branch-policy --target develop --json`
+- workflow `Branch Policy` no GitHub Actions para pushes e pull requests, incluindo a branch-base do PR
 
 ## Regras praticas
 

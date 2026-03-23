@@ -51,7 +51,7 @@ O projeto adota um fluxo simples para continuar profissional sem virar burocrati
 Fluxo sugerido:
 
 1. abra uma branch curta a partir de `develop`
-2. valide com a CLI oficial, inclusive o nome da branch
+2. valide com a CLI oficial, inclusive nome da branch e destino do PR
 3. integre em `develop`
 4. promova `develop` para `main` quando a rodada estiver pronta para release
 
@@ -60,8 +60,15 @@ Se houver hotfix urgente em producao, a correcao pode sair de `main`, mas depois
 Comando util:
 
 ```bash
-python -m rede_neural_do_zero check-branch --name feat/add-branch-policy
+python -m rede_neural_do_zero check-branch --name feat/add-branch-policy --target develop
 ```
+
+Destino esperado de PR:
+
+- `feat/*`, `fix/*`, `docs/*` e `chore/*` -> `develop`
+- `hotfix/*` e `release/*` -> `main`
+- promocao de versao -> `develop` abrindo PR para `main`
+- sincronizacao depois de hotfix -> `main` abrindo PR para `develop`
 
 ## Padroes do repositorio
 

@@ -14,6 +14,8 @@ sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 from src.interfaces.branch_policy import (  # noqa: E402
     detectar_branch_atual,
     exemplos_branch,
+    exemplos_destino_branch,
+    validar_destino_pr,
     validar_nome_branch,
 )
 
@@ -32,7 +34,7 @@ class TestBranchPolicy(unittest.TestCase):
             "docs/update-branching-guide",
             "chore/reorganize-ci",
             "hotfix/fix-release-link",
-            "release/v2.2.5",
+            "release/v2.2.6",
         ]:
             with self.subTest(nome=nome):
                 resultado = validar_nome_branch(nome)
@@ -42,7 +44,7 @@ class TestBranchPolicy(unittest.TestCase):
         for nome in [
             "feature/minha-branch",
             "docs/wiki links",
-            "release/2.2.5",
+            "release/2.2.6",
             "Feat/upper",
             "",
         ]:
@@ -50,10 +52,43 @@ class TestBranchPolicy(unittest.TestCase):
                 resultado = validar_nome_branch(nome)
                 self.assertFalse(resultado.valid)
 
+    def test_validar_destino_pull_request(self) -> None:
+        cenarios = [
+            ("feat/add-branch-policy", "develop"),
+            ("fix/checkpoint-parser", "develop"),
+            ("docs/update-branching-guide", "develop"),
+            ("chore/reorganize-ci", "develop"),
+            ("hotfix/fix-release-link", "main"),
+            ("release/v2.2.6", "main"),
+            ("develop", "main"),
+            ("main", "develop"),
+        ]
+        for branch, destino in cenarios:
+            with self.subTest(branch=branch, destino=destino):
+                self.assertTrue(validar_destino_pr(branch, destino).valid)
+
+    def test_rejeitar_destino_pull_request_errado(self) -> None:
+        cenarios = [
+            ("feat/add-branch-policy", "main"),
+            ("fix/checkpoint-parser", "main"),
+            ("hotfix/fix-release-link", "develop"),
+            ("release/v2.2.6", "develop"),
+            ("develop", "develop"),
+            ("main", "main"),
+        ]
+        for branch, destino in cenarios:
+            with self.subTest(branch=branch, destino=destino):
+                self.assertFalse(validar_destino_pr(branch, destino).valid)
+
     def test_exemplos_contam_validas_e_invalidas(self) -> None:
         exemplos = exemplos_branch()
         self.assertIn("feat/add-multiclass-report", exemplos["validas"])
         self.assertIn("feature/nova-coisa", exemplos["invalidas"])
+
+    def test_exemplos_destino_contam_validos_e_invalidos(self) -> None:
+        exemplos = exemplos_destino_branch()
+        self.assertIn("feat/add-metrics -> develop", exemplos["validas"])
+        self.assertIn("feat/add-metrics -> main", exemplos["invalidas"])
 
     def test_detectar_branch_atual_por_ambiente(self) -> None:
         valor_branch = os.environ.get("BRANCH_NAME")
@@ -83,6 +118,8 @@ class TestBranchPolicy(unittest.TestCase):
                 "check-branch",
                 "--name",
                 "feat/add-branch-policy",
+                "--target",
+                "develop",
             ],
             check=True,
             cwd=repo_root,
@@ -90,6 +127,7 @@ class TestBranchPolicy(unittest.TestCase):
             text=True,
         )
         self.assertIn('"valid": true', resultado.stdout)
+        self.assertIn('"target_validation"', resultado.stdout)
 
     def test_standalone_branch_policy_script(self) -> None:
         repo_root = Path(__file__).resolve().parents[1]
@@ -99,6 +137,8 @@ class TestBranchPolicy(unittest.TestCase):
                 "src/interfaces/branch_policy.py",
                 "--name",
                 "feature/invalida",
+                "--target",
+                "main",
                 "--json",
             ],
             cwd=repo_root,
@@ -107,6 +147,25 @@ class TestBranchPolicy(unittest.TestCase):
         )
         self.assertNotEqual(resultado.returncode, 0)
         self.assertIn('"valid": false', resultado.stdout)
+
+    def test_standalone_branch_policy_script_rejeita_destino_errado(self) -> None:
+        repo_root = Path(__file__).resolve().parents[1]
+        resultado = subprocess.run(
+            [
+                sys.executable,
+                "src/interfaces/branch_policy.py",
+                "--name",
+                "feat/route-test",
+                "--target",
+                "main",
+                "--json",
+            ],
+            cwd=repo_root,
+            capture_output=True,
+            text=True,
+        )
+        self.assertNotEqual(resultado.returncode, 0)
+        self.assertIn('"target_validation"', resultado.stdout)
 
 
 if __name__ == "__main__":

@@ -38,4 +38,12 @@ jobs:
           fi
 
       - name: Validate branch naming
-        run: python src/interfaces/branch_policy.py --name "${{ steps.branch.outputs.name }}" --json
+        run: |
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            python src/interfaces/branch_policy.py \
+              --name "${{ steps.branch.outputs.name }}" \
+              --target "${{ github.base_ref }}" \
+              --json
+          else
+            python src/interfaces/branch_policy.py --name "${{ steps.branch.outputs.name }}" --json
+          fi

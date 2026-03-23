@@ -144,6 +144,7 @@ Se voce quer um mapa mais detalhado:
 - Branch estavel: `main`
 - Branch de integracao: `develop`
 - Prefixos recomendados: `feat/*`, `fix/*`, `docs/*`, `chore/*`, `hotfix/*`, `release/*`
+- Fluxo de PR recomendado: `feat/fix/docs/chore -> develop`, `hotfix/release -> main`, `develop -> main`, `main -> develop`
 - Issues: <https://github.com/SavioCodes/rede-neural-do-zero/issues>
 - Releases: <https://github.com/SavioCodes/rede-neural-do-zero/releases>
 - Tags: <https://github.com/SavioCodes/rede-neural-do-zero/tags>

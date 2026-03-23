@@ -2,6 +2,19 @@
 
 Todas as mudancas relevantes deste projeto passam a ser registradas aqui seguindo versionamento semantico.
 
+## [2.2.6] - 2026-03-23
+
+### Added
+
+- validacao do destino correto do pull request para reduzir erro entre `main` e `develop`
+- cobertura de testes para branch-base correta no fluxo oficial
+
+### Changed
+
+- comando `check-branch` agora aceita `--target`
+- workflow `Branch Policy` passou a validar tambem a branch-base dos pull requests
+- templates e docs de branches agora mostram com mais clareza quando usar `develop` ou `main`
+
 ## [2.2.5] - 2026-03-22
 
 ### Changed

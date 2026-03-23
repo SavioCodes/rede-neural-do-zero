@@ -93,8 +93,8 @@ python -m rede_neural_do_zero build-package --check
 Valida nomes de branch pelo padrao oficial do projeto.
 
 ```bash
-python -m rede_neural_do_zero check-branch --name feat/add-branch-policy
-python -m rede_neural_do_zero check-branch --name docs/update-wiki-links
+python -m rede_neural_do_zero check-branch --name feat/add-branch-policy --target develop
+python -m rede_neural_do_zero check-branch --name hotfix/fix-release-link --target main
 ```
 
 ### `verify`
