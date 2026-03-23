@@ -23,15 +23,25 @@ python -m pip install dist/rede_neural_do_zero-*.whl
 
 O repositorio inclui workflow de publicacao no GitHub Actions baseado em Trusted Publishing do PyPI.
 
+Tambem existe um workflow de `Release Draft` que extrai a secao oficial do `CHANGELOG.md` e monta o corpo do draft release no GitHub.
+
 Fluxo sugerido:
 
 1. criar ou atualizar a versao em `pyproject.toml`
 2. atualizar `src/__init__.py` e `CHANGELOG.md`
 3. validar com `python -m rede_neural_do_zero verify --build-package`
 4. commitar a mudanca
-5. criar uma tag, por exemplo `v2.3.0`
-6. publicar a release no GitHub
-7. deixar o workflow publicar o pacote no PyPI
+5. revisar o draft gerado a partir do `CHANGELOG.md`
+6. criar uma tag, por exemplo `v2.4.0`
+7. publicar a release no GitHub
+8. deixar o workflow publicar o pacote no PyPI
+
+## Gerando release notes localmente
+
+```bash
+python -m rede_neural_do_zero release-notes --version v2.4.0
+python -m rede_neural_do_zero release-notes --json --output logs/release-notes.md
+```
 
 ## Links oficiais
 

@@ -147,8 +147,11 @@ Se voce quer um mapa mais detalhado:
 - Fluxo de PR recomendado: `feat/fix/docs/chore -> develop`, `hotfix/release -> main`, `develop -> main`, `main -> develop`
 - Protecao oficial ativa em `main` e `develop` com checks obrigatorios
 - `CODEOWNERS` oficial cobrindo docs, nucleo, CLI e workflows
+- Reviewers padrao agora podem ser solicitados automaticamente com base no `CODEOWNERS`
 - Labels de PR aplicadas automaticamente pelo prefixo da branch
 - Hotfix em `main` agora gera PR automatico de sincronizacao para `develop`
+- Historico linear e squash merge fazem parte do fluxo oficial do repositorio
+- Workflow oficial gera draft de release notes a partir do `CHANGELOG.md`
 - Release PR tem template oficial separado
 - Issues: <https://github.com/SavioCodes/rede-neural-do-zero/issues>
 - Releases: <https://github.com/SavioCodes/rede-neural-do-zero/releases>

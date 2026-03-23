@@ -27,7 +27,7 @@ class TestBranchLabels(unittest.TestCase):
             ("docs/update-release-guide", "develop", ["docs"]),
             ("chore/reorganize-workflows", "develop", ["chore"]),
             ("hotfix/fix-main-sync", "main", ["hotfix"]),
-            ("release/v2.3.0", "main", ["release"]),
+            ("release/v2.4.0", "main", ["release"]),
         ]
         for head, base, esperado in cenarios:
             with self.subTest(head=head, base=base):

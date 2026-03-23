@@ -1,0 +1,107 @@
+name: Codeowners Reviewers
+
+on:
+  pull_request_target:
+    types:
+      - opened
+      - reopened
+      - synchronize
+      - ready_for_review
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  request_reviewers:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+
+      - name: Export changed files
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/files --paginate --jq '.[].filename' > changed-files.txt
+          cat changed-files.txt
+
+      - name: Resolve CODEOWNERS reviewers
+        run: |
+          python src/interfaces/codeowners_reviewers.py \
+            --codeowners .github/CODEOWNERS \
+            --files changed-files.txt \
+            --exclude "${{ github.event.pull_request.user.login }}" \
+            --json > codeowners-reviewers.json
+          cat codeowners-reviewers.json
+
+      - name: Request missing reviewers
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          import subprocess
+          import sys
+
+          with open("codeowners-reviewers.json", encoding="utf-8") as arquivo:
+              payload = json.load(arquivo)
+
+          repo = os.environ["GITHUB_REPOSITORY"]
+          numero_pr = os.environ["PR_NUMBER"]
+          atual_raw = subprocess.check_output(
+              [
+                  "gh",
+                  "api",
+                  f"repos/{repo}/pulls/{numero_pr}/requested_reviewers",
+              ],
+              text=True,
+          )
+          atual = json.loads(atual_raw)
+          usuarios_atuais = {item["login"] for item in atual.get("users", [])}
+          times_atuais = {item["slug"] for item in atual.get("teams", [])}
+
+          usuarios = [
+              item
+              for item in payload.get("user_reviewers", [])
+              if item not in usuarios_atuais
+          ]
+          times = []
+          for item in payload.get("team_reviewers", []):
+              slug = item.split("/", 1)[1] if "/" in item else item
+              if slug not in times_atuais and slug not in times:
+                  times.append(slug)
+
+          if not usuarios and not times:
+              print("Nenhum reviewer novo para solicitar.")
+              sys.exit(0)
+
+          request_payload = {
+              "reviewers": usuarios,
+              "team_reviewers": times,
+          }
+          subprocess.run(
+              [
+                  "gh",
+                  "api",
+                  f"repos/{repo}/pulls/{numero_pr}/requested_reviewers",
+                  "--method",
+                  "POST",
+                  "--input",
+                  "-",
+              ],
+              input=json.dumps(request_payload),
+              text=True,
+              check=True,
+          )
+          PY

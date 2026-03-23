@@ -36,14 +36,14 @@ Nomes aceitos:
 - `docs/update-wiki-links`
 - `chore/reorganize-ci-cache`
 - `hotfix/fix-release-link`
-- `release/v2.3.0`
+- `release/v2.4.0`
 
 ## Exemplos invalidos
 
 - `feature/nova-coisa`
 - `docs/wiki links`
 - `Feat/maiuscula`
-- `release/2.3.0`
+- `release/2.4.0`
 - `minha-branch`
 
 ## Fluxo sugerido
@@ -93,8 +93,11 @@ Para deixar esse fluxo menos manual, o projeto tambem usa:
 
 - protecao oficial em `main` e `develop`
 - `CODEOWNERS` para areas sensiveis do repositorio
+- reviewers padrao baseados no `CODEOWNERS`
 - labels automaticas de PR por prefixo da branch
 - workflow `Hotfix Sync` para abrir PR de `main` para `develop` depois de um hotfix
+- release notes em draft geradas a partir do `CHANGELOG.md`
+- squash merge como padrao oficial de merge no GitHub
 - template de release PR em `.github/PULL_REQUEST_TEMPLATE/release.md`
 
 ## Objetivo desse modelo

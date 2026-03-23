@@ -18,6 +18,8 @@ from .cli_config import (
     resolver_config_comando,
     serializar_config_efetiva,
 )
+from .codeowners_reviewers import CodeownersEntry, ReviewerResolution, resolve_reviewers
+from .release_notes import ReleaseNotesResult, construir_release_notes, extrair_secao_changelog
 
 __all__ = [
     "build_parser",
@@ -25,6 +27,9 @@ __all__ = [
     "BranchPolicyResult",
     "BranchTargetResult",
     "LabelDefinition",
+    "CodeownersEntry",
+    "ReviewerResolution",
+    "ReleaseNotesResult",
     "validar_nome_branch",
     "validar_destino_pr",
     "detectar_branch_atual",
@@ -32,6 +37,9 @@ __all__ = [
     "exemplos_destino_branch",
     "labels_para_pull_request",
     "definicoes_para_labels",
+    "resolve_reviewers",
+    "construir_release_notes",
+    "extrair_secao_changelog",
     "aplicar_config_cli",
     "argv_comando_atual",
     "carregar_arquivo_config",

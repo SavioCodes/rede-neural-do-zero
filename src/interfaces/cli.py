@@ -41,6 +41,7 @@ from .cli_config import (
     argv_comando_atual,
     serializar_config_efetiva,
 )
+from .release_notes import construir_release_notes
 
 
 def _write_json(path: Path, payload: Any) -> None:
@@ -350,6 +351,23 @@ def cmd_check_branch(args: argparse.Namespace) -> None:
         raise SystemExit(1)
 
 
+def cmd_release_notes(args: argparse.Namespace) -> None:
+    """Extrai release notes oficiais para uso manual ou em automacoes."""
+    payload = construir_release_notes(
+        version=args.version,
+        changelog_path=args.changelog,
+        pyproject_path=args.pyproject,
+    )
+    if args.output:
+        Path(args.output).write_text(payload.body, encoding="utf-8")
+
+    if args.json:
+        print(json.dumps(payload.to_dict(), indent=2, ensure_ascii=True))
+        return
+
+    print(payload.body)
+
+
 def build_parser() -> tuple[argparse.ArgumentParser, dict[str, argparse.ArgumentParser]]:
     """Monta o parser principal da CLI."""
     parser = argparse.ArgumentParser(
@@ -487,6 +505,18 @@ def build_parser() -> tuple[argparse.ArgumentParser, dict[str, argparse.Argument
     )
     parser_check_branch.set_defaults(func=cmd_check_branch)
     parsers_por_comando["check-branch"] = parser_check_branch
+
+    parser_release_notes = subparsers.add_parser(
+        "release-notes",
+        help="Extrai release notes do CHANGELOG para a versao atual ou informada",
+    )
+    parser_release_notes.add_argument("--version", type=str, default=None)
+    parser_release_notes.add_argument("--changelog", type=str, default="CHANGELOG.md")
+    parser_release_notes.add_argument("--pyproject", type=str, default="pyproject.toml")
+    parser_release_notes.add_argument("--output", type=str, default=None)
+    parser_release_notes.add_argument("--json", action="store_true")
+    parser_release_notes.set_defaults(func=cmd_release_notes)
+    parsers_por_comando["release-notes"] = parser_release_notes
 
     return parser, parsers_por_comando
 

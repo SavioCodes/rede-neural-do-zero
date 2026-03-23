@@ -115,6 +115,8 @@ entao atualize tambem README, docs e, quando aplicavel, os links de `tags` e `re
 O repositorio tambem possui algumas automacoes oficiais:
 
 - `CODEOWNERS` para docs, nucleo, CLI e workflows
+- reviewers padrao resolvidos a partir do `CODEOWNERS`
 - labels automaticas para o tipo de branch do PR
 - sincronizacao automatica de `main` para `develop` depois de hotfix
+- draft de release notes a partir do `CHANGELOG.md`
 - protecao oficial em `main` e `develop` com checks obrigatorios

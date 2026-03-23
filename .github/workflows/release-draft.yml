@@ -1,0 +1,119 @@
+name: Release Draft
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - CHANGELOG.md
+      - pyproject.toml
+      - src/__init__.py
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Versao ou tag opcional para gerar o draft"
+        required: false
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  draft:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+
+      - name: Resolve release notes from CHANGELOG
+        run: |
+          if [ -n "${{ inputs.version }}" ]; then
+            python src/interfaces/release_notes.py --version "${{ inputs.version }}" --json > release-notes.json
+          else
+            python src/interfaces/release_notes.py --json > release-notes.json
+          fi
+          cat release-notes.json
+
+      - name: Create or update draft release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          import subprocess
+
+          with open("release-notes.json", encoding="utf-8") as arquivo:
+              payload = json.load(arquivo)
+
+          repo = os.environ["GITHUB_REPOSITORY"]
+          tag = payload["tag_name"]
+          body = payload["body"]
+          title = payload["title"]
+
+          consulta = subprocess.run(
+              [
+                  "gh",
+                  "api",
+                  f"repos/{repo}/releases/tags/{tag}",
+              ],
+              capture_output=True,
+              text=True,
+          )
+
+          if consulta.returncode == 0:
+              release = json.loads(consulta.stdout)
+              update_payload = {
+                  "tag_name": tag,
+                  "target_commitish": "main",
+                  "name": title,
+                  "body": body,
+                  "draft": release.get("draft", True),
+                  "prerelease": release.get("prerelease", False),
+              }
+              subprocess.run(
+                  [
+                      "gh",
+                      "api",
+                      f"repos/{repo}/releases/{release['id']}",
+                      "--method",
+                      "PATCH",
+                      "--input",
+                      "-",
+                  ],
+                  input=json.dumps(update_payload),
+                  text=True,
+                  check=True,
+              )
+          else:
+              create_payload = {
+                  "tag_name": tag,
+                  "target_commitish": "main",
+                  "name": title,
+                  "body": body,
+                  "draft": True,
+                  "prerelease": False,
+                  "generate_release_notes": False,
+              }
+              subprocess.run(
+                  [
+                      "gh",
+                      "api",
+                      f"repos/{repo}/releases",
+                      "--method",
+                      "POST",
+                      "--input",
+                      "-",
+                  ],
+                  input=json.dumps(create_payload),
+                  text=True,
+                  check=True,
+              )
+          PY

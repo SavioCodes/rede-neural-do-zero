@@ -2,6 +2,25 @@
 
 Todas as mudancas relevantes deste projeto passam a ser registradas aqui seguindo versionamento semantico.
 
+## [2.4.0] - 2026-03-23
+
+### Added
+
+- workflow para solicitar reviewers a partir do `CODEOWNERS`
+- workflow `Release Draft` para montar release notes com base no `CHANGELOG.md`
+- comando `release-notes` na CLI oficial
+- utilitarios versionados para resolver reviewers e extrair release notes
+
+### Changed
+
+- `main` e `develop` passaram a exigir historico linear e review de code owner
+- politica do repositorio agora padroniza `squash merge` como fluxo oficial
+- docs de governanca, publicacao e CLI foram alinhadas com o fluxo de release draft
+
+### Fixed
+
+- exemplos e docs de versao foram atualizados para o ciclo `v2.4.0`
+
 ## [2.3.0] - 2026-03-23
 
 ### Added

@@ -97,6 +97,15 @@ python -m rede_neural_do_zero check-branch --name feat/add-branch-policy --targe
 python -m rede_neural_do_zero check-branch --name hotfix/fix-release-link --target main
 ```
 
+### `release-notes`
+
+Extrai a secao oficial do `CHANGELOG.md` para virar release notes ou draft release.
+
+```bash
+python -m rede_neural_do_zero release-notes --version v2.4.0
+python -m rede_neural_do_zero release-notes --json --output logs/release-notes.md
+```
+
 ### `verify`
 
 Executa lint, tipos, testes, notebooks, docs e, opcionalmente, build do pacote.
@@ -138,4 +147,5 @@ Se o mesmo campo aparecer no arquivo e na linha de comando, a flag explicita ven
 - quer continuar um treino salvo: `resume`
 - quer medir um setup com menos variacao: `evaluate`
 - quer comparar configuracoes: `benchmark`
+- quer preparar release notes oficiais: `release-notes`
 - quer validar o repositorio inteiro: `verify`

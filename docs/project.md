@@ -49,9 +49,11 @@ Guia rapido:
 Para manter o repositorio mais profissional, o projeto agora tambem tem:
 
 - `CODEOWNERS` cobrindo docs, nucleo, CLI e workflows
+- reviewers padrao automaticos baseados no `CODEOWNERS`
 - labels automaticas a partir da branch do PR
 - template de release PR
 - sincronizacao automatica depois de hotfix
+- draft de release notes e politica de squash merge no GitHub
 
 Veja tambem: [`docs/governance.md`](https://github.com/SavioCodes/rede-neural-do-zero/blob/main/docs/governance.md)
 
