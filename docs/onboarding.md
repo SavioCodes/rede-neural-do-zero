@@ -17,6 +17,8 @@ Esta pagina e o ponto de entrada para quem quer contribuir sem se perder no repo
 - `onboarding`: tarefas que ajudam a entender a base do projeto ou a documentacao
 - `docs`: ajustes em guias, exemplos, wiki e documentacao web
 
+As primeiras tarefas guiadas do projeto ficam concentradas no milestone `v2.6.0`.
+
 ## Fluxo recomendado
 
 ```bash
